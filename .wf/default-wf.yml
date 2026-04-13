@@ -13,19 +13,31 @@ documents:
     staled_field: "staled"
 
   - type: design
-    file_pattern: "**/*-design.md"
+    role: primary                         # required — exactly one per feature
+    file_pattern: "**/*-design.md"        # matches {feature-id}-design.md
     statuses: [draft, active, closed, done, cancelled]
     initial_status: draft
-    parent_of: [plan]
+    parent_of: [design, plan]             # can own supporting designs and plans
     child_of: idea
     version_field: "version"
     staled_field: "staled"
+
+  - type: design
+    role: supporting                      # optional — many allowed per feature
+    file_pattern: "**/*-design-*.md"      # matches {feature-id}-design-{topic}.md
+    statuses: [draft, active, closed, done, cancelled]
+    initial_status: draft
+    parent_of: [plan]                     # supporting designs own plans, not other designs
+    child_of: design                      # parent_id must point to a primary design
+    version_field: "version"
+    staled_field: "staled"
+    sort_by: created                      # sorted by created date, no explicit order needed
 
   - type: plan
     file_pattern: "**/*-plan-*.md"
     statuses: [draft, active, implementing, done, blocked, cancelled]
     initial_status: draft
-    child_of: design
+    child_of: design                      # parent_id → primary or supporting design
     version_field: "version"
     staled_field: "staled"
 
@@ -38,7 +50,8 @@ documents:
     staled_field: "staled"
 
 events:
-  # Idea events
+  # ─── Idea events ────────────────────────────────────────────────────────────
+
   - name: ACTIVATE_IDEA
     applies_to: idea
     from_status: draft
@@ -56,18 +69,10 @@ events:
     from_status: [draft, active]
     to_status: cancelled
     effects:
-      - delete_child_documents
-        child_types: [design, plan]
+      - delete_child_documents:
+          child_types: [design, plan]
 
-  # Design events
-  - name: CREATE_DESIGN
-    applies_to: design
-    from_status: draft
-    to_status: draft
-    effects:
-      - create_child_document
-        child_type: design
-        template_path: "templates/design-template.md"
+  # ─── Design events (primary and supporting share the same events) ────────────
 
   - name: ACTIVATE_DESIGN
     applies_to: design
@@ -106,18 +111,32 @@ events:
     from_status: [draft, active, closed]
     to_status: cancelled
     effects:
-      - delete_child_documents
-        child_types: [plan]
+      - delete_child_documents:
+          child_types: [plan]
 
-  # Plan events
+  # ─── Supporting design creation ─────────────────────────────────────────────
+
+  - name: CREATE_SUPPORTING_DESIGN
+    applies_to: design                    # fires on the primary design
+    role: primary                         # only available on primary designs
+    from_status: [active, done]
+    to_status: active
+    effects:
+      - create_child_document:
+          child_type: design
+          child_role: supporting
+          template_path: ".wf/templates/design-template.md"
+
+  # ─── Plan events ────────────────────────────────────────────────────────────
+
   - name: CREATE_PLAN
-    applies_to: design
+    applies_to: design                    # fires on primary or supporting design
     from_status: done
     to_status: done
     effects:
-      - create_child_document
-        child_type: plan
-        template_path: "templates/plan-template.md"
+      - create_child_document:
+          child_type: plan
+          template_path: ".wf/templates/plan-template.md"
 
   - name: ACTIVATE_PLAN
     applies_to: plan
@@ -149,9 +168,9 @@ events:
     from_status: [active, implementing]
     to_status: blocked
     effects:
-      - send_notification
-        message: "Plan blocked, awaiting resolution"
-        severity: warning
+      - send_notification:
+          message: "Plan blocked, awaiting resolution"
+          severity: warning
 
   - name: UNBLOCK_PLAN
     applies_to: plan
@@ -166,13 +185,27 @@ events:
     effects: []
 
 validation:
+  # ─── Feature integrity ───────────────────────────────────────────────────────
+  - rule: "Each feature directory must have exactly one primary design"
+    check: "count(designs where role == 'primary') == 1"
+
+  - rule: "Supporting designs must have parent_id pointing to a primary design"
+    check: "design.role == 'supporting' => parent.role == 'primary'"
+
+  # ─── Plan integrity ──────────────────────────────────────────────────────────
   - rule: "Plan cannot be active if its design is not done"
     check: "plan.status == 'active' => design.status == 'done'"
+
   - rule: "Design cannot be done if it has no plans"
     check: "design.status == 'done' => count(design.plans) > 0"
-  - rule: "Public docs must not be stale when design version changes"
+
+  # ─── Staleness ───────────────────────────────────────────────────────────────
+  - rule: "Plans must not be stale when design version changes"
     check: "design.version == child.source_version"
+
+  # ─── Release fields ──────────────────────────────────────────────────────────
   - rule: "actual_release must be a valid semver or null"
     check: "actual_release == null or actual_release matches '^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9\\.]+)?(\\+[a-zA-Z0-9\\.]+)?$'"
+
   - rule: "actual_release should only be set when status is done"
     check: "actual_release == null or status == 'done'"

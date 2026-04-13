@@ -22,6 +22,7 @@ dist/
 # --- Workflow System ---
 # Derived state cache (local only)
 .wf/cache/
+.wf/prompts/
 
 # Auto-generated context summaries (optional to ignore)
 # Uncomment if you prefer to regenerate summaries rather than version them
@@ -58,3 +59,10 @@ docs/internal/
 !.env.example
 *.key
 *.pem
+
+# --- Backup ---
+_backup/
+
+# --- Claude ---
+CLAUDE.md
+.claude/

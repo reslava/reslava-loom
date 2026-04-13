@@ -1,15 +1,13 @@
-Here's a comprehensive `DOCUMENTATION_GUIDE.md` that establishes the writing conventions and document structure standards for the entire project.
-
-```markdown
 ---
 type: design
 id: documentation-guide
 title: "Documentation Guide — Writing Conventions & Structure"
 status: active
 created: 2026-04-12
-version: 1.0.0
+updated: 2026-04-13
+version: 2
 tags: [documentation, conventions, style-guide]
-parent_id: workflow-design-v2
+parent_id: workflow-design
 child_ids: []
 requires_load: []
 ---
@@ -48,7 +46,7 @@ I agree. PostgreSQL offers better concurrency and supports advanced features we 
 
 ### Third Person Everywhere Else
 
-All other sections—Goal, Context, Architecture, step descriptions, etc.—are written in **third person** (or neutral narrative voice). This maintains objectivity and professional documentation standards.
+All other sections — Goal, Context, Architecture, step descriptions, etc. — are written in **third person** (or neutral narrative voice). This maintains objectivity and professional documentation standards.
 
 ```markdown
 ## Goal
@@ -66,6 +64,44 @@ The system currently represents documents as independent entities. A Feature gro
 
 ---
 
+## Versioning
+
+### Document Version Field
+
+All workflow documents (idea, design, plan, ctx) use a **simple integer** for the `version` field.
+
+```yaml
+version: 1   # initial
+version: 2   # after first refinement
+version: 3   # after second refinement
+```
+
+Semver (`1.0.0`, `1.2.3`) is **not used** for document versions. Documents have no external consumers — the version field communicates only "this has been meaningfully revised N times." An integer is sufficient.
+
+The `REFINE_DESIGN` event increments the version automatically via the `increment_version` effect.
+
+### Application Release Fields
+
+The `target_release` and `actual_release` frontmatter fields **do** use semver — these refer to the application version shipped to real consumers.
+
+```yaml
+target_release: "1.2.0"
+actual_release: "1.2.0"   # set when status → done and feature ships
+```
+
+### Overwrite vs Archive
+
+When a document is refined, **overwrite it**. Git is the history. There is no need for `design-v1.md` sitting next to `design-v2.md`.
+
+| Situation | Action |
+|-----------|--------|
+| Document refined (same direction) | Overwrite — increment `version`, Git tracks the diff |
+| Design direction abandoned (different concept) | Move to `features/_archive/` |
+
+The `_archive/` folder is for **abandoned directions**, not for older versions of current documents. A note in the design's `# CHAT` section explaining why an approach was abandoned is more valuable than a stale archived file.
+
+---
+
 ## Document Structure
 
 ### Required Frontmatter Fields
@@ -75,15 +111,16 @@ Every workflow document must include YAML frontmatter with at minimum:
 | Field | Description |
 |-------|-------------|
 | `type` | Document type (`idea`, `design`, `plan`, `ctx`) |
-| `id` | Unique identifier (kebab-case, e.g., `workflow-design-v2`) |
+| `role` | Design role: `primary` or `supporting` (design documents only) |
+| `id` | Unique identifier (kebab-case, e.g., `payment-system-design`) |
 | `title` | Human-readable title in quotes |
 | `status` | Current status (see status reference) |
 | `created` | ISO date `YYYY-MM-DD` |
-| `version` | Semantic version or integer |
+| `version` | Integer (1, 2, 3 ...) |
 | `tags` | Array of relevant tags |
 | `parent_id` | ID of parent document (or `null`) |
 | `child_ids` | Array of child document IDs |
-| `requires_load` | Array of document IDs required for AI session context |
+| `requires_load` | Paths to documents required for AI session context |
 
 ### Body Structure by Document Type
 
@@ -94,7 +131,7 @@ Every workflow document must include YAML frontmatter with at minimum:
 | `plan` | Goal, Steps table, Step details, Legend |
 | `ctx` | Active state, Key decisions, Open questions, Step continuation note |
 
-Templates for each type are available in `docs/templates/`.
+Templates for each type are available in `.wf/templates/`.
 
 ---
 
@@ -176,9 +213,11 @@ A legend should be included in any document that uses these symbols in tables (e
 
 | Element | Convention | Example |
 |---------|------------|---------|
-| Document IDs | kebab-case | `workflow-design-v2` |
+| Document IDs | kebab-case | `payment-system-design` |
 | Feature IDs | kebab-case | `payment-system` |
-| File names | kebab-case with type suffix | `plan-001.md` |
+| Primary design filename | `{feature-id}-design.md` | `payment-system-design.md` |
+| Supporting design filename | `{feature-id}-design-{topic}.md` | `payment-system-design-webhooks.md` |
+| Plan filename | `{feature-id}-plan-{NNN}.md` | `payment-system-plan-001.md` |
 | Event names | SCREAMING_SNAKE_CASE | `REFINE_DESIGN` |
 | CLI commands | kebab-case | `wf ai respond` |
 
@@ -192,12 +231,13 @@ When writing documentation intended for AI consumption:
 2. **Use structured sections.** AI models attend more strongly to headers.
 3. **Include examples.** Concrete examples improve response accuracy.
 4. **Specify the mode.** Indicate whether the AI should respond in Chat Mode (natural language) or Action Mode (JSON proposal).
+5. **Use `requires_load`.** List every document path the AI needs before it can continue meaningfully. Use full paths relative to workspace root: `references/workspace-directory-structure-reference.md`.
 
 ---
 
 ## Templates
 
-Reference templates are located in `docs/templates/`:
+Reference templates are located in `.wf/templates/`:
 
 - `idea-template.md`
 - `design-template.md`
@@ -212,4 +252,5 @@ When creating a new document, copy the appropriate template and fill in placehol
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0.0 | 2026-04-12 | Initial documentation guide. |
+| 1 | 2026-04-12 | Initial documentation guide. |
+| 2 | 2026-04-13 | Added Versioning section (integer vs semver, overwrite vs archive). Added `role` to required frontmatter fields. Updated naming conventions with primary/supporting design patterns. Updated `requires_load` guidance to use full paths. |
