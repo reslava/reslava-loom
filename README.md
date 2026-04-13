@@ -1,10 +1,12 @@
-# 🧠 Reslava — AI-Native Development Workflow System
+# 🧵 REslava Loom
+
+**Weave ideas into features with AI.**
 
 **Document-driven. Event-sourced. Git-native. AI-agnostic.**
 
-Stop losing context when working with AI. This VS Code extension turns your Markdown files into a structured, versionable workflow engine that guides collaboration between you and your LLM assistant.
+Stop losing context when working with AI. REslava Loom turns your Markdown files into a structured, versionable workflow engine that weaves human intent with AI execution.
 
-> ⚠️ **Early Development** — This project is currently in active design and initial implementation. The core engine is being built. See [Roadmap](#roadmap) for current status.
+> ⚠️ **Early Development** — This project is in active design and initial implementation. The core engine is being built. See [Roadmap](#current-status--roadmap) for current status.
 
 ---
 
@@ -12,12 +14,12 @@ Stop losing context when working with AI. This VS Code extension turns your Mark
 
 AI-assisted development is stuck in the **Chat Era**. You prompt, the AI generates, you copy-paste, and context is lost. Features drift. Plans go stale. There's no single source of truth.
 
-Reslava replaces ephemeral chat with **persistent documents** that act as both specification and conversation log:
+REslava Loom replaces ephemeral chat with **persistent documents** that act as both specification and conversation log:
 
 - **Clear separation** between idea, design, planning, and execution.
 - **Automatic staleness detection** when designs change.
 - **Human-in-the-loop** approval for AI‑proposed state changes.
-- **Customizable workflows** that adapt to *your* process, not the other way around.
+- **Customizable workflows** that adapt to *your* process.
 - **Zero lock‑in** — everything is Markdown, versioned with Git.
 
 ---
@@ -26,7 +28,7 @@ Reslava replaces ephemeral chat with **persistent documents** that act as both s
 
 1. **Documents are the Database** — Every feature lives in a folder: `idea.md`, `design.md`, `plan-*.md`.
 2. **Status is Derived** — No central state file. Frontmatter (`status: active`) defines the workflow.
-3. **AI Reads the Docs** — The extension injects `design.md` (or a summary) into the AI prompt so it never forgets why decisions were made.
+3. **AI Reads the Docs** — The extension injects `design.md` (or a summary) into the AI prompt.
 4. **You Approve Changes** — AI proposes an action (e.g., "Refine Design"). You see a diff, click **Approve**, and only then does the file change.
 
 ```text
@@ -48,7 +50,7 @@ Feature: Payment System
 | ⚙️ **Declarative Custom Workflows** | Define your own document types and transitions in `workflow.yml`. |
 | 🧩 **Built-in Effects** | Automate linting, deployment, notifications with `run_command`, etc. |
 | 🖥️ **VS Code Native** | Tree view, file decorations, toolbar commands. Fits your existing workflow. |
-| 🔌 **AI Agnostic** | Works with DeepSeek, OpenAI, Anthropic, or local models (Ollama). No vendor lock‑in. |
+| 🔌 **AI Agnostic** | Works with DeepSeek, OpenAI, Anthropic, or local models (Ollama). |
 
 ---
 
@@ -61,11 +63,9 @@ The project is in **Phase 1: Core Engine Implementation**.
 - [x] AI integration protocol and handshake design
 - [ ] Core engine (reducers, derived state, event applier)
 - [ ] Filesystem layer (Markdown load/save)
-- [ ] CLI interface (`wf` command)
+- [ ] CLI interface (`loom` command)
 - [ ] VS Code extension (tree view, commands)
 - [ ] Native AI client integration
-
-See the [GitHub Projects](https://github.com/your-repo/projects) board for detailed tracking.
 
 ---
 
@@ -80,21 +80,21 @@ See the [GitHub Projects](https://github.com/your-repo/projects) board for detai
 ### Development Setup
 
 ```bash
-git clone https://github.com/your-username/reslava-workflow-vsix.git
-cd reslava-workflow-vsix
+git clone https://github.com/reslava/reslava-loom.git
+cd reslava-loom
 npm install
 npm run build
 ```
 
 To test the extension:
 - Press `F5` in VS Code to launch the Extension Development Host.
-- Open a workspace and run `> Workflow: Initialize` (once implemented).
+- Open a workspace and run `Loom: Initialize` (once implemented).
 
 ---
 
 ## Documentation
 
-All design and reference documentation is available in the [`docs/`](./docs/) directory:
+All design and reference documentation is available in the [`docs/`](./docs/) and [`references/`](./references/) directories:
 
 | Document | Purpose |
 |----------|---------|
@@ -103,14 +103,16 @@ All design and reference documentation is available in the [`docs/`](./docs/) di
 | [**EFFECTS.md**](./docs/EFFECTS.md) | Catalog of built-in effects. |
 | [**AI_INTEGRATION.md**](./docs/AI_INTEGRATION.md) | AI handshake protocol and native client design. |
 | [**DOCUMENTATION_GUIDE.md**](./docs/DOCUMENTATION_GUIDE.md) | Writing conventions and structure. |
-| [**Templates**](./docs/templates/) | Base templates for `idea`, `design`, `plan`, `ctx`. |
 | [**CONFIGURATION.md**](./docs/CONFIGURATION.md) | Complete reference for all VS Code settings. |
+| [**CLI Commands Reference**](./references/cli-commands-reference.md) | Every `loom` command documented. |
+| [**VS Code Commands Reference**](./references/vscode-commands-reference.md) | All `Loom:` commands and keybindings. |
+| [**Templates**](./docs/templates/) | Base templates for `idea`, `design`, `plan`, `ctx`. |
 
 ---
 
 ## Example: Custom Blog Post Workflow
 
-Reslava is not limited to software development. Here's a `workflow.yml` for a blog pipeline:
+REslava Loom is not limited to software development. Here's a `workflow.yml` for a blog pipeline:
 
 ```yaml
 name: "Blog Pipeline"
@@ -139,6 +141,27 @@ When a draft is approved, the static site rebuilds automatically.
 
 ---
 
+## Quick CLI Example
+
+```bash
+# Initialize a new workspace
+loom init
+
+# Create a new idea
+loom new idea "Add Dark Mode"
+
+# Start a chat session
+loom chat new --title "Auth strategy debate"
+
+# Refine a design using a chat
+loom refine-with-chat features/auth/auth-design.md chats/security-chat.md
+
+# Check feature status
+loom status auth
+```
+
+---
+
 ## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines and [DOCUMENTATION_GUIDE.md](./docs/DOCUMENTATION_GUIDE.md) for writing conventions.
@@ -151,9 +174,9 @@ Contributions are welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for 
 
 ## License
 
-MIT © 2026
+MIT © 2026 Rafa Eslava
 
 ---
 
 **Ready to stop losing context?**  
-Star the repo to follow along, and join us in building a better way to collaborate with AI.
+Star the repo, and let's weave something great together. 🧵✨
