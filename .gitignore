@@ -60,9 +60,6 @@ docs/internal/
 *.key
 *.pem
 
-# --- Backup ---
-_backup/
-
 # --- Claude ---
 CLAUDE.md
 .claude/
