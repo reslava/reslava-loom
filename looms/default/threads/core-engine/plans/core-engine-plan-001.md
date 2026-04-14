@@ -2,7 +2,7 @@
 type: plan
 id: core-engine-plan-001
 title: "Core Engine Implementation — Types and Reducers"
-status: draft
+status: done
 created: 2026-04-10
 updated: 2026-04-14
 version: 2
@@ -41,12 +41,12 @@ This establishes the foundation for filesystem integration and future CLI/VSIX c
 
 | Done | # | Step | Files touched |
 |---|---|---|---|
-| 🔳 | 1 | Define TypeScript core types | `packages/core/src/types.ts` |
-| 🔳 | 2 | Implement design reducer | `packages/core/src/designReducer.ts` |
-| 🔳 | 3 | Implement plan reducer | `packages/core/src/planReducer.ts` |
-| 🔳 | 4 | Implement applyEvent orchestrator | `packages/core/src/applyEvent.ts` |
-| 🔳 | 5 | Implement derived state functions | `packages/core/src/derived.ts` |
-| 🔳 | 6 | Basic tests / usage example | `packages/core/test/` |
+| ✅ | 1 | Define TypeScript core types | `packages/core/src/types.ts` |
+| ✅ | 2 | Implement design reducer | `packages/core/src/designReducer.ts` |
+| ✅ | 3 | Implement plan reducer | `packages/core/src/planReducer.ts` |
+| ✅ | 4 | Implement applyEvent orchestrator | `packages/core/src/applyEvent.ts` |
+| ✅ | 5 | Implement derived state functions | `packages/core/src/derived.ts` |
+| ✅ | 6 | Basic tests / usage example | `packages/core/test/` |
 
 ---
 

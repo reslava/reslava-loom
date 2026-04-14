@@ -2,7 +2,7 @@
 type: plan
 id: core-engine-plan-002
 title: "Filesystem Integration — Markdown Load and Save"
-status: draft
+status: done
 created: 2026-04-10
 updated: 2026-04-14
 version: 1
@@ -44,13 +44,13 @@ This step transforms the system from in‑memory logic into a persistent, real�
 
 | Done | # | Step | Files touched | Blocked by |
 |---|---|---|---|---|
-| 🔳 | 1 | Setup filesystem utilities (with robust loom resolution) | `packages/fs/src/utils.ts` | — |
-| 🔳 | 2 | Implement `loadDoc` (Markdown + frontmatter + validation) | `packages/fs/src/load.ts` | Step 1 |
-| 🔳 | 3 | Implement `saveDoc` (atomic Markdown writer) | `packages/fs/src/save.ts` | Step 1 |
-| 🔳 | 4 | Implement `loadThread` | `packages/fs/src/loadThread.ts` | Steps 2, 3 |
-| 🔳 | 5 | Implement `saveThread` | `packages/fs/src/saveThread.ts` | Steps 2, 3 |
-| 🔳 | 6 | Integrate with core engine (`runEvent`) | `packages/fs/src/runEvent.ts` | Steps 4, 5 |
-| 🔳 | 7 | Test with real thread folder | `looms/test/threads/example/` | All |
+| ✅ | 1 | Setup filesystem utilities (with robust loom resolution) | `packages/fs/src/utils.ts` | — |
+| ✅ | 2 | Implement `loadDoc` (Markdown + frontmatter + validation) | `packages/fs/src/load.ts` | Step 1 |
+| ✅ | 3 | Implement `saveDoc` (atomic Markdown writer) | `packages/fs/src/save.ts` | Step 1 |
+| ✅ | 4 | Implement `loadThread` | `packages/fs/src/loadThread.ts` | Steps 2, 3 |
+| ✅ | 5 | Implement `saveThread` | `packages/fs/src/saveThread.ts` | Steps 2, 3 |
+| ✅ | 6 | Integrate with core engine (`runEvent`) | `packages/fs/src/runEvent.ts` | Steps 4, 5 |
+| ✅ | 7 | Test with real thread folder | `looms/test/threads/example/` | All |
 
 ---
 

@@ -1,19 +1,12 @@
 {
-  "name": "reslava-workflow-vsix",
-  "version": "1.0.0",
-  "description": "**Document-driven. Event-sourced. Git-native. AI-agnostic.**",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "name": "reslava-loom",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "devDependencies": {
-    "fs-extra": "^11.3.4"
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
   }
 }

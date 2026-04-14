@@ -35,15 +35,15 @@ Implement a minimal global registry for Loom workspaces, enabling the `loom init
 
 | Done | # | Step | Files touched | Blocked by |
 |---|---|---|---|---|
-| 🔳 | 1 | Create `ConfigRegistry` class | `packages/core/src/registry.ts` | `core-engine-plan-002` |
-| 🔳 | 2 | Implement `getActiveLoomRoot()` in filesystem layer | `packages/fs/src/utils.ts` |
-| 🔳 | 3 | Implement `loom init` command | `packages/cli/src/commands/init.ts` |
-| 🔳 | 4 | Implement `loom setup` command | `packages/cli/src/commands/setup.ts` |
-| 🔳 | 5 | Implement `loom switch` command | `packages/cli/src/commands/switch.ts` |
-| 🔳 | 6 | Implement `loom list` command | `packages/cli/src/commands/list.ts` |
-| 🔳 | 7 | Implement `loom current` command | `packages/cli/src/commands/current.ts` |
-| 🔳 | 8 | Update all filesystem operations to use `getActiveLoomRoot()` | `packages/fs/src/*.ts` |
-| 🔳 | 9 | Test with mono‑loom and multi‑loom scenarios | `looms/test/` |
+| ✅ | 1 | Create `ConfigRegistry` class | `packages/core/src/registry.ts` | `core-engine-plan-002` |
+| ✅ | 2 | Implement `getActiveLoomRoot()` in filesystem layer | `packages/fs/src/utils.ts` |
+| ✅ | 3 | Implement `loom init` command | `packages/cli/src/commands/init.ts` |
+| ✅ | 4 | Implement `loom setup` command | `packages/cli/src/commands/setup.ts` |
+| ✅ | 5 | Implement `loom switch` command | `packages/cli/src/commands/switch.ts` |
+| ✅ | 6 | Implement `loom list` command | `packages/cli/src/commands/list.ts` |
+| ✅ | 7 | Implement `loom current` command | `packages/cli/src/commands/current.ts` |
+| ✅ | 8 | Update all filesystem operations to use `getActiveLoomRoot()` | `packages/fs/src/*.ts` |
+| ✅ | 9 | Test with mono‑loom and multi‑loom scenarios | `looms/test/` |
 
 ---
 
