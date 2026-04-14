@@ -1242,3 +1242,19 @@ I can provide the fully updated versions of the most critical files first. Tell 
 Once these anchors are updated, we can work through the design docs thread by thread.
 
 What would you like to weave first, Rafa? 🧵✨
+
+## Rafa:
+"refactor: align project with REslava Loom brand and structure phase 1
+
+- Rename project from 'Reslava Workflow' to 'REslava Loom'
+- Adopt thematic vocabulary: threads (features), loom (workspace), weave (create)
+- Restructure directories: looms/default/ and looms/test/ for multi-loom support
+- Move .wf/ to .loom/ and update all configuration paths
+- Replace 'wf' CLI command with 'loom'
+- Add ~/.loom/config.yaml global registry specification
+- Introduce mono-loom and multi-loom operational modes
+- Archive deprecated files to _archive/
+
+Alongside Phase 2, the document’s final structure and terminology will be established
+before implementing the core engine. All future development will build
+on this foundation."
