@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Document } from '../../core/dist/types';
 import { serializeFrontmatter } from '../../core/dist/frontmatterUtils';
+import { updateStepsTableInContent } from '../../core/dist/planTableUtils';
 
 export class FileWriteError extends Error {
   constructor(public filePath: string, originalError: Error) {
@@ -17,43 +18,16 @@ export class FilePermissionError extends Error {
   }
 }
 
-function generateStepsTable(steps: any[], originalContent: string): string {
-  if (!steps.length) return originalContent;
-
-  const header = '| Done | # | Step | Files touched | Blocked by |';
-  const separator = '|---|---|---|---|---|';
-  const rows = steps.map(s => {
-    const done = s.done ? '✅' : '🔳';
-    const files = s.files_touched?.length ? s.files_touched.join(', ') : '—';
-    const blockers = s.blockedBy?.length ? s.blockedBy.join(', ') : '—';
-    return `| ${done} | ${s.order} | ${s.description} | ${files} | ${blockers} |`;
-  });
-
-  const newTable = [header, separator, ...rows].join('\n');
-
-  const stepsRegex = /# Steps\s*\n([\s\S]*?)(?=\n---|\n##|$)/i;
-  if (stepsRegex.test(originalContent)) {
-    return originalContent.replace(stepsRegex, `# Steps\n\n${newTable}`);
-  }
-  
-  const goalRegex = /(# Goal\s*\n[\s\S]*?)(?=\n---|\n##|$)/i;
-  if (goalRegex.test(originalContent)) {
-    return originalContent.replace(goalRegex, `$1\n\n# Steps\n\n${newTable}`);
-  }
-  
-  return `${originalContent}\n\n# Steps\n\n${newTable}`;
-}
-
 export async function saveDoc(doc: Document, filePath: string): Promise<void> {
   // Separate internal properties from frontmatter
   const { content, _path, steps, ...frontmatter } = doc as any;
 
   let bodyContent = content;
   if (doc.type === 'plan' && steps) {
-    bodyContent = generateStepsTable(steps, content);
+    bodyContent = updateStepsTableInContent(content, steps);
   }
 
-  // Use our own canonical serializer
+  // Serialize frontmatter using the canonical serializer
   const frontmatterStr = serializeFrontmatter(frontmatter);
   const output = `${frontmatterStr}\n${bodyContent}`;
 
@@ -63,7 +37,7 @@ export async function saveDoc(doc: Document, filePath: string): Promise<void> {
     path.dirname(filePath),
     `.loom-tmp-${Date.now()}-${path.basename(filePath)}.tmp`
   );
-  
+
   try {
     await fs.writeFile(tempPath, output, { mode: 0o644 });
     try {
