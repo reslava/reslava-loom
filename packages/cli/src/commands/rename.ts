@@ -6,13 +6,13 @@ import { saveDoc } from '../../../fs/dist/save';
 import { getActiveLoomRoot } from '../../../fs/dist/utils';
 import { generatePermanentId } from '../../../core/dist/idUtils';
 import { Document, PlanDoc } from '../../../core/dist/types';
+import { findDocumentById, gatherAllDocumentIds, findMarkdownFiles } from '../../../fs/dist/pathUtils';
 
 export async function renameCommand(oldId: string, newTitle: string): Promise<void> {
     const loomRoot = getActiveLoomRoot();
-    const threadsDir = path.join(loomRoot, 'threads');
 
-    // 1. Find the document with the given ID
-    const docPath = await findDocumentById(threadsDir, oldId);
+    // 1. Find the document with the given ID using pathUtils
+    const docPath = await findDocumentById(loomRoot, oldId);
     if (!docPath) {
         console.error(chalk.red(`❌ Document with ID '${oldId}' not found.`));
         process.exit(1);
@@ -27,15 +27,15 @@ export async function renameCommand(oldId: string, newTitle: string): Promise<vo
         process.exit(1);
     }
 
-    // 4. Gather all existing IDs for uniqueness check (excluding the current document)
-    const allIds = await gatherAllDocumentIds(threadsDir);
+    // 4. Gather all existing IDs for uniqueness check using pathUtils
+    const allIds = await gatherAllDocumentIds(loomRoot);
     allIds.delete(oldId);
 
     // 5. Generate the new permanent ID from the new title
     const newId = generatePermanentId(newTitle, doc.type, allIds);
 
     // 6. Scan all documents and update references
-    const updatedCount = await updateAllReferences(threadsDir, oldId, newId);
+    const updatedCount = await updateAllReferences(loomRoot, oldId, newId);
 
     // 7. Update the document itself
     const updatedDoc = {
@@ -62,41 +62,11 @@ export async function renameCommand(oldId: string, newTitle: string): Promise<vo
 }
 
 /**
- * Recursively searches for a document with the given ID.
- */
-async function findDocumentById(dir: string, id: string): Promise<string | null> {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory() && entry.name !== '_archive') {
-            const found = await findDocumentById(fullPath, id);
-            if (found) return found;
-        } else if (entry.isFile() && entry.name === `${id}.md`) {
-            return fullPath;
-        }
-    }
-    return null;
-}
-
-/**
- * Gathers all document IDs from the entire loom.
- */
-async function gatherAllDocumentIds(threadsDir: string): Promise<Set<string>> {
-    const ids = new Set<string>();
-    const files = await findMarkdownFiles(threadsDir);
-    for (const file of files) {
-        const id = path.basename(file, '.md');
-        ids.add(id);
-    }
-    return ids;
-}
-
-/**
  * Scans all documents and updates references from oldId to newId.
  * Returns the number of documents updated.
  */
-async function updateAllReferences(threadsDir: string, oldId: string, newId: string): Promise<number> {
-    const files = await findMarkdownFiles(threadsDir);
+async function updateAllReferences(loomRoot: string, oldId: string, newId: string): Promise<number> {
+    const files = await findMarkdownFiles(loomRoot);
     let updatedCount = 0;
 
     for (const file of files) {
@@ -142,18 +112,4 @@ async function updateAllReferences(threadsDir: string, oldId: string, newId: str
     }
 
     return updatedCount;
-}
-
-async function findMarkdownFiles(dir: string): Promise<string[]> {
-    const result: string[] = [];
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory() && entry.name !== '_archive') {
-            result.push(...await findMarkdownFiles(fullPath));
-        } else if (entry.isFile() && entry.name.endsWith('.md')) {
-            result.push(fullPath);
-        }
-    }
-    return result;
 }

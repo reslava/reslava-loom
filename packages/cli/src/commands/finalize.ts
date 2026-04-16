@@ -6,13 +6,13 @@ import { saveDoc } from '../../../fs/dist/save';
 import { getActiveLoomRoot } from '../../../fs/dist/utils';
 import { generatePermanentId } from '../../../core/dist/idUtils';
 import { Document } from '../../../core/dist/types';
+import { findDocumentById, gatherAllDocumentIds } from '../../../fs/dist/pathUtils';
 
 export async function finalizeCommand(tempId: string): Promise<void> {
     const loomRoot = getActiveLoomRoot();
-    const threadsDir = path.join(loomRoot, 'threads');
 
-    // 1. Find the document with the given temporary ID
-    const docPath = await findDocumentByTempId(threadsDir, tempId);
+    // 1. Find the document with the given temporary ID using pathUtils
+    const docPath = await findDocumentById(loomRoot, tempId);
     if (!docPath) {
         console.error(chalk.red(`❌ Document with temporary ID '${tempId}' not found.`));
         process.exit(1);
@@ -27,8 +27,8 @@ export async function finalizeCommand(tempId: string): Promise<void> {
         process.exit(1);
     }
 
-    // 4. Gather all existing IDs in the loom for uniqueness check
-    const existingIds = await gatherAllDocumentIds(threadsDir);
+    // 4. Gather all existing IDs in the loom for uniqueness check using pathUtils
+    const existingIds = await gatherAllDocumentIds(loomRoot);
 
     // 5. Generate the permanent ID from the document's title
     const permanentId = generatePermanentId(doc.title, doc.type, existingIds);
@@ -55,48 +55,4 @@ export async function finalizeCommand(tempId: string): Promise<void> {
     console.log(chalk.gray(`   Old ID: ${tempId}`));
     console.log(chalk.green(`   New ID: ${permanentId}`));
     console.log(chalk.gray(`   Path: ${newPath}`));
-}
-
-/**
- * Recursively searches for a document with the given temporary ID.
- */
-async function findDocumentByTempId(dir: string, tempId: string): Promise<string | null> {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory() && entry.name !== '_archive') {
-            const found = await findDocumentByTempId(fullPath, tempId);
-            if (found) return found;
-        } else if (entry.isFile() && entry.name === `${tempId}.md`) {
-            return fullPath;
-        }
-    }
-    return null;
-}
-
-/**
- * Gathers all document IDs from the entire loom for uniqueness checking.
- */
-async function gatherAllDocumentIds(threadsDir: string): Promise<Set<string>> {
-    const ids = new Set<string>();
-    const files = await findMarkdownFiles(threadsDir);
-    for (const file of files) {
-        const id = path.basename(file, '.md');
-        ids.add(id);
-    }
-    return ids;
-}
-
-async function findMarkdownFiles(dir: string): Promise<string[]> {
-    const result: string[] = [];
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory() && entry.name !== '_archive') {
-            result.push(...await findMarkdownFiles(fullPath));
-        } else if (entry.isFile() && entry.name.endsWith('.md')) {
-            result.push(fullPath);
-        }
-    }
-    return result;
 }

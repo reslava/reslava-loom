@@ -3,26 +3,7 @@ import { loadDoc } from './load';
 import { getActiveLoomRoot } from './utils';
 import { LinkIndex, createEmptyIndex, DocumentEntry, StepBlocker } from '../../core/dist/linkIndex';
 import { Document, PlanDoc } from '../../core/dist/types';
-import * as fs from 'fs-extra';
-
-/**
- * Recursively finds all Markdown files in a directory, excluding _archive.
- */
-async function findMarkdownFiles(dir: string): Promise<string[]> {
-    const result: string[] = [];
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    
-    for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory() && entry.name !== '_archive') {
-            result.push(...await findMarkdownFiles(fullPath));
-        } else if (entry.isFile() && entry.name.endsWith('.md')) {
-            result.push(fullPath);
-        }
-    }
-    
-    return result;
-}
+import { findMarkdownFiles } from './pathUtils';
 
 /**
  * Builds a complete LinkIndex by scanning all documents in the active loom.
