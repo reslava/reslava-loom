@@ -1,30 +1,36 @@
 import chalk from 'chalk';
-import { runEvent } from '../../../fs/dist/runEvent';
-import { loadThread } from '../../../fs/dist/loadThread';
+import { runEvent } from '../../../app/dist/runEvent';
+import { loadThread as loadThreadFs } from '../../../fs/dist/loadThread';
+import { saveThread } from '../../../fs/dist/saveThread';
+
+// Helper to bind dependencies for runEvent
+const runEventWithDeps = (threadId: string, event: any) => 
+    runEvent(threadId, event, { loadThread: loadThreadFs, saveThread });
 
 export async function startPlanCommand(planId: string): Promise<void> {
-  try {
-    const threadId = planId.split('-plan-')[0];
-    if (!threadId) {
-      throw new Error(`Invalid plan ID format. Expected "{threadId}-plan-###", got "${planId}"`);
-    }
+    try {
+        const threadId = planId.split('-plan-')[0];
+        if (!threadId) {
+            throw new Error(`Invalid plan ID format. Expected "{threadId}-plan-###", got "${planId}"`);
+        }
 
-    const thread = await loadThread(threadId);
-    const plan = thread.plans.find(p => p.id === planId);
-    
-    if (!plan) {
-      throw new Error(`Plan '${planId}' not found in thread '${threadId}'`);
-    }
+        const thread = await loadThreadFs(threadId);
+        const plan = thread.plans.find(p => p.id === planId);
+        
+        if (!plan) {
+            throw new Error(`Plan '${planId}' not found in thread '${threadId}'`);
+        }
 
-    // If plan is still draft, activate it first
-    if (plan.status === 'draft') {
-      await runEvent(threadId, { type: 'ACTIVATE_PLAN', planId } as any);      
-    }
+        if (plan.status === 'draft') {
+            await runEventWithDeps(threadId, { type: 'ACTIVATE_PLAN', planId });
+            console.log(chalk.gray(`   Plan activated (draft → active)`));
+        }
 
-    // Now start implementing
-    await runEvent(threadId, { type: 'START_IMPLEMENTING_PLAN', planId } as any);
-  } catch (e: any) {
-    console.error(chalk.red(`❌ Failed to start plan: ${e.message}`));
-    process.exit(1);
-  }
+        await runEventWithDeps(threadId, { type: 'START_IMPLEMENTING_PLAN', planId });
+        console.log(chalk.green(`🧵 START_PLAN applied to '${planId}'`));
+        console.log(chalk.gray(`   Plan status changed to implementing.`));
+    } catch (e: any) {
+        console.error(chalk.red(`❌ Failed to start plan: ${e.message}`));
+        process.exit(1);
+    }
 }

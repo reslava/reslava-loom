@@ -32,8 +32,8 @@ Introduce an explicit Application Layer (`app/`) to centralize orchestration log
 
 | # | Done | Step | Files touched |
 |---|---|---|---|
-| 1 | — | Create app package structure | `packages/app/*` |
-| 2 | — | Extract first use-case (completeStep) | `cli/commands/completeStep.ts`, `app/completeStep.ts` |
+| 1 | ✅ | Create app package structure | `packages/app/*` |
+| 2 | ✅ | Extract first use-case (completeStep) | `cli/commands/completeStep.ts`, `app/completeStep.ts` |
 | 3 | — | Refactor fs orchestration leakage | `packages/fs/runEvent.ts`, `packages/fs/saveThread.ts` |
 | 4 | — | Migrate remaining CLI commands to app layer | `packages/cli/commands/*` |
 | 5 | — | Normalize fs into repositories/adapters | `packages/fs/*` |

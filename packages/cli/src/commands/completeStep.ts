@@ -1,39 +1,37 @@
 import chalk from 'chalk';
-import { runEvent } from '../../../fs/dist/runEvent';
+import { completeStep } from '../../../app/dist/completeStep';
 import { loadThread } from '../../../fs/dist/loadThread';
+import { runEvent } from '../../../app/dist/runEvent';
+import { saveThread } from '../../../fs/dist/saveThread';
+
+// Bind dependencies for runEvent
+const runEventBound = (threadId: string, event: any) =>
+    runEvent(threadId, event, { loadThread, saveThread });
 
 export async function completeStepCommand(planId: string, options: { step?: string }): Promise<void> {
-  try {
-    const threadId = planId.split('-plan-')[0];
-    if (!threadId) {
-      throw new Error(`Invalid plan ID format. Expected "{threadId}-plan-###", got "${planId}"`);
+    try {
+        const step = options.step ? parseInt(options.step, 10) : undefined;
+        if (step === undefined || isNaN(step)) {
+            throw new Error('Step number is required. Use --step <n>');
+        }
+
+        const result = await completeStep(
+            { planId, step },
+            { loadThread, runEvent: runEventBound }
+        );
+
+        console.log(chalk.green(`✅ Step ${step} completed in '${planId}'`));
+        
+        if (result.autoCompleted) {
+            console.log(chalk.green(`🎉 All steps completed! Plan '${planId}' is now done.`));
+        } else {
+            const nextStep = result.plan.steps.find(s => !s.done);
+            if (nextStep) {
+                console.log(chalk.gray(`   Next step: Step ${nextStep.order} — ${nextStep.description}`));
+            }
+        }
+    } catch (e: any) {
+        console.error(chalk.red(`❌ Failed to complete step: ${e.message}`));
+        process.exit(1);
     }
-
-    const step = options.step ? parseInt(options.step, 10) : undefined;
-    if (step === undefined || isNaN(step)) {
-      throw new Error('Step number is required. Use --step <n>');
-    }
-
-    const thread = await loadThread(threadId);
-    const plan = thread.plans.find(p => p.id === planId);
-    
-    if (!plan) {
-      throw new Error(`Plan '${planId}' not found in thread '${threadId}'`);
-    }
-
-    const stepIndex = step - 1;
-    const beforeStep = plan.steps[stepIndex];
-
-    await runEvent(threadId, { type: 'COMPLETE_STEP', planId, stepIndex } as any);
-
-    // Reload and check
-    const afterThread = await loadThread(threadId);
-    const afterPlan = afterThread.plans.find(p => p.id === planId);
-    const afterStep = afterPlan?.steps[stepIndex];    
-
-    // ... rest of function ...
-  } catch (e: any) {
-    console.error(chalk.red(`❌ Failed to complete step: ${e.message}`));
-    process.exit(1);
-  }
 }
