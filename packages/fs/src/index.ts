@@ -8,4 +8,4 @@ export { saveDoc, FileWriteError, FilePermissionError } from './serializers/fron
 
 // Repositories
 export { loadThread, saveThread } from './repositories/threadRepository';
-export { buildLinkIndex, updateIndexForFile } from './repositories/linkRepository';
+export { buildLinkIndex } from './repositories/linkRepository';  // ← removed updateIndexForFile

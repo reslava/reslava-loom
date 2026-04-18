@@ -19,35 +19,36 @@ export interface LoomRegistry {
  * Resolves the absolute path to the currently active Loom workspace root.
  *
  * Resolution order:
- * 1. Check global registry (~/.loom/config.yaml) for active_loom.
- * 2. Walk up from current working directory looking for .loom/.
+ * 1. Walk up from current working directory looking for .loom/.
+ * 2. Check global registry (~/.loom/config.yaml) for active_loom. 
  * 3. Throw a helpful error if neither is found.
  */
 export function getActiveLoomRoot(): string {
-    // 1. Try global registry (multi‑loom mode)
-    const registry = new ConfigRegistry();
-    const active = registry.getActiveLoom();
-    if (active) {
-        const resolved = registry.resolveLoomPath(active);
-        if (fs.existsSync(resolved)) {
-            return resolved;
-        }
-    }
-
-    // 2. Walk up from cwd looking for .loom/ (mono‑loom mode)
+    // 1. FIRST, walk up from cwd looking for .loom/ (mono‑loom mode)
     let currentDir = process.cwd();
     while (true) {
         const loomDir = path.join(currentDir, '.loom');
         if (fs.existsSync(loomDir)) {
             return currentDir;
         }
-
         const parentDir = path.dirname(currentDir);
-        if (parentDir === currentDir) {
-            break;
-        }
+        if (parentDir === currentDir) break;
         currentDir = parentDir;
     }
+
+    // 2. SECOND, try global registry (multi‑loom mode)
+    const registryPath = path.join(os.homedir(), '.loom', 'config.yaml');
+    if (fs.existsSync(registryPath)) {
+        const registryContent = fs.readFileSync(registryPath, 'utf8');
+        const registry = yaml.parse(registryContent) as LoomRegistry | null;
+        if (registry?.active_loom) {
+            const configDir = path.dirname(registryPath);
+            const activePath = path.resolve(configDir, registry.active_loom);
+            if (fs.existsSync(activePath)) {
+                return activePath;
+            }
+        }
+    }    
 
     // 3. No loom found
     throw new Error(

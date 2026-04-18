@@ -9,6 +9,7 @@ tags: [loom, workspace, ux, vocabulary, architecture, vision]
 parent_id: workflow-design-v2
 child_ids: [loom-multi-workspace-mvp-design]
 requires_load: []
+role: primary
 ---
 
 # Minimal Multi-Loom Workspace Support
