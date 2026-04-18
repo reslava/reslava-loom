@@ -1,15 +1,17 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { Thread, Document, DesignDoc } from '../../../core/dist/types';
+import { Thread } from '../../../core/dist/entities/thread';
+import { Document } from '../../../core/dist/entities/document';
+import { DesignDoc } from '../../../core/dist/entities/design';
 import { loadDoc, FrontmatterParseError } from '../serializers/frontmatterLoader';
 import { saveDoc } from '../serializers/frontmatterSaver';
-import { findMarkdownFiles } from '../utils/pathUtils';
 import { resolveThreadPath } from '../utils/workspaceUtils';
+import { findMarkdownFiles } from '../utils/pathUtils';
 import {
     validateParentExists,
     getDanglingChildIds,
     validateDesignRole,
-    ValidationIssue
+    validateSinglePrimaryDesign
 } from '../../../core/dist/validation';
 import { buildLinkIndex } from './linkRepository';
 
@@ -24,7 +26,7 @@ export async function loadThread(threadId: string): Promise<Thread> {
     
     for (const file of files) {
         try {
-            docs.push(await loadDoc(file));
+            docs.push(await loadDoc(file) as Document);
         } catch (e) {
             if (e instanceof FrontmatterParseError) {
                 console.warn(`Skipping ${file}: ${e.message}`);
@@ -34,34 +36,40 @@ export async function loadThread(threadId: string): Promise<Thread> {
         }
     }
     
-    const primaryDesign = docs.find(d => d.type === 'design' && (d as DesignDoc).role === 'primary') as DesignDoc | undefined;
-    if (!primaryDesign) {
+    const primaryDesigns = docs.filter(d => d.type === 'design' && (d as DesignDoc).role === 'primary') as DesignDoc[];
+    
+    if (primaryDesigns.length === 0) {
         throw new Error(`No primary design found for thread '${threadId}'`);
     }
-
-    // Build a lightweight link index for validation
+    if (primaryDesigns.length > 1) {
+        const ids = primaryDesigns.map(d => d.id).join(', ');
+        throw new Error(`Thread '${threadId}' has multiple primary designs: ${ids}`);
+    }
+    
+    const primaryDesign = primaryDesigns[0];
     const index = await buildLinkIndex();
     
-    // Emit warnings for validation issues
     for (const doc of docs) {
-        // Check parent_id
         if (doc.parent_id && !validateParentExists(doc, index)) {
             console.warn(`⚠️  [${doc.id}] Broken parent_id: ${doc.parent_id}`);
         }
         
-        // Check child_ids
         const dangling = getDanglingChildIds(doc, index);
         for (const childId of dangling) {
             console.warn(`⚠️  [${doc.id}] Dangling child_id: ${childId}`);
         }
         
-        // Check design role
         if (doc.type === 'design') {
             const roleIssue = validateDesignRole(doc as DesignDoc);
             if (roleIssue) {
                 console.warn(`⚠️  [${doc.id}] ${roleIssue.message}`);
             }
         }
+    }
+
+    const primaryIssue = validateSinglePrimaryDesign(docs);
+    if (primaryIssue) {
+        console.warn(`⚠️  [${threadId}] ${primaryIssue.message}`);
     }
 
     return {

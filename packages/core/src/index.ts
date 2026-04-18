@@ -38,9 +38,12 @@ export { parseStepsTable, generateStepsTable, updateStepsTableInContent } from '
 export { createEmptyIndex, LinkIndex, DocumentEntry, StepBlocker } from './linkIndex';
 
 // ============================================================================
-// Types (Shared)
+// Shared Types (formerly types.ts)
 // ============================================================================
-export { Document, DocumentStatus, WorkflowEvent, DiagnosticEvent, ThreadStatus, ThreadPhase } from './types';
+export { Document, DocumentStatus } from './entities/document';
+export { WorkflowEvent, DiagnosticEvent } from './events/workflowEvent';
+
+// Remove: export * from './types';
 
 // ============================================================================
 // Body Generators

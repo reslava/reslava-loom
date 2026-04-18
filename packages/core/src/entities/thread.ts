@@ -2,7 +2,7 @@ import { IdeaDoc } from './idea';
 import { DesignDoc } from './design';
 import { PlanDoc } from './plan';
 import { CtxDoc } from './ctx';
-import { Document } from '../types';
+import { Document } from './document';
 
 export type ThreadStatus = 'CANCELLED' | 'IMPLEMENTING' | 'ACTIVE' | 'DONE';
 

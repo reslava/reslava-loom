@@ -40,7 +40,7 @@ That said, there are a handful of real bugs, several architectural inconsistenci
 
 ---
 
-### 2. Confirmed Bugs
+### 2. Confirmed Bugs [ALL FIXED ✅]
 
 #### 2.1 `ConfigRegistry.removeLoom` — Index Off-by-One After Splice
 

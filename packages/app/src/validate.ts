@@ -2,7 +2,9 @@ import { getActiveLoomRoot } from '../../fs/dist';
 import { buildLinkIndex } from '../../fs/dist';
 import { loadDoc } from '../../fs/dist';
 import { LinkIndex } from '../../core/dist/linkIndex';
-import { Document, DesignDoc, PlanDoc } from '../../core/dist/types';
+import { Document } from '../../core/dist/entities/document';
+import { DesignDoc } from '../../core/dist/entities/design';
+import { PlanDoc } from '../../core/dist/entities/plan';
 import {
     validateParentExists,
     getDanglingChildIds,

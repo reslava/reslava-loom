@@ -1,4 +1,5 @@
-import { DocumentType, DocumentStatus } from './types';
+import { DocumentType } from './entities/base';
+import { DocumentStatus } from './entities/document';
 
 /**
  * Base frontmatter fields present in all Loom documents.

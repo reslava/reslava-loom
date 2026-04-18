@@ -1,45 +1,30 @@
-import { Document, DesignDoc, PlanDoc } from './types';
+import { Document } from './entities/document';
+import { DesignDoc } from './entities/design';
+import { PlanDoc } from './entities/plan';
 import { LinkIndex } from './linkIndex';
 
 export interface ValidationIssue {
-    /** The ID of the document with the issue. */
     documentId: string;
-    /** Severity level: 'error' for critical problems, 'warning' for advisories. */
     severity: 'error' | 'warning';
-    /** Human‑readable description of the issue. */
     message: string;
 }
 
-/**
- * Checks whether a document's parent_id exists in the link index.
- *
- * @param doc - The document to validate.
- * @param index - The link index containing all known documents.
- * @returns True if the parent exists or if there is no parent; false otherwise.
- */
 export function validateParentExists(doc: Document, index: LinkIndex): boolean {
     if (!doc.parent_id) return true;
-    return index.documents.has(doc.parent_id);
+    const parent = index.documents.get(doc.parent_id);
+    if (!parent) return false;
+    return parent.exists || parent.archived;
 }
 
-/**
- * Returns a list of child_ids that do not exist in the link index.
- *
- * @param doc - The document whose child_ids should be validated.
- * @param index - The link index containing all known documents.
- * @returns An array of dangling child IDs.
- */
 export function getDanglingChildIds(doc: Document, index: LinkIndex): string[] {
     if (!doc.child_ids) return [];
-    return doc.child_ids.filter(id => !index.documents.has(id));
+    return doc.child_ids.filter(id => {
+        const child = index.documents.get(id);
+        if (!child) return true;
+        return !child.exists && !child.archived;
+    });
 }
 
-/**
- * Validates the role field of a design document.
- *
- * @param doc - The design document to validate.
- * @returns A validation issue if the role is missing or invalid; otherwise null.
- */
 export function validateDesignRole(doc: DesignDoc): ValidationIssue | null {
     if (!doc.role) {
         return {
@@ -58,34 +43,6 @@ export function validateDesignRole(doc: DesignDoc): ValidationIssue | null {
     return null;
 }
 
-/**
- * Validates the design_version field of a plan against its parent design.
- *
- * @param plan - The plan document to validate.
- * @param index - The link index (used to locate the parent design).
- * @returns True if the plan's design_version matches the parent design's version,
- *          or if the parent cannot be found. False if versions mismatch.
- */
-export function validatePlanDesignVersion(plan: PlanDoc, index: LinkIndex): boolean {
-    const parentId = plan.parent_id;
-    if (!parentId) return true;
-    
-    const parentEntry = index.documents.get(parentId);
-    if (!parentEntry) return true; // Parent missing – caught by validateParentExists
-    
-    // Note: This requires the parent design's version.
-    // In practice, this is called after loading the parent design.
-    // For now, we return true; the CLI validate command handles this separately.
-    return true;
-}
-
-/**
- * Validates the step blockers within a plan.
- *
- * @param plan - The plan document whose steps should be validated.
- * @param index - The link index containing all known documents.
- * @returns An array of validation issues for invalid blockers.
- */
 export function validateStepBlockers(plan: PlanDoc, index: LinkIndex): ValidationIssue[] {
     const issues: ValidationIssue[] = [];
     if (!plan.steps) return issues;
@@ -94,7 +51,6 @@ export function validateStepBlockers(plan: PlanDoc, index: LinkIndex): Validatio
         if (!step.blockedBy || step.blockedBy.length === 0) continue;
         
         for (const blocker of step.blockedBy) {
-            // Check internal step dependency: "Step N"
             if (blocker.startsWith('Step ')) {
                 const stepNum = parseInt(blocker.replace('Step ', ''), 10);
                 if (isNaN(stepNum) || stepNum < 1 || stepNum > plan.steps.length) {
@@ -107,7 +63,6 @@ export function validateStepBlockers(plan: PlanDoc, index: LinkIndex): Validatio
                 continue;
             }
             
-            // Check cross‑plan dependency: plan ID
             if (blocker.includes('-plan-')) {
                 if (!index.documents.has(blocker)) {
                     issues.push({
@@ -119,7 +74,6 @@ export function validateStepBlockers(plan: PlanDoc, index: LinkIndex): Validatio
                 continue;
             }
             
-            // Unknown blocker format
             issues.push({
                 documentId: plan.id,
                 severity: 'warning',
@@ -129,4 +83,24 @@ export function validateStepBlockers(plan: PlanDoc, index: LinkIndex): Validatio
     }
     
     return issues;
+}
+
+export function validateSinglePrimaryDesign(docs: Document[]): ValidationIssue | null {
+    const primaryDesigns = docs.filter(d => d.type === 'design' && (d as DesignDoc).role === 'primary');
+    if (primaryDesigns.length === 0) {
+        return {
+            documentId: 'thread',
+            severity: 'error',
+            message: 'Thread has no primary design document.',
+        };
+    }
+    if (primaryDesigns.length > 1) {
+        const ids = primaryDesigns.map(d => d.id).join(', ');
+        return {
+            documentId: 'thread',
+            severity: 'error',
+            message: `Thread has multiple primary designs: ${ids}. Only one is allowed.`,
+        };
+    }
+    return null;
 }
