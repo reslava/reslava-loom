@@ -139,65 +139,19 @@ Create the use‑case for generating a design document from an existing idea. If
 
 ## Step 3 — Implement `weavePlan` Use‑Case
 
+**Implemented.** The `weavePlan` use‑case creates a new plan document. If the parent design is not already `done`, it is automatically finalized.
+
+**Persistence Correction:**  
+The original implementation used direct `fs.outputFile` for the plan document. This has been **corrected** to use `saveDoc` from the `fs` layer, ensuring:
+- `_path` is never serialized to frontmatter.
+- The steps table is correctly generated via `generateStepsTable`.
+- Consistent YAML formatting via `serializeFrontmatter`.
+
+The `weavePlan` use‑case now depends on `saveDoc` and uses it for both the auto‑finalized design and the new plan document.
+
 Create the use‑case for generating a plan from a finalized design.
 
 **File:** `app/src/weavePlan.ts`
-
-```typescript
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import { getActiveLoomRoot } from '../../fs/dist';
-import { loadThread } from '../../fs/dist';
-import { generatePlanId } from '../../fs/dist';
-import { createBaseFrontmatter, serializeFrontmatter } from '../../core/dist';
-import { generatePlanBody } from '../../core/dist';
-
-export interface WeavePlanInput {
-    threadId: string;
-    title?: string;
-    goal?: string;
-}
-
-export interface WeavePlanDeps {
-    getActiveLoomRoot: typeof getActiveLoomRoot;
-    loadThread: typeof loadThread;
-    fs: typeof fs;
-}
-
-export async function weavePlan(
-    input: WeavePlanInput,
-    deps: WeavePlanDeps
-): Promise<{ id: string; filePath: string }> {
-    const loomRoot = deps.getActiveLoomRoot();
-    const thread = await deps.loadThread(input.threadId);
-    
-    if (thread.design.status !== 'done') {
-        throw new Error(`Design must be 'done' before creating a plan. Current status: ${thread.design.status}`);
-    }
-    
-    const planTitle = input.title || `${input.threadId} Plan`;
-    const existingPlanIds = thread.plans.map(p => p.id);
-    const planId = generatePlanId(input.threadId, existingPlanIds);
-    
-    const frontmatter = createBaseFrontmatter('plan', planId, planTitle, thread.design.id);
-    (frontmatter as any).design_version = thread.design.version;
-    (frontmatter as any).target_version = thread.design.target_release || '0.1.0';
-    
-    const content = generatePlanBody(planTitle, input.goal);
-    
-    const frontmatterYaml = serializeFrontmatter(frontmatter);
-    const output = `${frontmatterYaml}\n${content}`;
-    
-    const threadPath = path.join(loomRoot, 'threads', input.threadId);
-    const plansDir = path.join(threadPath, 'plans');
-    await deps.fs.ensureDir(plansDir);
-    
-    const filePath = path.join(plansDir, `${planId}.md`);
-    await deps.fs.outputFile(filePath, output);
-    
-    return { id: planId, filePath };
-}
-```
 
 ---
 
@@ -291,7 +245,7 @@ All tests must pass. CLI commands should behave identically to before.
 - Complete, reusable `app` layer covering the full happy‑path workflow.
 - CLI commands are thin presentation wrappers.
 - Zero code duplication between CLI and future VS Code extension.
-- Architecture is fully validated and ready for Phase 6 (Validation Extraction).
+- All document persistence flows through `saveDoc`, ensuring consistent frontmatter formatting and no `_path` leakage.
 
 ---
 
