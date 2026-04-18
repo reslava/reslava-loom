@@ -2,7 +2,7 @@
 type: plan
 id: refactor-imports-plan-001
 title: "Update Client Imports to Use Domain Modules Directly"
-status: draft
+status: done
 created: 2026-04-16
 version: 1
 design_version: 1
@@ -33,13 +33,13 @@ Replace all imports that currently pull domain types (`IdeaDoc`, `DesignDoc`, `P
 
 | Done | # | Step | Files touched | Blocked by |
 |---|---|---|---|---|
-| 🔳 | 1 | Audit all imports of domain types | All `packages/*/src/**/*.ts` | — |
-| 🔳 | 2 | Update `fs` package imports | `packages/fs/src/*.ts` | Step 1 |
-| 🔳 | 3 | Update `cli` package imports | `packages/cli/src/**/*.ts` | Step 1 |
-| 🔳 | 4 | Update `core` internal imports | `packages/core/src/*.ts` (excluding entities/events/reducers) | Step 1 |
-| 🔳 | 5 | Remove re‑exports from `types.ts` | `packages/core/src/types.ts` | Steps 2–4 |
-| 🔳 | 6 | Run full test suite | `tests/*` | Step 5 |
-| 🔳 | 7 | Delete obsolete `types.ts` if empty | `packages/core/src/types.ts` | Step 5 |
+| ✅ | 1 | Audit all imports of domain types | All `packages/*/src/**/*.ts` | — |
+| ✅ | 2 | Update `fs` package imports | `packages/fs/src/*.ts` | Step 1 |
+| ✅ | 3 | Update `cli` package imports | `packages/cli/src/**/*.ts` | Step 1 |
+| ✅ | 4 | Update `core` internal imports | `packages/core/src/*.ts` (excluding entities/events/reducers) | Step 1 |
+| ✅ | 5 | Remove re‑exports from `types.ts` | `packages/core/src/types.ts` | Steps 2–4 |
+| ✅ | 6 | Run full test suite | `tests/*` | Step 5 |
+| ✅ | 7 | Delete obsolete `types.ts` if empty | `packages/core/src/types.ts` | Step 5 |
 
 ---
 
