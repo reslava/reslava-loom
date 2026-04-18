@@ -116,4 +116,14 @@ export class ConfigRegistry {
         }
         return null;
     }
+
+    /**
+     * Returns the name of the currently active loom, or null if none is set.
+     */
+    getActiveLoomName(): string | null {
+        const active = this.registry.active_loom;
+        if (!active) return null;
+        const loom = this.registry.looms.find(l => l.path === active);
+        return loom?.name || null;
+    }
 }

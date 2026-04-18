@@ -1,5 +1,5 @@
 // ============================================================================
-// Use‑Cases (files that exist)
+// Use‑Cases — Core Workflow
 // ============================================================================
 export { completeStep, CompleteStepInput, CompleteStepDeps } from './completeStep';
 export { finalize, FinalizeInput, FinalizeDeps } from './finalize';
@@ -11,8 +11,17 @@ export { validate, ValidateInput, ValidateDeps, ValidationResult } from './valid
 export { weaveIdea, WeaveIdeaInput, WeaveIdeaDeps } from './weaveIdea';
 export { weaveDesign, WeaveDesignInput, WeaveDesignDeps } from './weaveDesign';
 export { weavePlan, WeavePlanInput, WeavePlanDeps } from './weavePlan';
+
+// ============================================================================
+// Use‑Cases — Loom Management
+// ============================================================================
 export { initLoom, InitInput, InitDeps } from './init';
 export { setupLoom, SetupInput, SetupDeps } from './setup';
 export { switchLoom, SwitchInput, SwitchDeps } from './switch';
 export { listLooms, LoomListEntry, ListDeps } from './list';
 export { currentLoom, CurrentLoomInfo, CurrentDeps } from './current';
+
+// ============================================================================
+// Use‑Cases — State
+// ============================================================================
+export { getState, GetStateDeps } from './getState';
