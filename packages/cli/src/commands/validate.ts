@@ -1,7 +1,17 @@
 import chalk from 'chalk';
-import { validate } from '../../../app/dist';
-import { getActiveLoomRoot, buildLinkIndex, loadDoc } from '../../../fs/dist';
 import * as fs from 'fs-extra';
+import * as path from 'path';
+import { getActiveLoomRoot } from '../../../fs/dist';
+import { buildLinkIndex } from '../../../fs/dist';
+import { loadDoc } from '../../../fs/dist';
+import { Document, DesignDoc, PlanDoc } from '../../../core/dist';
+import {
+    validateParentExists,
+    getDanglingChildIds,
+    validateDesignRole,
+    validateStepBlockers,
+    ValidationIssue
+} from '../../../core/dist/validation';
 
 interface ValidateOptions {
     all?: boolean;
@@ -9,26 +19,131 @@ interface ValidateOptions {
     verbose?: boolean;
 }
 
-export async function validateCommand(threadId?: string, options?: ValidateOptions): Promise<void> {
-    try {
-        const result = await validate(
-            { threadId, all: options?.all, verbose: options?.verbose },
-            { getActiveLoomRoot, buildLinkIndex, loadDoc, fs }
-        );
+async function findMarkdownFiles(dir: string): Promise<string[]> {
+    const result: string[] = [];
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory() && entry.name !== '_archive') {
+            result.push(...await findMarkdownFiles(fullPath));
+        } else if (entry.isFile() && entry.name.endsWith('.md')) {
+            result.push(fullPath);
+        }
+    }
+    
+    return result;
+}
 
-        if (result.results.length === 1) {
-            const r = result.results[0];
-            if (r.issues.length === 0) {
-                console.log(chalk.green(`✅ Thread '${r.id}' is valid`));
-            } else {
-                console.log(chalk.red(`❌ Thread '${r.id}' has issues:`));
-                r.issues.forEach(i => console.log(`   - ${i}`));
-            }
-            process.exit(r.issues.length > 0 ? 1 : 0);
+async function validateThreadWithIndex(
+    threadId: string,
+    index: ReturnType<typeof buildLinkIndex> extends Promise<infer T> ? T : never,
+    loomRoot: string
+): Promise<{ id: string; issues: string[] }> {
+    const issues: string[] = [];
+    const threadPath = path.join(loomRoot, 'threads', threadId);
+    
+    if (!await fs.pathExists(threadPath)) {
+        return { id: threadId, issues: ['Thread directory not found'] };
+    }
+
+    const docs: Document[] = [];
+    const files = await findMarkdownFiles(threadPath);
+    
+    for (const file of files) {
+        try {
+            const doc = await loadDoc(file) as Document;
+            docs.push(doc);
+        } catch (e) {
+            issues.push(`Failed to load ${path.relative(loomRoot, file)}: ${(e as Error).message}`);
+        }
+    }
+
+    const primaryDesign = docs.find(d => d.type === 'design' && (d as DesignDoc).role === 'primary');
+    
+    if (!primaryDesign) {
+        issues.push('Missing primary design document');
+        return { id: threadId, issues };
+    }
+
+    for (const doc of docs) {
+        // Validate parent_id
+        if (doc.parent_id && !validateParentExists(doc, index)) {
+            issues.push(`Broken parent_id: ${doc.id} → ${doc.parent_id}`);
         }
 
-        const valid = result.results.filter(r => r.issues.length === 0);
-        const invalid = result.results.filter(r => r.issues.length > 0);
+        // Validate child_ids
+        const dangling = getDanglingChildIds(doc, index);
+        for (const childId of dangling) {
+            issues.push(`Dangling child_id: ${doc.id} → ${childId}`);
+        }
+
+        // Design-specific validation
+        if (doc.type === 'design') {
+            const roleIssue = validateDesignRole(doc as DesignDoc);
+            if (roleIssue) {
+                issues.push(roleIssue.message);
+            }
+        }
+
+        // Plan-specific validation
+        if (doc.type === 'plan') {
+            const plan = doc as PlanDoc;
+            
+            // Check design_version matches parent design
+            if (plan.parent_id) {
+                const parentDesign = docs.find(d => d.id === plan.parent_id) as DesignDoc;
+                if (parentDesign && plan.design_version !== parentDesign.version) {
+                    issues.push(`Plan ${plan.id} is stale (design v${parentDesign.version}, plan expects v${plan.design_version})`);
+                }
+            }
+
+            // Validate step blockers
+            const blockerIssues = validateStepBlockers(plan, index);
+            issues.push(...blockerIssues.map(i => i.message));
+        }
+    }
+
+    return { id: threadId, issues };
+}
+
+export async function validateCommand(threadId?: string, options?: ValidateOptions): Promise<void> {
+    const loomRoot = getActiveLoomRoot();
+    const threadsDir = path.join(loomRoot, 'threads');
+
+    console.log(chalk.gray('Building link index...'));
+    const index = await buildLinkIndex();
+    console.log(chalk.gray(`Indexed ${index.documents.size} documents.\n`));
+
+    if (threadId) {
+        const { issues } = await validateThreadWithIndex(threadId, index, loomRoot);
+        if (issues.length === 0) {
+            console.log(chalk.green(`✅ Thread '${threadId}' is valid`));
+        } else {
+            console.log(chalk.red(`❌ Thread '${threadId}' has issues:`));
+            issues.forEach(i => console.log(`   - ${i}`));
+        }
+        process.exit(issues.length > 0 ? 1 : 0);
+    }
+
+    if (options?.all) {
+        const entries = await fs.readdir(threadsDir);
+        const results: { id: string; issues: string[] }[] = [];
+        
+        for (const entry of entries) {
+            const threadPath = path.join(threadsDir, entry);
+            const stat = await fs.stat(threadPath);
+            if (stat.isDirectory() && entry !== '_archive') {
+                try {
+                    results.push(await validateThreadWithIndex(entry, index, loomRoot));
+                } catch {
+                    results.push({ id: entry, issues: ['Failed to load thread'] });
+                }
+            }
+        }
+
+        const valid = results.filter(r => r.issues.length === 0);
+        const invalid = results.filter(r => r.issues.length > 0);
 
         console.log(chalk.bold('\n🔍 Validation Summary\n'));
         for (const r of valid) {
@@ -46,8 +161,7 @@ export async function validateCommand(threadId?: string, options?: ValidateOptio
         }
 
         process.exit(invalid.length > 0 ? 1 : 0);
-    } catch (e: any) {
-        console.error(chalk.red(`❌ ${e.message}`));
-        process.exit(1);
     }
+
+    console.log(chalk.yellow('Specify a thread ID or use --all to validate all threads.'));
 }

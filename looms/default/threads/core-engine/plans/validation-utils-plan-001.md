@@ -2,7 +2,7 @@
 type: plan
 id: validation-utils-plan-001
 title: "Extract Validation Utilities"
-status: draft
+status: done
 created: 2026-04-16
 version: 1
 design_version: 1
@@ -33,12 +33,12 @@ Centralize all document relationship validation logic into pure functions within
 
 | Done | # | Step | Files touched | Blocked by |
 |---|---|---|---|---|
-| 🔳 | 1 | Create `validation.ts` with core validation functions | `packages/core/src/validation.ts` | — |
-| 🔳 | 2 | Refactor `validate.ts` CLI command to use utilities | `packages/cli/src/commands/validate.ts` | Step 1 |
-| 🔳 | 3 | Update `loadThread` to use validation utilities for warnings | `packages/fs/src/loadThread.ts` | Step 1 |
-| 🔳 | 4 | Integrate validation into link index builder | `packages/fs/src/buildLinkIndex.ts` | Step 1 |
-| 🔳 | 5 | Remove duplicated validation logic | All above | Steps 2-4 |
-| 🔳 | 6 | Run full test suite | `tests/*` | Step 5 |
+| ✅ | 1 | Create `validation.ts` with core validation functions | `packages/core/src/validation.ts` | — |
+| ✅ | 2 | Refactor `validate.ts` CLI command to use utilities | `packages/cli/src/commands/validate.ts` | Step 1 |
+| ✅ | 3 | Update `loadThread` to use validation utilities for warnings | `packages/fs/src/loadThread.ts` | Step 1 |
+| ✅ | 4 | Integrate validation into link index builder | `packages/fs/src/buildLinkIndex.ts` | Step 1 |
+| ✅ | 5 | Remove duplicated validation logic | All above | Steps 2-4 |
+| ✅ | 6 | Run full test suite | `tests/*` | Step 5 |
 
 ---
 
