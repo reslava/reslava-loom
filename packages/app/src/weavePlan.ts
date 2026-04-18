@@ -4,9 +4,9 @@ import { getActiveLoomRoot } from '../../fs/dist';
 import { loadThread } from '../../fs/dist';
 import { saveDoc } from '../../fs/dist';
 import { generatePlanId } from '../../fs/dist';
-import { createBaseFrontmatter, serializeFrontmatter } from '../../core/dist';
+import { createBaseFrontmatter } from '../../core/dist';
 import { generatePlanBody } from '../../core/dist';
-import { DesignDoc } from '../../core/dist';
+import { DesignDoc, PlanDoc } from '../../core/dist';
 
 export interface WeavePlanInput {
     threadId: string;
@@ -26,7 +26,7 @@ export interface WeavePlanDeps {
  * If the design is not already 'done', it is automatically finalized.
  *
  * @param input - The thread ID and optional title/goal.
- * @param deps - Filesystem and repository dependencies.
+ * @param deps - Filesystem, thread loading, and document saving dependencies.
  * @returns A promise resolving to the plan ID, file path, and auto‑finalize flag.
  */
 export async function weavePlan(
@@ -47,10 +47,7 @@ export async function weavePlan(
             updated: new Date().toISOString().split('T')[0],
         };
         
-        // Determine the design file path
         const designPath = (design as any)._path || path.join(loomRoot, 'threads', input.threadId, `${design.id}.md`);
-        
-        // Use saveDoc to properly serialize (excludes _path, steps)
         await deps.saveDoc(updatedDesign, designPath);
         
         design = updatedDesign;
@@ -61,21 +58,25 @@ export async function weavePlan(
     const existingPlanIds = thread.plans.map(p => p.id);
     const planId = generatePlanId(input.threadId, existingPlanIds);
     
-    const frontmatter = createBaseFrontmatter('plan', planId, planTitle, design.id);
-    (frontmatter as any).design_version = design.version;
-    (frontmatter as any).target_version = design.target_release || '0.1.0';
+    const baseFrontmatter = createBaseFrontmatter('plan', planId, planTitle, design.id);
     
-    const content = generatePlanBody(planTitle, input.goal);
-    
-    const frontmatterYaml = serializeFrontmatter(frontmatter);
-    const output = `${frontmatterYaml}\n${content}`;
+    // Build the full PlanDoc with required specific fields
+    const doc: PlanDoc = {
+        ...baseFrontmatter,
+        type: 'plan',
+        status: 'draft',
+        design_version: design.version,
+        target_version: design.target_release || '0.1.0',
+        steps: [],
+        content: generatePlanBody(planTitle, input.goal),
+    } as PlanDoc;
     
     const threadPath = path.join(loomRoot, 'threads', input.threadId);
     const plansDir = path.join(threadPath, 'plans');
     await deps.fs.ensureDir(plansDir);
     
     const filePath = path.join(plansDir, `${planId}.md`);
-    await deps.fs.outputFile(filePath, output);
+    await deps.saveDoc(doc, filePath);
     
     return { id: planId, filePath, autoFinalizedDesign };
 }
