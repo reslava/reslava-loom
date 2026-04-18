@@ -1,7 +1,7 @@
 import chalk from 'chalk';
-import { currentLoom } from '../../../app/dist';
+import { currentLoom } from '../../../app/dist/current';
 import * as fs from 'fs-extra';
-import { ConfigRegistry } from '../../../core/dist';
+import { ConfigRegistry } from '../../../core/dist/registry';
 
 export async function currentCommand(): Promise<void> {
     try {
@@ -16,6 +16,13 @@ export async function currentCommand(): Promise<void> {
         }
         
         console.log(chalk.bold(`\n🧵 Active Loom\n`));
+        
+        if (info.isMonoLoom) {
+            console.log(`  Mode: ${chalk.blue('mono‑loom')} (local project)`);
+        } else {
+            console.log(`  Mode: ${chalk.blue('multi‑loom')} (global registry)`);
+        }
+        
         console.log(`  Name: ${chalk.green(info.name)}`);
         console.log(`  Path: ${info.exists ? chalk.gray(info.path!) : chalk.red(`[missing] ${info.path}`)}`);
         

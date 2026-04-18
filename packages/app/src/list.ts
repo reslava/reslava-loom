@@ -1,36 +1,41 @@
 import * as fs from 'fs-extra';
-import { ConfigRegistry } from '../../core/dist';
+import { ConfigRegistry } from '../../core/dist/registry';
 
 export interface LoomListEntry {
-    /** The name of the loom. */
     name: string;
-    /** The absolute filesystem path to the loom. */
     path: string;
-    /** Whether the loom directory exists on disk. */
     exists: boolean;
-    /** Whether this is the currently active loom. */
     isActive: boolean;
 }
 
 export interface ListDeps {
-    /** Filesystem utilities. */
     fs: typeof fs;
-    /** Global registry of looms. */
     registry: ConfigRegistry;
 }
 
-/**
- * Lists all registered looms with their current status.
- *
- * @param deps - Filesystem and registry dependencies.
- * @returns A promise resolving to an array of loom entries.
- */
 export async function listLooms(deps: ListDeps): Promise<LoomListEntry[]> {
-    const looms = deps.registry.listLooms();
-    const active = deps.registry.getActiveLoom();
+    const registry = deps.registry;
+    
+    // If we are in a mono‑loom context, return a single entry for the local loom.
+    if (registry.isMonoLoom()) {
+        const localPath = registry.getMonoLoomPath();
+        if (localPath) {
+            return [{
+                name: '(local)',
+                path: localPath,
+                exists: true,
+                isActive: true,
+            }];
+        }
+        return [];
+    }
+    
+    // Multi‑loom mode: list all registered looms.
+    const looms = registry.listLooms();
+    const active = registry.getActiveLoom();
     
     return looms.map(loom => {
-        const resolved = deps.registry.resolveLoomPath(loom.path);
+        const resolved = registry.resolveLoomPath(loom.path);
         return {
             name: loom.name,
             path: resolved,

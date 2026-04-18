@@ -2,7 +2,6 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as yaml from 'yaml';
-import { ConfigRegistry } from '../../../core/dist';
 
 export interface LoomEntry {
     name: string;
@@ -18,25 +17,33 @@ export interface LoomRegistry {
 /**
  * Resolves the absolute path to the currently active Loom workspace root.
  *
- * Resolution order:
- * 1. Walk up from current working directory looking for .loom/.
- * 2. Check global registry (~/.loom/config.yaml) for active_loom. 
- * 3. Throw a helpful error if neither is found.
+ * Resolution order (Mono‑Loom First):
+ * 1. Walk up from the current working directory, looking for a .loom/ directory.
+ *    If found, return that directory. (The global registry is ignored.)
+ * 2. If no local .loom/ is found, check the global registry at ~/.loom/config.yaml.
+ *    If an active_loom is set and the path exists, return it.
+ * 3. If neither is found, throw a clear error with remediation steps.
+ *
+ * @throws {Error} If no Loom workspace can be located.
  */
 export function getActiveLoomRoot(): string {
-    // 1. FIRST, walk up from cwd looking for .loom/ (mono‑loom mode)
+    // 1. FIRST: Walk up from cwd looking for .loom/ (mono‑loom mode)
     let currentDir = process.cwd();
     while (true) {
         const loomDir = path.join(currentDir, '.loom');
         if (fs.existsSync(loomDir)) {
             return currentDir;
         }
+
         const parentDir = path.dirname(currentDir);
-        if (parentDir === currentDir) break;
+        if (parentDir === currentDir) {
+            // Reached filesystem root
+            break;
+        }
         currentDir = parentDir;
     }
 
-    // 2. SECOND, try global registry (multi‑loom mode)
+    // 2. SECOND: Try global registry (multi‑loom mode)
     const registryPath = path.join(os.homedir(), '.loom', 'config.yaml');
     if (fs.existsSync(registryPath)) {
         const registryContent = fs.readFileSync(registryPath, 'utf8');
@@ -48,7 +55,7 @@ export function getActiveLoomRoot(): string {
                 return activePath;
             }
         }
-    }    
+    }
 
     // 3. No loom found
     throw new Error(

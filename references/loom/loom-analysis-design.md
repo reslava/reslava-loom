@@ -114,13 +114,13 @@ This is semantically valid TypeScript (hoisted), but it is confusing and signals
 
 ### 3. Architectural Inconsistencies
 
-#### 3.1 `types.ts` is Still a Re-Export Facade
+#### ✅ 3.1 `types.ts` is Still a Re-Export Facade
 
 `refactor-imports-plan-001` (status: `draft`) was supposed to eliminate `types.ts` as a re-export layer and force direct imports from entity modules. This plan was explicitly deferred until after the app layer refactor. The app layer refactor is now complete — this plan should be promoted and executed before the VS Code extension adds yet another consumer importing from `types.ts`.
 
 Every new import added in the VS Code extension that goes through `types.ts` makes the eventual migration larger.
 
-#### 3.2 `getActiveLoomRoot()` Has Two Implementations With Inverted Priority
+#### ✅ 3.2 `getActiveLoomRoot()` Has Two Implementations With Inverted Priority
 
 There are two implementations with opposite resolution order:
 

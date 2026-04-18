@@ -57,6 +57,18 @@ looms:
 - The CLI reads this file to determine the active loom root.
 - Commands that operate on threads resolve paths relative to the active loom root.
 
+#### 1.1 Active Loom Resolution Priority
+
+The `getActiveLoomRoot()` function resolves the active loom using the following strict order:
+
+1.  **Local Mono‑Loom (Priority):** Walk up the directory tree from the current working directory, searching for a `.loom/` directory. If found, that directory is the active loom root. **The global registry is completely ignored in this case.**
+
+2.  **Global Multi‑Loom (Fallback):** If no local `.loom/` directory is found, read the global registry at `~/.loom/config.yaml`. If an `active_loom` is set and the path exists, that path is the active loom root.
+
+3.  **Error:** If neither a local `.loom/` nor a valid global active loom is found, throw an error with remediation steps.
+
+**Rationale:** This priority ensures that Loom behaves as a project‑local tool by default, aligning with developer expectations when working inside a Loom‑enabled repository. The global registry is used only when operating outside of any Loom project.
+
 ### 2. Commands
 
 | Command | Description |

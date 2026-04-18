@@ -1,7 +1,7 @@
 import chalk from 'chalk';
-import { switchLoom } from '../../../app/dist';
+import { switchLoom } from '../../../app/dist/switch';
 import * as fs from 'fs-extra';
-import { ConfigRegistry } from '../../../core/dist';
+import { ConfigRegistry } from '../../../core/dist/registry';
 
 export async function switchCommand(name: string): Promise<void> {
     try {
