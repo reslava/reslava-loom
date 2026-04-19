@@ -1,14 +1,12 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { getActiveLoomRoot } from '../utils/workspaceUtils';
 import { findMarkdownFiles } from '../utils/pathUtils';
 import { loadDoc } from '../serializers/frontmatterLoader';
 import { LinkIndex, createEmptyIndex, DocumentEntry, StepBlocker } from '../../../core/dist/linkIndex';
 import { Document } from '../../../core/dist/entities/document';
 import { PlanDoc } from '../../../core/dist/entities/plan';
 
-export async function buildLinkIndex(): Promise<LinkIndex> {
-    const loomRoot = getActiveLoomRoot();
+export async function buildLinkIndex(loomRoot: string): Promise<LinkIndex> {
     const threadsDir = path.join(loomRoot, 'threads');
     const index = createEmptyIndex();
     
@@ -81,6 +79,7 @@ function removeDocumentFromIndex(index: LinkIndex, docId: string): void {
 
 export async function updateIndexForFile(
     index: LinkIndex,
+    loomRoot: string,
     filePath: string,
     event: 'create' | 'change' | 'delete'
 ): Promise<void> {

@@ -13,28 +13,26 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 
 export interface GetStateInput {
-    /** Optional filters to apply to the thread list. */
     threadFilter?: {
         status?: ThreadStatus[];
         phase?: string[];
         idPattern?: string;
     };
-    /** Optional sorting for the thread list. */
     sortBy?: 'id' | 'created';
-    /** Sort direction. Defaults to ascending. */
     sortOrder?: 'asc' | 'desc';
 }
 
 export interface GetStateDeps {
-    getActiveLoomRoot: typeof getActiveLoomRoot;
-    loadThread: typeof loadThread;
-    buildLinkIndex: typeof buildLinkIndex;
+    getActiveLoomRoot: (wsRoot?: string) => string;
+    loadThread: (loomRoot: string, threadId: string, index?: any) => Promise<Thread>;
+    buildLinkIndex: (loomRoot: string) => Promise<any>;
     registry: ConfigRegistry;
     fs: typeof fs;
+    workspaceRoot?: string;
 }
 
 export async function getState(deps: GetStateDeps, input?: GetStateInput): Promise<LoomState> {
-    const loomRoot = deps.getActiveLoomRoot();
+    const loomRoot = deps.getActiveLoomRoot(deps.workspaceRoot);
     const registry = deps.registry;
     
     const isMono = registry.isMonoLoom();
@@ -44,8 +42,7 @@ export async function getState(deps: GetStateDeps, input?: GetStateInput): Promi
     const threadsDir = path.join(loomRoot, 'threads');
     const allThreads: Thread[] = [];
     
-    // Build the link index ONCE before loading any threads
-    const index = await deps.buildLinkIndex();
+    const index = await deps.buildLinkIndex(loomRoot);
     
     if (deps.fs.existsSync(threadsDir)) {
         const entries = await deps.fs.readdir(threadsDir);
@@ -54,8 +51,7 @@ export async function getState(deps: GetStateDeps, input?: GetStateInput): Promi
             const stat = await deps.fs.stat(threadPath);
             if (stat.isDirectory() && entry !== '_archive') {
                 try {
-                    // Pass the pre‑built index to loadThread
-                    const thread = await deps.loadThread(entry, index);
+                    const thread = await deps.loadThread(loomRoot, entry, index);
                     allThreads.push(thread);
                 } catch (e) {
                     // Skip invalid threads

@@ -1,5 +1,6 @@
-import { loadThread, getActiveLoomRoot } from '../../fs/dist';
-import { serializeFrontmatter } from '../../core/dist';
+import { loadThread } from '../../fs/dist';
+import { getActiveLoomRoot } from '../../fs/dist';
+import { serializeFrontmatter } from '../../core/dist/frontmatterUtils';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import matter from 'gray-matter';
@@ -10,9 +11,10 @@ export interface SummariseInput {
 }
 
 export interface SummariseDeps {
-    loadThread: typeof loadThread;
-    getActiveLoomRoot: typeof getActiveLoomRoot;
+    loadThread: (loomRoot: string, threadId: string) => Promise<any>;
+    getActiveLoomRoot: (wsRoot?: string) => string;
     fs: typeof fs;
+    loomRoot: string;
 }
 
 function extractSection(content: string, heading: string): string {
@@ -48,8 +50,8 @@ export async function summarise(
     input: SummariseInput,
     deps: SummariseDeps
 ): Promise<{ ctxPath: string; generated: boolean }> {
-    const thread = await deps.loadThread(input.threadId);
-    const loomRoot = deps.getActiveLoomRoot();
+    const thread = await deps.loadThread(deps.loomRoot, input.threadId);
+    const loomRoot = deps.getActiveLoomRoot(deps.loomRoot);
     const ctxPath = path.join(loomRoot, 'threads', input.threadId, `${input.threadId}-ctx.md`);
 
     if (!input.force && deps.fs.existsSync(ctxPath)) {
@@ -88,13 +90,13 @@ ${goal}
 ${context}
 
 ## Key Decisions Made
-${decisions.map(d => `- ${d}`).join('\n')}
+${decisions.map((d: string) => `- ${d}`).join('\n')}
 
 ## Open Questions
-${questions.map(q => `- ${q}`).join('\n')}
+${questions.map((q: string) => `- ${q}`).join('\n')}
 
 ## Active Plans
-${thread.plans.map(p => `- ${p.id} (status: ${p.status}, progress: ${p.steps?.filter(s => s.done).length || 0}/${p.steps?.length || 0} steps)`).join('\n')}
+${thread.plans.map((p: any) => `- ${p.id} (status: ${p.status}, progress: ${p.steps?.filter((s: any) => s.done).length || 0}/${p.steps?.length || 0} steps)`).join('\n')}
 
 ---
 *Generated: ${now}*

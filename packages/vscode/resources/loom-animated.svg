@@ -1,0 +1,26 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="loomGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4FC3F7"></stop>
+      <stop offset="100%" stop-color="#7C4DFF"></stop>
+    </linearGradient>
+  </defs>
+
+  <g stroke="url(#loomGradient)" stroke-width="6" stroke-linecap="round" fill="none">
+
+    <!-- Vertical threads -->
+    <line x1="40" y1="24" x2="40" y2="104"></line>
+    <line x1="64" y1="24" x2="64" y2="104"></line>
+    <line x1="88" y1="24" x2="88" y2="104"></line>
+
+    <!-- Animated horizontal weaving -->
+    <path d="M24 48 C40 48, 40 64, 56 64 C72 64, 72 48, 88 48 C104 48, 104 64, 120 64" stroke-dasharray="200" stroke-dashoffset="200">
+      <animate attributeName="stroke-dashoffset" from="200" to="0" dur="1.6s" repeatCount="indefinite"></animate>
+    </path>
+
+    <path d="M24 80 C40 80, 40 96, 56 96 C72 96, 72 80, 88 80 C104 80, 104 96, 120 96" stroke-dasharray="200" stroke-dashoffset="200">
+      <animate attributeName="stroke-dashoffset" from="200" to="0" dur="1.6s" begin="0.3s" repeatCount="indefinite"></animate>
+    </path>
+
+  </g>
+</svg>

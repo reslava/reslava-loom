@@ -1,11 +1,9 @@
 import chalk from 'chalk';
-import { completeStep } from '../../../app/dist';
-import { loadThread, saveThread } from '../../../fs/dist';
-import { runEvent } from '../../../app/dist';
-
-// Bind dependencies for runEvent
-const runEventBound = (threadId: string, event: any) =>
-    runEvent(threadId, event, { loadThread, saveThread });
+import { completeStep } from '../../../app/dist/completeStep';
+import { loadThread } from '../../../fs/dist';
+import { runEvent } from '../../../app/dist/runEvent';
+import { saveThread } from '../../../fs/dist';
+import { getActiveLoomRoot } from '../../../fs/dist';
 
 export async function completeStepCommand(planId: string, options: { step?: string }): Promise<void> {
     try {
@@ -14,13 +12,16 @@ export async function completeStepCommand(planId: string, options: { step?: stri
             throw new Error('Step number is required. Use --step <n>');
         }
 
+        const loomRoot = getActiveLoomRoot();
+        const runEventBound = (threadId: string, event: any) =>
+            runEvent(threadId, event, { loadThread, saveThread, loomRoot });
+
         const result = await completeStep(
             { planId, step },
-            { loadThread, runEvent: runEventBound }
+            { loadThread, runEvent: runEventBound, loomRoot }
         );
 
         console.log(chalk.green(`✅ Step ${step} completed in '${planId}'`));
-        
         if (result.autoCompleted) {
             console.log(chalk.green(`🎉 All steps completed! Plan '${planId}' is now done.`));
         } else {

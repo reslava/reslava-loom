@@ -1,5 +1,7 @@
 import { loadThread } from '../../fs/dist';
-import { PlanDoc, WorkflowEvent, Thread } from '../../core/dist';
+import { runEvent } from './runEvent';
+import { PlanDoc } from '../../core/dist/entities/plan';
+import { WorkflowEvent } from '../../core/dist/events/workflowEvent';
 
 export interface CompleteStepInput {
     planId: string;
@@ -7,8 +9,9 @@ export interface CompleteStepInput {
 }
 
 export interface CompleteStepDeps {
-    loadThread: typeof loadThread;
-    runEvent: (threadId: string, event: WorkflowEvent) => Promise<Thread>;
+    loadThread: (loomRoot: string, threadId: string) => Promise<any>;
+    runEvent: (threadId: string, event: WorkflowEvent) => Promise<any>;
+    loomRoot: string;
 }
 
 export async function completeStep(
@@ -22,8 +25,8 @@ export async function completeStep(
 
     const stepIndex = input.step - 1;
 
-    const thread = await deps.loadThread(threadId);
-    const plan = thread.plans.find(p => p.id === input.planId);
+    const thread = await deps.loadThread(deps.loomRoot, threadId);
+    const plan = thread.plans.find((p: any) => p.id === input.planId);
     
     if (!plan) {
         throw new Error(`Plan '${input.planId}' not found in thread '${threadId}'`);
@@ -43,8 +46,8 @@ export async function completeStep(
 
     await deps.runEvent(threadId, { type: 'COMPLETE_STEP', planId: input.planId, stepIndex } as WorkflowEvent);
 
-    const updatedThread = await deps.loadThread(threadId);
-    const updatedPlan = updatedThread.plans.find(p => p.id === input.planId)!;
+    const updatedThread = await deps.loadThread(deps.loomRoot, threadId);
+    const updatedPlan = updatedThread.plans.find((p: any) => p.id === input.planId)!;
     const autoCompleted = updatedPlan.status === 'done';
 
     return { plan: updatedPlan, autoCompleted };

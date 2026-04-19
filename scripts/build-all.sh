@@ -38,4 +38,7 @@ cd ../cli && npx tsc --build --force
 echo "🔗 Linking CLI globally..."
 npm link --force
 
+echo "📦 Building vscode..."
+cd ../vscode && npx tsc --build --force
+
 echo "✅ Build complete. 'loom' command is ready."

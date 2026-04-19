@@ -22,10 +22,11 @@ export interface ValidateInput {
 }
 
 export interface ValidateDeps {
-    getActiveLoomRoot: typeof getActiveLoomRoot;
-    buildLinkIndex: typeof buildLinkIndex;
+    getActiveLoomRoot: (wsRoot?: string) => string;
+    buildLinkIndex: (loomRoot: string) => Promise<LinkIndex>;
     loadDoc: typeof loadDoc;
     fs: typeof fs;
+    loomRoot: string;
 }
 
 export interface ValidationResult {
@@ -104,9 +105,9 @@ export async function validate(
     input: ValidateInput,
     deps: ValidateDeps
 ): Promise<{ results: ValidationResult[]; index: LinkIndex }> {
-    const loomRoot = deps.getActiveLoomRoot();
+    const loomRoot = deps.getActiveLoomRoot(deps.loomRoot);
     const threadsDir = path.join(loomRoot, 'threads');
-    const index = await deps.buildLinkIndex();
+    const index = await deps.buildLinkIndex(loomRoot);
     const results: ValidationResult[] = [];
 
     if (input.threadId) {

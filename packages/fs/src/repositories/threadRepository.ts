@@ -5,8 +5,8 @@ import { Document } from '../../../core/dist/entities/document';
 import { DesignDoc } from '../../../core/dist/entities/design';
 import { loadDoc, FrontmatterParseError } from '../serializers/frontmatterLoader';
 import { saveDoc } from '../serializers/frontmatterSaver';
-import { resolveThreadPath } from '../utils/workspaceUtils';
 import { findMarkdownFiles } from '../utils/pathUtils';
+import { resolveThreadPath } from '../utils/workspaceUtils';
 import {
     validateParentExists,
     getDanglingChildIds,
@@ -14,17 +14,9 @@ import {
     validateSinglePrimaryDesign
 } from '../../../core/dist/validation';
 import { LinkIndex } from '../../../core/dist/linkIndex';
-import { buildLinkIndex } from './linkRepository';
 
-/**
- * Loads a thread by its ID.
- *
- * @param threadId - The thread identifier.
- * @param index - Optional pre‑built link index. If provided, avoids an extra filesystem scan.
- * @returns A promise resolving to the fully loaded Thread.
- */
-export async function loadThread(threadId: string, index?: LinkIndex): Promise<Thread> {
-    const threadPath = resolveThreadPath(threadId);
+export async function loadThread(loomRoot: string, threadId: string, index?: LinkIndex): Promise<Thread> {
+    const threadPath = resolveThreadPath(loomRoot, threadId);
     if (!await fs.pathExists(threadPath)) {
         throw new Error(`Thread directory not found: ${threadPath}`);
     }
@@ -56,30 +48,26 @@ export async function loadThread(threadId: string, index?: LinkIndex): Promise<T
     
     const primaryDesign = primaryDesigns[0];
     
-    // Use provided index or build a new one
-    const linkIndex = index ?? await buildLinkIndex();
-    
-    for (const doc of docs) {
-        if (doc.parent_id && !validateParentExists(doc, linkIndex)) {
-            console.warn(`⚠️  [${doc.id}] Broken parent_id: ${doc.parent_id}`);
-        }
-        
-        const dangling = getDanglingChildIds(doc, linkIndex);
-        for (const childId of dangling) {
-            console.warn(`⚠️  [${doc.id}] Dangling child_id: ${childId}`);
-        }
-        
-        if (doc.type === 'design') {
-            const roleIssue = validateDesignRole(doc as DesignDoc);
-            if (roleIssue) {
-                console.warn(`⚠️  [${doc.id}] ${roleIssue.message}`);
+    if (index) {
+        for (const doc of docs) {
+            if (doc.parent_id && !validateParentExists(doc, index)) {
+                console.warn(`⚠️  [${doc.id}] Broken parent_id: ${doc.parent_id}`);
+            }
+            const dangling = getDanglingChildIds(doc, index);
+            for (const childId of dangling) {
+                console.warn(`⚠️  [${doc.id}] Dangling child_id: ${childId}`);
+            }
+            if (doc.type === 'design') {
+                const roleIssue = validateDesignRole(doc as DesignDoc);
+                if (roleIssue) {
+                    console.warn(`⚠️  [${doc.id}] ${roleIssue.message}`);
+                }
             }
         }
-    }
-
-    const primaryIssue = validateSinglePrimaryDesign(docs);
-    if (primaryIssue) {
-        console.warn(`⚠️  [${threadId}] ${primaryIssue.message}`);
+        const primaryIssue = validateSinglePrimaryDesign(docs);
+        if (primaryIssue) {
+            console.warn(`⚠️  [${threadId}] ${primaryIssue.message}`);
+        }
     }
 
     return {
@@ -93,8 +81,8 @@ export async function loadThread(threadId: string, index?: LinkIndex): Promise<T
     };
 }
 
-function determinePathForDoc(doc: any, threadId: string): string {
-    const threadPath = resolveThreadPath(threadId);
+function determinePathForDoc(doc: any, loomRoot: string, threadId: string): string {
+    const threadPath = resolveThreadPath(loomRoot, threadId);
     switch (doc.type) {
         case 'idea': return path.join(threadPath, `${threadId}-idea.md`);
         case 'design': {
@@ -110,10 +98,10 @@ function determinePathForDoc(doc: any, threadId: string): string {
     }
 }
 
-export async function saveThread(thread: Thread): Promise<void> {
+export async function saveThread(loomRoot: string, thread: Thread): Promise<void> {
     for (const doc of thread.allDocs) {
         let filePath = (doc as any)._path;
-        if (!filePath) filePath = determinePathForDoc(doc, thread.id);
+        if (!filePath) filePath = determinePathForDoc(doc, loomRoot, thread.id);
         await saveDoc(doc, filePath);
     }
 }

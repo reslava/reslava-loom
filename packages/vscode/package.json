@@ -1,0 +1,67 @@
+{
+  "name": "loom-vscode",
+  "displayName": "Loom",
+  "description": "Weave ideas into features with AI — document‑driven workflow for VS Code",
+  "version": "0.1.0",
+  "publisher": "reslava",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:.loom/**"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "loom",
+          "title": "Loom",
+          "icon": "resources/loom-monochrome-vscode.svg"
+        }
+      ]
+    },
+    "views": {
+      "loom": [
+        {
+          "id": "loom.threads",
+          "name": "Threads"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "loom.refresh",
+        "title": "Loom: Refresh",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "loom.refresh",
+          "when": "view == loom.threads",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "@reslava-loom/app": "file:../app",
+    "@reslava-loom/core": "file:../core",
+    "@reslava-loom/fs": "file:../fs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.5.0"
+  }
+}

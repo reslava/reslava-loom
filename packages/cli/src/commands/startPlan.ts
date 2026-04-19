@@ -1,10 +1,8 @@
 import chalk from 'chalk';
-import { runEvent } from '../../../app/dist';
-import { loadThread as loadThreadFs, saveThread } from '../../../fs/dist';
-
-// Helper to bind dependencies for runEvent
-const runEventWithDeps = (threadId: string, event: any) => 
-    runEvent(threadId, event, { loadThread: loadThreadFs, saveThread });
+import { runEvent } from '../../../app/dist/runEvent';
+import { loadThread } from '../../../fs/dist';
+import { saveThread } from '../../../fs/dist';
+import { getActiveLoomRoot } from '../../../fs/dist';
 
 export async function startPlanCommand(planId: string): Promise<void> {
     try {
@@ -13,12 +11,16 @@ export async function startPlanCommand(planId: string): Promise<void> {
             throw new Error(`Invalid plan ID format. Expected "{threadId}-plan-###", got "${planId}"`);
         }
 
-        const thread = await loadThreadFs(threadId);
-        const plan = thread.plans.find(p => p.id === planId);
+        const loomRoot = getActiveLoomRoot();
+        const thread = await loadThread(loomRoot, threadId);
+        const plan = thread.plans.find((p: any) => p.id === planId);
         
         if (!plan) {
             throw new Error(`Plan '${planId}' not found in thread '${threadId}'`);
         }
+
+        const runEventWithDeps = (tid: string, evt: any) =>
+            runEvent(tid, evt, { loadThread, saveThread, loomRoot });
 
         if (plan.status === 'draft') {
             await runEventWithDeps(threadId, { type: 'ACTIVATE_PLAN', planId });

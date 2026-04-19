@@ -1,13 +1,16 @@
 import chalk from 'chalk';
-import { weavePlan } from '../../../app/dist';
-import { getActiveLoomRoot, loadThread, saveDoc } from '../../../fs/dist';
+import { weavePlan } from '../../../app/dist/weavePlan';
+import { loadThread } from '../../../fs/dist';
+import { saveDoc } from '../../../fs/dist';
+import { getActiveLoomRoot } from '../../../fs/dist';
 import * as fs from 'fs-extra';
 
 export async function weavePlanCommand(threadId: string, options: { title?: string; goal?: string }): Promise<void> {
     try {
+        const loomRoot = getActiveLoomRoot();
         const result = await weavePlan(
             { threadId, title: options.title, goal: options.goal },
-            { getActiveLoomRoot, loadThread, saveDoc, fs }
+            { loadThread, saveDoc, fs, loomRoot }
         );
         if (result.autoFinalizedDesign) {
             console.log(chalk.gray(`   Design auto-finalized`));
