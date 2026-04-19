@@ -1,4 +1,6 @@
 import { PlanDoc } from '../entities/plan';
+import { LinkIndex } from '../linkIndex';
+import { isStepBlocked } from '../planUtils';
 
 /**
  * Filters an array of plans by their staleness flag.
@@ -23,11 +25,15 @@ export function filterPlansByTargetVersion(plans: PlanDoc[], version: string): P
 }
 
 /**
- * Filters an array of plans to only those that contain at least one blocked step.
+ * Filters an array of plans to only those that contain at least one genuinely blocked step.
  *
  * @param plans - The array of plans to filter.
+ * @param index - The link index for resolving blockers.
  * @returns A new array containing only plans that have one or more blocked steps.
  */
-export function filterPlansWithBlockedSteps(plans: PlanDoc[]): PlanDoc[] {
-    return plans.filter(p => p.steps?.some(s => !s.done && s.blockedBy && s.blockedBy.length > 0));
+export function filterPlansWithBlockedSteps(plans: PlanDoc[], index: LinkIndex): PlanDoc[] {
+    return plans.filter(p => {
+        if (!p.steps) return false;
+        return p.steps.some(s => !s.done && isStepBlocked(s, p, index));
+    });
 }
