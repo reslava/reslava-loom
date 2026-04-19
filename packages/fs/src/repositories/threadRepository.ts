@@ -13,9 +13,17 @@ import {
     validateDesignRole,
     validateSinglePrimaryDesign
 } from '../../../core/dist/validation';
+import { LinkIndex } from '../../../core/dist/linkIndex';
 import { buildLinkIndex } from './linkRepository';
 
-export async function loadThread(threadId: string): Promise<Thread> {
+/**
+ * Loads a thread by its ID.
+ *
+ * @param threadId - The thread identifier.
+ * @param index - Optional pre‑built link index. If provided, avoids an extra filesystem scan.
+ * @returns A promise resolving to the fully loaded Thread.
+ */
+export async function loadThread(threadId: string, index?: LinkIndex): Promise<Thread> {
     const threadPath = resolveThreadPath(threadId);
     if (!await fs.pathExists(threadPath)) {
         throw new Error(`Thread directory not found: ${threadPath}`);
@@ -47,14 +55,16 @@ export async function loadThread(threadId: string): Promise<Thread> {
     }
     
     const primaryDesign = primaryDesigns[0];
-    const index = await buildLinkIndex();
+    
+    // Use provided index or build a new one
+    const linkIndex = index ?? await buildLinkIndex();
     
     for (const doc of docs) {
-        if (doc.parent_id && !validateParentExists(doc, index)) {
+        if (doc.parent_id && !validateParentExists(doc, linkIndex)) {
             console.warn(`⚠️  [${doc.id}] Broken parent_id: ${doc.parent_id}`);
         }
         
-        const dangling = getDanglingChildIds(doc, index);
+        const dangling = getDanglingChildIds(doc, linkIndex);
         for (const childId of dangling) {
             console.warn(`⚠️  [${doc.id}] Dangling child_id: ${childId}`);
         }

@@ -44,6 +44,9 @@ export async function getState(deps: GetStateDeps, input?: GetStateInput): Promi
     const threadsDir = path.join(loomRoot, 'threads');
     const allThreads: Thread[] = [];
     
+    // Build the link index ONCE before loading any threads
+    const index = await deps.buildLinkIndex();
+    
     if (deps.fs.existsSync(threadsDir)) {
         const entries = await deps.fs.readdir(threadsDir);
         for (const entry of entries) {
@@ -51,7 +54,8 @@ export async function getState(deps: GetStateDeps, input?: GetStateInput): Promi
             const stat = await deps.fs.stat(threadPath);
             if (stat.isDirectory() && entry !== '_archive') {
                 try {
-                    const thread = await deps.loadThread(entry);
+                    // Pass the pre‑built index to loadThread
+                    const thread = await deps.loadThread(entry, index);
                     allThreads.push(thread);
                 } catch (e) {
                     // Skip invalid threads
@@ -78,9 +82,6 @@ export async function getState(deps: GetStateDeps, input?: GetStateInput): Promi
         filteredThreads = sortThreadsById(filteredThreads, input.sortOrder !== 'desc');
     }
     
-    // Build link index once
-    const index = await deps.buildLinkIndex();
-    
     const totalThreads = filteredThreads.length;
     const activeThreads = filteredThreads.filter(t => getThreadStatus(t) === 'ACTIVE').length;
     const implementingThreads = filteredThreads.filter(t => getThreadStatus(t) === 'IMPLEMENTING').length;
@@ -88,7 +89,6 @@ export async function getState(deps: GetStateDeps, input?: GetStateInput): Promi
     const totalPlans = filteredThreads.reduce((sum, t) => sum + t.plans.length, 0);
     const stalePlans = filteredThreads.reduce((sum, t) => sum + t.plans.filter(p => p.staled).length, 0);
     
-    // Accurate blocked steps count using isStepBlocked
     let blockedSteps = 0;
     for (const thread of filteredThreads) {
         for (const plan of thread.plans) {
