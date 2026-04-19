@@ -1,5 +1,9 @@
-import { getActiveLoomRoot, loadThread, buildLinkIndex } from '../../fs/dist';
-import { getThreadStatus, getThreadPhase, LinkIndex, PlanDoc } from '../../core/dist';
+import { getActiveLoomRoot } from '../../fs/dist';
+import { loadThread } from '../../fs/dist';
+import { buildLinkIndex } from '../../fs/dist';
+import { getThreadStatus, getThreadPhase } from '../../core/dist';
+import { LinkIndex } from '../../core/dist/linkIndex';
+import { PlanDoc } from '../../core/dist/entities/plan';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
@@ -35,46 +39,8 @@ export interface ThreadStatusResult {
             description: string;
             done: boolean;
             blockedBy: string[];
-            isBlocked: boolean;
         }>;
-        nextStep?: { order: number; description: string };
     };
-}
-
-function isStepBlocked(step: { order: number; blockedBy: string[] }, plan: PlanDoc, index: LinkIndex): boolean {
-    if (!step.blockedBy || step.blockedBy.length === 0) return false;
-
-    for (const blocker of step.blockedBy) {
-        const stepMatch = blocker.match(/^Step\s+(\d+)$/i);
-        if (stepMatch) {
-            const stepNum = parseInt(stepMatch[1], 10);
-            const targetStep = plan.steps?.find(s => s.order === stepNum);
-            if (targetStep && !targetStep.done) return true;
-            continue;
-        }
-
-        if (blocker.includes('-plan-')) {
-            const planEntry = index.documents.get(blocker);
-            if (!planEntry) return true;
-            if (!planEntry.exists) return true;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-function findNextStep(plan: PlanDoc, index: LinkIndex): { order: number; description: string } | null {
-    if (!plan.steps) return null;
-
-    for (const step of plan.steps) {
-        if (step.done) continue;
-        if (!isStepBlocked(step, plan, index)) {
-            return { order: step.order, description: step.description };
-        }
-    }
-
-    return null;
 }
 
 export async function status(
@@ -87,13 +53,13 @@ export async function status(
 
     if (input.threadId) {
         const thread = await deps.loadThread(input.threadId);
-        const status = getThreadStatus(thread);
+        const threadStatus = getThreadStatus(thread);
         const phase = getThreadPhase(thread);
         const activePlan = thread.plans.find(p => p.status === 'implementing' || p.status === 'active');
 
         const result: ThreadStatusResult = {
             id: thread.id,
-            status,
+            status: threadStatus,
             phase,
             designVersion: thread.design.version,
             designTitle: thread.design.title,
@@ -114,9 +80,7 @@ export async function status(
                     description: s.description,
                     done: s.done,
                     blockedBy: s.blockedBy || [],
-                    isBlocked: !s.done && isStepBlocked(s, activePlan, index),
                 })),
-                nextStep: findNextStep(activePlan, index) || undefined,
             };
         }
 
