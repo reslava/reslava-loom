@@ -34,7 +34,7 @@ export { planReducer } from './reducers/planReducer';
 export { applyEvent } from './applyEvent';
 export { getThreadStatus, getThreadPhase, isPlanStale, getStalePlans } from './derived';
 export { createBaseFrontmatter, serializeFrontmatter } from './frontmatterUtils';
-export { toKebabCaseId, ensureUniqueId, generateTempId, generatePermanentId } from './idUtils';
+export { toKebabCaseId, ensureUniqueId, generateTempId, generatePermanentId, generatePlanId } from './idUtils';
 export { ConfigRegistry } from './registry';
 export { parseStepsTable, generateStepsTable, updateStepsTableInContent } from './planTableUtils';
 export { isStepBlocked, findNextStep } from './planUtils';

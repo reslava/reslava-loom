@@ -3,7 +3,7 @@ import * as path from 'path';
 import { getActiveLoomRoot } from '../../fs/dist';
 import { loadThread } from '../../fs/dist';
 import { saveDoc } from '../../fs/dist';
-import { generatePlanId } from '../../fs/dist';
+import { generatePlanId } from '../../core/dist';
 import { createBaseFrontmatter } from '../../core/dist';
 import { generatePlanBody } from '../../core/dist';
 import { DesignDoc, PlanDoc } from '../../core/dist';

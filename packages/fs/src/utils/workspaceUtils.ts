@@ -77,13 +77,3 @@ export function resolveThreadPath(threadId: string): string {
 export async function ensureDir(dirPath: string): Promise<void> {
     await fs.ensureDir(dirPath);
 }
-
-export function generatePlanId(threadId: string, existingPlanIds: string[]): string {
-    const prefix = `${threadId}-plan-`;
-    const numbers = existingPlanIds
-        .map(p => p.match(/-plan-(\d+)\.md$/)?.[1])
-        .filter(Boolean)
-        .map(Number);
-    const next = numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
-    return `${prefix}${String(next).padStart(3, '0')}`;
-}

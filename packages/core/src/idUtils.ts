@@ -5,10 +5,10 @@
 export function toKebabCaseId(title: string): string {
     return title
         .toLowerCase()
-        .replace(/[^\w\s-]/g, '') // Remove special characters
+        .replace(/[^\w\s-]/g, '')
         .trim()
-        .replace(/\s+/g, '-')     // Replace spaces with hyphens
-        .replace(/-+/g, '-');     // Collapse multiple hyphens
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
 }
 
 /**
@@ -44,4 +44,18 @@ export function generateTempId(type: string): string {
 export function generatePermanentId(title: string, type: string, existingIds: Set<string>): string {
     const baseId = `${toKebabCaseId(title)}-${type}`;
     return ensureUniqueId(baseId, existingIds);
+}
+
+/**
+ * Generates the next available plan ID for a thread.
+ * Format: {threadId}-plan-{###}
+ */
+export function generatePlanId(threadId: string, existingPlanIds: string[]): string {
+    const prefix = `${threadId}-plan-`;
+    const numbers = existingPlanIds
+        .map(p => p.match(/-plan-(\d+)\.md$/)?.[1])
+        .filter(Boolean)
+        .map(Number);
+    const next = numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
+    return `${prefix}${String(next).padStart(3, '0')}`;
 }
