@@ -1,37 +1,46 @@
-import { Thread } from './entities/thread';
+import { Thread, ThreadStatus, ThreadPhase, getPrimaryDesign } from './entities/thread';
 import { PlanDoc } from './entities/plan';
 import { DesignDoc } from './entities/design';
-import { ThreadStatus, ThreadPhase } from './entities/thread';
 
 export function getThreadStatus(thread: Thread): ThreadStatus {
     const allDocs = thread.allDocs;
-
-    if (allDocs.some(d => d.status === 'cancelled')) {
-        return 'CANCELLED';
-    }
-    if (allDocs.some(d => d.type === 'plan' && d.status === 'implementing')) {
+    const plans = thread.plans;
+    
+    // 1. Implementing wins over everything
+    if (plans.some(p => p.status === 'implementing')) {
         return 'IMPLEMENTING';
     }
-    if (allDocs.some(d => d.status === 'active' || d.status === 'draft')) {
-        return 'ACTIVE';
-    }
-    const plans = allDocs.filter(d => d.type === 'plan') as PlanDoc[];
-    if (plans.length > 0 && plans.every(p => p.status === 'done')) {
+    
+    // 2. All documents done -> thread done (must have at least one plan)
+    if (plans.length > 0 && allDocs.every(d => d.status === 'done')) {
         return 'DONE';
     }
+    
+    // 3. Any plan active or draft?
+    if (plans.some(p => p.status === 'active' || p.status === 'draft')) {
+        return 'ACTIVE';
+    }
+    
+    // 4. Any plan blocked?
+    if (plans.some(p => p.status === 'blocked')) {
+        return 'BLOCKED';
+    }
+    
+    // 5. Fallback
     return 'ACTIVE';
 }
 
 export function getThreadPhase(thread: Thread): ThreadPhase {
-    const { idea, design, plans } = thread;
-
+    const plans = thread.plans;
+    const primaryDesign = getPrimaryDesign(thread);
+    
     if (plans.some(p => p.status === 'implementing' || p.status === 'done')) {
         return 'implementing';
     }
     if (plans.length > 0) {
         return 'planning';
     }
-    if (design) {
+    if (primaryDesign) {
         return 'designing';
     }
     return 'ideating';
@@ -42,5 +51,7 @@ export function isPlanStale(plan: PlanDoc, design: DesignDoc): boolean {
 }
 
 export function getStalePlans(thread: Thread): PlanDoc[] {
-    return thread.plans.filter(p => isPlanStale(p, thread.design));
+    const primaryDesign = getPrimaryDesign(thread);
+    if (!primaryDesign) return [];
+    return thread.plans.filter(p => isPlanStale(p, primaryDesign));
 }

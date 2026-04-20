@@ -60,28 +60,47 @@ export interface Thread {
 
 ### 2. `ThreadStatus` Derivation (Final)
 
-The status is derived **only from plans**. Ideas and designs do not affect the status (they keep the thread `ACTIVE` by default). Cancelled documents are archived and excluded.
+The thread's status reflects the holistic state of all its documents, with execution progress (plans) taking priority.
 
 | Priority | Status | Condition |
 | :--- | :--- | :--- |
 | 1 | `IMPLEMENTING` | Any plan has `status: 'implementing'`. |
-| 2 | `DONE` | All plans are `'done'` (and at least one plan exists). |
+| 2 | `DONE` | **All documents** in the thread are `'done'` (and at least one plan exists). |
 | 3 | `ACTIVE` | At least one plan is `'draft'` or `'active'`. |
 | 4 | `BLOCKED` | At least one plan is `'blocked'`. |
 | 5 | `ACTIVE` | Fallback (e.g., only ideas or designs exist). |
 
+**Rationale:** A thread is only truly `DONE` when every piece of work—ideas, designs, and plans—is finalized. If a design is still `draft` while all plans are `done`, the feature is not complete. This ensures the status accurately reflects the user's remaining work.
+
 **Implementation:**
 ```typescript
 export function getThreadStatus(thread: Thread): ThreadStatus {
+    const allDocs = thread.allDocs;
     const plans = thread.plans;
     
-    if (plans.some(p => p.status === 'implementing')) return 'IMPLEMENTING';
-    if (plans.length > 0 && plans.every(p => p.status === 'done')) return 'DONE';
-    if (plans.some(p => p.status === 'active' || p.status === 'draft')) return 'ACTIVE';
-    if (plans.some(p => p.status === 'blocked')) return 'BLOCKED';
+    // 1. Implementing wins over everything
+    if (plans.some(p => p.status === 'implementing')) {
+        return 'IMPLEMENTING';
+    }
+    
+    // 2. All documents done -> thread done (must have at least one plan)
+    if (plans.length > 0 && allDocs.every(d => d.status === 'done')) {
+        return 'DONE';
+    }
+    
+    // 3. Any plan active or draft?
+    if (plans.some(p => p.status === 'active' || p.status === 'draft')) {
+        return 'ACTIVE';
+    }
+    
+    // 4. Any plan blocked?
+    if (plans.some(p => p.status === 'blocked')) {
+        return 'BLOCKED';
+    }
+    
+    // 5. Fallback
     return 'ACTIVE';
 }
-```
 
 ### 3. `loadThread` Contract (`fs/src/repositories/threadRepository.ts`)
 

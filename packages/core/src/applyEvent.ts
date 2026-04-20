@@ -4,25 +4,28 @@ import { DesignDoc } from './entities/design';
 import { PlanDoc } from './entities/plan';
 import { designReducer } from './reducers/designReducer';
 import { planReducer } from './reducers/planReducer';
+import { getPrimaryDesign } from './entities/thread';
 
 export function applyEvent(thread: Thread, event: WorkflowEvent): Thread {
     const updatedDocs = [...thread.allDocs];
     let designUpdated = false;
     let newDesignVersion: number | null = null;
+    
+    const primaryDesign = getPrimaryDesign(thread);
 
     for (let i = 0; i < updatedDocs.length; i++) {
         const doc = updatedDocs[i];
 
         if (doc.type === 'design') {
             const designDoc = doc as DesignDoc;
-            if (event.type === 'REFINE_DESIGN' && designDoc.id === thread.design.id) {
+            if (event.type === 'REFINE_DESIGN' && primaryDesign && designDoc.id === primaryDesign.id) {
                 const updated = designReducer(designDoc, event);
                 updatedDocs[i] = updated;
                 designUpdated = true;
                 newDesignVersion = updated.version;
             } else if (
                 ['ACTIVATE_DESIGN', 'CLOSE_DESIGN', 'REOPEN_DESIGN', 'FINALISE_DESIGN', 'CANCEL_DESIGN'].includes(event.type) &&
-                designDoc.id === thread.design.id
+                primaryDesign && designDoc.id === primaryDesign.id
             ) {
                 updatedDocs[i] = designReducer(designDoc, event as any);
             }
@@ -41,12 +44,12 @@ export function applyEvent(thread: Thread, event: WorkflowEvent): Thread {
         }
     }
 
-    if (designUpdated && newDesignVersion) {
+    if (designUpdated && newDesignVersion && primaryDesign) {
         for (let i = 0; i < updatedDocs.length; i++) {
             const doc = updatedDocs[i];
             if (doc.type === 'plan') {
                 const planDoc = doc as PlanDoc;
-                if (planDoc.parent_id === thread.design.id) {
+                if (planDoc.parent_id === primaryDesign.id) {
                     updatedDocs[i] = {
                         ...planDoc,
                         staled: true,
@@ -57,19 +60,17 @@ export function applyEvent(thread: Thread, event: WorkflowEvent): Thread {
         }
     }
 
-    const design = updatedDocs.find(d => d.type === 'design' && (d as DesignDoc).role === 'primary') as DesignDoc;
-    const idea = updatedDocs.find(d => d.type === 'idea');
+    const ideas = updatedDocs.filter(d => d.type === 'idea') as any[];
+    const designs = updatedDocs.filter(d => d.type === 'design') as DesignDoc[];
     const plans = updatedDocs.filter(d => d.type === 'plan') as PlanDoc[];
-    const contexts = updatedDocs.filter(d => d.type === 'ctx');
-    const supportingDesigns = updatedDocs.filter(d => d.type === 'design' && (d as DesignDoc).role !== 'primary') as DesignDoc[];
+    const contexts = updatedDocs.filter(d => d.type === 'ctx') as any[];
 
     return {
-        ...thread,
-        idea: idea as any,
-        design,
-        supportingDesigns,
+        id: thread.id,
+        ideas,
+        designs,
         plans,
-        contexts: contexts as any,
+        contexts,
         allDocs: updatedDocs,
     };
 }
