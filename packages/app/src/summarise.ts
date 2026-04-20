@@ -1,6 +1,7 @@
 import { loadThread } from '../../fs/dist';
 import { getActiveLoomRoot } from '../../fs/dist';
 import { serializeFrontmatter } from '../../core/dist/frontmatterUtils';
+import { getPrimaryDesign } from '../../core/dist/entities/thread';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import matter from 'gray-matter';
@@ -51,17 +52,22 @@ export async function summarise(
     deps: SummariseDeps
 ): Promise<{ ctxPath: string; generated: boolean }> {
     const thread = await deps.loadThread(deps.loomRoot, input.threadId);
+    const primaryDesign = getPrimaryDesign(thread);
+    if (!primaryDesign) {
+        throw new Error(`Thread '${input.threadId}' has no design document.`);
+    }
+
     const loomRoot = deps.getActiveLoomRoot(deps.loomRoot);
     const ctxPath = path.join(loomRoot, 'threads', input.threadId, `${input.threadId}-ctx.md`);
 
     if (!input.force && deps.fs.existsSync(ctxPath)) {
         const existing = matter.read(ctxPath);
-        if (existing.data.source_version === thread.design.version) {
+        if (existing.data.source_version === primaryDesign.version) {
             return { ctxPath, generated: false };
         }
     }
 
-    const designContent = thread.design.content || '';
+    const designContent = primaryDesign.content || '';
     const goal = extractSection(designContent, 'Goal');
     const context = extractSection(designContent, 'Context');
     const decisions = extractDecisions(designContent);
@@ -71,14 +77,14 @@ export async function summarise(
     const summaryFrontmatter = {
         type: 'ctx',
         id: `${input.threadId}-ctx`,
-        title: `Context Summary — ${thread.design.title}`,
+        title: `Context Summary — ${primaryDesign.title}`,
         status: 'active',
         created: now.split('T')[0],
         version: 1,
         tags: ['ctx', 'summary'],
-        parent_id: thread.design.id,
+        parent_id: primaryDesign.id,
         requires_load: [],
-        source_version: thread.design.version,
+        source_version: primaryDesign.version,
     };
 
     const summaryBody = `# Design Context Summary

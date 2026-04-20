@@ -13,12 +13,20 @@ export async function completeStepCommand(planId: string, options: { step?: stri
         }
 
         const loomRoot = getActiveLoomRoot();
-        const runEventBound = (threadId: string, event: any) =>
-            runEvent(threadId, event, { loadThread, saveThread, loomRoot });
+        
+        // Wrapper that handles null thread
+        const loadThreadOrThrow = async (root: string, tid: string) => {
+            const thread = await loadThread(root, tid);
+            if (!thread) throw new Error(`Thread '${tid}' is empty or does not exist.`);
+            return thread;
+        };
+
+        const runEventBound = (tid: string, evt: any) =>
+            runEvent(tid, evt, { loadThread: loadThreadOrThrow, saveThread, loomRoot });
 
         const result = await completeStep(
             { planId, step },
-            { loadThread, runEvent: runEventBound, loomRoot }
+            { loadThread: loadThreadOrThrow, runEvent: runEventBound, loomRoot }
         );
 
         console.log(chalk.green(`✅ Step ${step} completed in '${planId}'`));

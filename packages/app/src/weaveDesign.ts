@@ -7,6 +7,7 @@ import { generatePermanentId } from '../../core/dist';
 import { createBaseFrontmatter } from '../../core/dist';
 import { generateDesignBody } from '../../core/dist';
 import { DesignDoc, IdeaDoc } from '../../core/dist';
+import { getPrimaryDesign } from '../../core/dist/entities/thread';
 
 export interface WeaveDesignInput {
     threadId: string;
@@ -93,10 +94,8 @@ export async function weaveDesign(
     const loomRoot = deps.getActiveLoomRoot();
     const threadPath = path.join(loomRoot, 'threads', input.threadId);
     
-    // Ensure the thread directory exists
     await deps.fs.ensureDir(threadPath);
     
-    // Look for an existing idea
     const idea = await findIdeaFile(threadPath, deps);
     
     let parentId: string | null = null;
@@ -118,7 +117,6 @@ export async function weaveDesign(
         designTitle = input.title || ideaTitle;
     }
     
-    // Generate design ID (no parent required)
     const existingIds = new Set<string>();
     const entries = await deps.fs.readdir(threadPath);
     for (const entry of entries) {

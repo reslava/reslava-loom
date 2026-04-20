@@ -3,10 +3,14 @@ import { getState, GetStateInput } from '../../../app/dist';
 import { getActiveLoomRoot, loadThread, buildLinkIndex } from '../../../fs/dist';
 import { ConfigRegistry } from '../../../core/dist';
 import * as fs from 'fs-extra';
+import { Thread } from '../../../core/dist';
 import { getThreadStatus, getThreadPhase } from '../../../core/dist';
 import { PlanDoc } from '../../../core/dist';
+import { LinkIndex } from '../../../core/dist';
+import { buildLinkIndex as buildIndex } from '../../../fs/dist';
 import { ThreadStatus } from '../../../core/dist';
 import { isStepBlocked, findNextStep } from '../../../core/dist';
+import { getPrimaryDesign } from '../../../core/dist/entities/thread';
 
 function colorStatus(status: string): string {
     switch (status) {
@@ -86,11 +90,14 @@ export async function statusCommand(
 
             const threadStatus = getThreadStatus(thread);
             const phase = getThreadPhase(thread);
+            const primaryDesign = getPrimaryDesign(thread);
+            const designTitle = primaryDesign?.title || 'No design';
+            const designVersion = primaryDesign?.version || 0;
 
             console.log(chalk.bold(`\n🧵 Thread: ${thread.id}`));
             console.log(`   Status: ${colorStatus(threadStatus)}`);
             console.log(`   Phase:  ${phase}`);
-            console.log(`   Design: ${thread.design.title} (v${thread.design.version})`);
+            console.log(`   Design: ${designTitle} (v${designVersion})`);
             console.log(`   Plans:  ${thread.plans.length} (${thread.plans.filter(p => p.status === 'done').length} done)`);
 
             const activePlan = thread.plans.find(
@@ -98,7 +105,7 @@ export async function statusCommand(
             );
 
             if (activePlan && options?.verbose) {
-                const index = state.index;  // <-- Use the index from state
+                const index = state.index;
                 const steps = activePlan.steps || [];
                 const doneCount = steps.filter(s => s.done).length;
 
@@ -139,7 +146,7 @@ export async function statusCommand(
             }
 
             if (activePlan && !options?.verbose) {
-                const index = state.index;  // <-- Use the index from state
+                const index = state.index;
                 const nextStep = findNextStep(activePlan as PlanDoc, index);
                 if (nextStep) {
                     console.log(chalk.gray(`\n   💡 Next step: Step ${nextStep.order} — ${nextStep.description}`));

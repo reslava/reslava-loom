@@ -6,6 +6,7 @@ import { LinkIndex } from '../../core/dist/linkIndex';
 import { Document } from '../../core/dist/entities/document';
 import { DesignDoc } from '../../core/dist/entities/design';
 import { PlanDoc } from '../../core/dist/entities/plan';
+import { getPrimaryDesign } from '../../core/dist/entities/thread';
 import {
     validateParentExists,
     getDanglingChildIds,
@@ -59,11 +60,12 @@ async function validateThread(
         }
     }
 
-    const primaryDesign = docs.find(d => d.type === 'design' && (d as DesignDoc).role === 'primary');
+    const primaryDesign = docs.find(d => d.type === 'design' && (d as DesignDoc).role === 'primary') as DesignDoc;
     
-    if (!primaryDesign) {
-        issues.push('Missing primary design document');
-        return { id: threadId, issues };
+    // Warning if multiple primary designs exist
+    const primaryDesigns = docs.filter(d => d.type === 'design' && (d as DesignDoc).role === 'primary');
+    if (primaryDesigns.length > 1) {
+        issues.push(`Warning: Thread has ${primaryDesigns.length} primary designs. Using first one.`);
     }
 
     for (const doc of docs) {

@@ -12,7 +12,14 @@ export async function startPlanCommand(planId: string): Promise<void> {
         }
 
         const loomRoot = getActiveLoomRoot();
-        const thread = await loadThread(loomRoot, threadId);
+        
+        const loadThreadOrThrow = async (root: string, tid: string) => {
+            const thread = await loadThread(root, tid);
+            if (!thread) throw new Error(`Thread '${tid}' is empty or does not exist.`);
+            return thread;
+        };
+
+        const thread = await loadThreadOrThrow(loomRoot, threadId);
         const plan = thread.plans.find((p: any) => p.id === planId);
         
         if (!plan) {
@@ -20,7 +27,7 @@ export async function startPlanCommand(planId: string): Promise<void> {
         }
 
         const runEventWithDeps = (tid: string, evt: any) =>
-            runEvent(tid, evt, { loadThread, saveThread, loomRoot });
+            runEvent(tid, evt, { loadThread: loadThreadOrThrow, saveThread, loomRoot });
 
         if (plan.status === 'draft') {
             await runEventWithDeps(threadId, { type: 'ACTIVATE_PLAN', planId });
