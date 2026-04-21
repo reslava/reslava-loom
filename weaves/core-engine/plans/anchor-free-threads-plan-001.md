@@ -47,12 +47,12 @@ Due to the significant impact of changing `Thread` from a single `design` to `de
 
 | Done | # | Step | Files touched | Blocked by |
 |---|---|---|---|---|
-| 🔳 | 1.1 | Redefine `Thread` interface with `designs[]` | `packages/core/src/entities/thread.ts` | — |
-| 🔳 | 1.2 | Add `getPrimaryDesign(thread: Thread): DesignDoc \| undefined` helper | `packages/core/src/entities/thread.ts` | Step 1.1 |
-| 🔳 | 1.3 | Update `getThreadStatus` to use the refined plan‑only priority order | `packages/core/src/derived.ts` | Step 1.1 |
-| 🔳 | 1.4 | Update `loadThread` to return `null` for empty folders | `packages/fs/src/repositories/threadRepository.ts` | Step 1.1 |
-| 🔳 | 1.5 | Update `buildLinkIndex` to use `getPrimaryDesign()` where needed | `packages/fs/src/repositories/linkRepository.ts` | Step 1.2 |
-| 🔳 | 1.6 | Run full test suite to verify no regressions | All packages | Steps 1.1‑1.5 |
+| ✅ | 1.1 | Redefine `Thread` interface with `designs[]` | `packages/core/src/entities/thread.ts` | — |
+| ✅ | 1.2 | Add `getPrimaryDesign(thread: Thread): DesignDoc \| undefined` helper | `packages/core/src/entities/thread.ts` | Step 1.1 |
+| ✅ | 1.3 | Update `getThreadStatus` to use the refined plan‑only priority order | `packages/core/src/derived.ts` | Step 1.1 |
+| ✅ | 1.4 | Update `loadThread` to return `null` for empty folders | `packages/fs/src/repositories/threadRepository.ts` | Step 1.1 |
+| ✅ Not needed (no dependency) | 1.5 | Update `buildLinkIndex` to use `getPrimaryDesign()` where needed | `packages/fs/src/repositories/linkRepository.ts` | Step 1.2 |
+| ✅ | 1.6 | Run full test suite to verify no regressions | All packages | Steps 1.1‑1.5 |
 
 ---
 
@@ -217,12 +217,12 @@ All tests must pass before proceeding to Phase 2.
 
 | Done | # | Step | Files touched | Blocked by |
 |---|---|---|---|---|
-| 🔳 | 2.1 | Refactor `core` consumers to use `designs[]` directly | `packages/core/src/derived.ts`, `validation.ts` | Phase 1 |
-| 🔳 | 2.2 | Refactor `fs` layer | `packages/fs/src/repositories/linkRepository.ts` | Phase 1 |
-| 🔳 | 2.3 | Refactor `app` layer use‑cases | `getState.ts`, `summarise.ts`, `validate.ts`, `weaveDesign.ts`, `weavePlan.ts`, `status.ts` | Phase 1 |
-| 🔳 | 2.4 | Refactor `cli` commands | `status.ts`, `validate.ts` | Phase 1 |
-| 🔳 | 2.5 | Refactor `vscode` tree provider | `treeProvider.ts` | Phase 1 |
-| 🔳 | 2.6 | Run full test suite after each layer | All packages | — |
+| ✅ | 2.1 | Refactor `core` consumers to use `designs[]` directly | `packages/core/src/derived.ts`, `validation.ts` | Phase 1 |
+| ✅ | 2.2 | Refactor `fs` layer | `packages/fs/src/repositories/linkRepository.ts` | Phase 1 |
+| ✅ | 2.3 | Refactor `app` layer use‑cases | ✅`getState.ts`, `summarise.ts`, `validate.ts`, `weaveDesign.ts`, `weavePlan.ts`, `status.ts` | Phase 1 |
+| ✅ | 2.4 | Refactor `cli` commands | `status.ts`, `validate.ts` | Phase 1 |
+| ✅ | 2.5 | Refactor `vscode` tree provider | `treeProvider.ts` | Phase 1 |
+| ✅ Multi-loom ⏳ Deferred (test update needed) | 2.6 | Run full test suite after each layer | All packages | — |
 
 ---
 
