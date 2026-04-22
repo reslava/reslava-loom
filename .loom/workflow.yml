@@ -13,25 +13,13 @@ documents:
     staled_field: "staled"
 
   - type: design
-    role: primary                         # required — exactly one per feature
-    file_pattern: "**/*-design.md"        # matches {feature-id}-design.md
+    file_pattern: "**/*-design*.md"
     statuses: [draft, active, closed, done, cancelled]
     initial_status: draft
-    parent_of: [design, plan]             # can own supporting designs and plans
-    child_of: idea
+    parent_of: [design, plan]
+    child_of: [idea, design]
     version_field: "version"
     staled_field: "staled"
-
-  - type: design
-    role: supporting                      # optional — many allowed per feature
-    file_pattern: "**/*-design-*.md"      # matches {feature-id}-design-{topic}.md
-    statuses: [draft, active, closed, done, cancelled]
-    initial_status: draft
-    parent_of: [plan]                     # supporting designs own plans, not other designs
-    child_of: design                      # parent_id must point to a primary design
-    version_field: "version"
-    staled_field: "staled"
-    sort_by: created                      # sorted by created date, no explicit order needed
 
   - type: plan
     file_pattern: "**/*-plan-*.md"
@@ -114,19 +102,6 @@ events:
       - delete_child_documents:
           child_types: [plan]
 
-  # ─── Supporting design creation ─────────────────────────────────────────────
-
-  - name: CREATE_SUPPORTING_DESIGN
-    applies_to: design                    # fires on the primary design
-    role: primary                         # only available on primary designs
-    from_status: [active, done]
-    to_status: active
-    effects:
-      - create_child_document:
-          child_type: design
-          child_role: supporting
-          template_path: ".wf/templates/design-template.md"
-
   # ─── Plan events ────────────────────────────────────────────────────────────
 
   - name: CREATE_PLAN
@@ -185,13 +160,6 @@ events:
     effects: []
 
 validation:
-  # ─── Feature integrity ───────────────────────────────────────────────────────
-  - rule: "Each feature directory must have exactly one primary design"
-    check: "count(designs where role == 'primary') == 1"
-
-  - rule: "Supporting designs must have parent_id pointing to a primary design"
-    check: "design.role == 'supporting' => parent.role == 'primary'"
-
   # ─── Plan integrity ──────────────────────────────────────────────────────────
   - rule: "Plan cannot be active if its design is not done"
     check: "plan.status == 'active' => design.status == 'done'"

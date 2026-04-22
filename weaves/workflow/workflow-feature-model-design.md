@@ -7,7 +7,6 @@ created: 2026-04-11
 version: 1.0.0
 tags: [feature, model, relationships, architecture]
 parent_id: workflow-vscode-extension
-role: supporting
 child_ids: []
 requires_load: []
 ---

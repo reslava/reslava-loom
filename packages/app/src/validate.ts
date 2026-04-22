@@ -1,5 +1,3 @@
-import { getActiveLoomRoot } from '../../fs/dist';
-import { buildLinkIndex } from '../../fs/dist';
 import { loadDoc } from '../../fs/dist';
 import { findMarkdownFiles } from '../../fs/dist';
 import { LinkIndex } from '../../core/dist/linkIndex';
@@ -9,7 +7,6 @@ import { PlanDoc } from '../../core/dist/entities/plan';
 import {
     validateParentExists,
     getDanglingChildIds,
-    validateDesignRole,
     validateStepBlockers
 } from '../../core/dist/validation';
 import * as fs from 'fs-extra';
@@ -71,13 +68,6 @@ async function validateWeave(
         const dangling = getDanglingChildIds(doc, index);
         for (const childId of dangling) {
             issues.push(`Dangling child_id: ${doc.id} → ${childId}`);
-        }
-
-        if (doc.type === 'design') {
-            const roleIssue = validateDesignRole(doc as DesignDoc);
-            if (roleIssue) {
-                issues.push(roleIssue.message);
-            }
         }
 
         if (doc.type === 'plan') {

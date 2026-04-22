@@ -2,7 +2,7 @@
 type: plan
 id: ai-command-palette-plan-001
 title: "AI Command Palette — Implementation"
-status: draft
+status: done
 created: 2026-04-22
 version: 1
 tags: [ai, commands, promote, refine, summarize, vscode]

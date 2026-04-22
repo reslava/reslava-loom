@@ -44,7 +44,6 @@ export { createEmptyIndex, LinkIndex, DocumentEntry, StepBlocker } from './linkI
 export {
     validateParentExists,
     getDanglingChildIds,
-    validateDesignRole,
     validateStepBlockers,
     ValidationIssue
 } from './validation';

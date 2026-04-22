@@ -140,8 +140,6 @@ export async function weaveDesign(
     
     const permanentId = generatePermanentId(designTitle, 'design', existingIds);
     const frontmatter = createBaseFrontmatter('design', permanentId, designTitle, parentId);
-    (frontmatter as any).role = 'primary'; // Default role; can be removed later
-    
     const content = generateDesignBody(designTitle, 'User');
     
     const doc: DesignDoc = {

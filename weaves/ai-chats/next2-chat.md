@@ -121,9 +121,9 @@ This is the biggest structural change. Worth doing, but it will touch the entire
 ### Suggested order
 
 1. **15** — Golden path test (find real gaps)
-2. **8** — Fix `workflow.yml` (5 minutes)
+2. ✅ **8** — Fix `workflow.yml` (5 minutes)
 3. **9** — Settle the weave/thread constraint question (design decision, then code if needed)
-4. **6** — `promoteToDesign`, `refineIdea/Design`, and fill out the AI command palette
+4. ✅ **6** — `promoteToDesign`, `refineIdea/Design`, and fill out the AI command palette
 5. **4** — weaves → threads refactor
 
 Does that order feel right, or do you want to reorder?

@@ -14,7 +14,6 @@ import { resolveWeavePath } from '../utils/workspaceUtils';
 import {
     validateParentExists,
     getDanglingChildIds,
-    validateDesignRole
 } from '../../../core/dist/validation';
 import { LinkIndex } from '../../../core/dist/linkIndex';
 
@@ -68,12 +67,6 @@ export async function loadWeave(loomRoot: string, weaveId: string, index?: LinkI
             for (const childId of dangling) {
                 console.warn(`⚠️  [${doc.id}] Dangling child_id: ${childId}`);
             }
-            if (doc.type === 'design') {
-                const roleIssue = validateDesignRole(doc as DesignDoc);
-                if (roleIssue) {
-                    console.warn(`⚠️  [${doc.id}] ${roleIssue.message}`);
-                }
-            }
         }
         
         // Warn if multiple designs exist (informational)
@@ -97,10 +90,7 @@ function determinePathForDoc(doc: any, loomRoot: string, weaveId: string): strin
     const weavePath = resolveWeavePath(weaveId, loomRoot);
     switch (doc.type) {
         case 'idea': return path.join(weavePath, `${weaveId}-idea.md`);
-        case 'design': {
-            if (doc.role === 'primary') return path.join(weavePath, `${weaveId}-design.md`);
-            return path.join(weavePath, `${doc.id}.md`);
-        }
+        case 'design': return path.join(weavePath, `${doc.id}.md`);
         case 'plan': return path.join(weavePath, 'plans', `${doc.id}.md`);
         case 'ctx': {
             if (doc.source_version !== undefined) return path.join(weavePath, `${weaveId}-ctx.md`);

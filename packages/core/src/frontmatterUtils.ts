@@ -85,7 +85,6 @@ const ORDERED_KEYS = [
     'parent_id',
     'child_ids',
     'requires_load',
-    'role',
     'target_release',
     'actual_release',
     'target_version',

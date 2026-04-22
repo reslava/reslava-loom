@@ -1,6 +1,6 @@
 import { Document } from './entities/document';
-import { DesignDoc } from './entities/design';
 import { PlanDoc } from './entities/plan';
+
 import { LinkIndex } from './linkIndex';
 
 export interface ValidationIssue {
@@ -29,27 +29,6 @@ export function getDanglingChildIds(doc: Document, index: LinkIndex): string[] {
         if (!child) return true;
         return !child.exists && !child.archived;
     });
-}
-
-/**
- * Validates the role field of a design document.
- */
-export function validateDesignRole(doc: DesignDoc): ValidationIssue | null {
-    if (!doc.role) {
-        return {
-            documentId: doc.id,
-            severity: 'warning',
-            message: 'Design missing role field (should be "primary" or "supporting")',
-        };
-    }
-    if (doc.role !== 'primary' && doc.role !== 'supporting') {
-        return {
-            documentId: doc.id,
-            severity: 'error',
-            message: `Invalid role "${doc.role}" (must be "primary" or "supporting")`,
-        };
-    }
-    return null;
 }
 
 /**

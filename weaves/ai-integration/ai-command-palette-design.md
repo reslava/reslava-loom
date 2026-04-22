@@ -9,7 +9,6 @@ tags: [ai, commands, promote, refine, summarize, vscode]
 parent_id: core-engine-design
 child_ids: []
 requires_load: [ai-integration-design]
-role: supporting
 target_release: "0.3.0"
 actual_release: null
 ---

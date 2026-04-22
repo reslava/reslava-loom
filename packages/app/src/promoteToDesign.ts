@@ -96,7 +96,6 @@ export async function promoteToDesign(
         ...frontmatter,
         type: 'design',
         status: 'draft',
-        role: 'supporting',
         content: `# ${title}\n\n${body}`,
     } as DesignDoc;
 

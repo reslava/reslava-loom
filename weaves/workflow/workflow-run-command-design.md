@@ -7,7 +7,6 @@ created: 2026-04-11
 version: 1.0.0
 tags: [workflow, effects, security, templating]
 parent_id: workflow-design-v2
-role: supporting
 child_ids: []
 requires_load: []
 ---

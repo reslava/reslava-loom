@@ -12,7 +12,6 @@ child_ids: [core-engine-plan-001, core-engine-plan-002, core-engine-plan-003]
 requires_load: []
 target_release: "0.1.0"
 actual_release: null
-role: primary
 ---
 
 # REslava Loom — Core Engine Design
