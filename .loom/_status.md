@@ -9,24 +9,22 @@
 local mode
 
 ## Active weave
-core-engine
+vscode-extension
 
 ## Active design
-weaves/core-engine/core-engine-design.md
+weaves/vscode-extension/vscode-extension-design.md
 
 ## Active plan
-none
+> `vscode-extension-plan-004.md` | Feature | Step 5 (commands) | Builds the core extension structure and tree view. Steps 1-4 done. |
+- `vscode-extension-plan-005.md` | Feature | `vscode-extension-plan-004` | Adds thread‑based grouping to the tree view. |
+- `vscode-extension-plan-006.md` | Feature | `vscode-extension-plan-004`, `vscode-extension-plan-005` | Implements toolbar controls and actions. |
+- `cli-error-standardization-idea.md` | Polish (Deferred) | None | Improves CLI UX; can be done anytime, even after initial VS Code release. |
+
 
 ## Last session
-2026-04-13 — Defined Feature Model v2 (primary/supporting roles), updated
-             default-wf.yml, DOCUMENTATION_GUIDE.md, CLAUDE.md, workspace
-             directory structure. Refined _archive/ subdirs. Defined _status.md
-             format and two-stage strategy.
-
-2026-04-14 — Completed vocabulary alignment: renamed project to REslava Loom,
-             adopted `loom` CLI, `threads/` directory, and multi-loom structure.
-             Created `~/looms/default/` and `~/looms/test/` workspaces.
-             Updated all design docs and references to final terminology.
+2026-04-22 — Session setup: fused CLAUDE.md+CLAUDE2.md, fixed linkRepository.ts
+             (threads→weaves bug), created vscode-extension-ctx, loom-reference,
+             and loom-analysis-reference docs. Active front is vscode-extension.
 
 ---
 <!-- STAGE 1 MAINTENANCE INSTRUCTIONS (delete this block when Stage → 2)

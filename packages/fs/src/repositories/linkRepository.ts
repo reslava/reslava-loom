@@ -7,7 +7,7 @@ import { Document } from '../../../core/dist/entities/document';
 import { PlanDoc } from '../../../core/dist/entities/plan';
 
 export async function buildLinkIndex(loomRoot: string): Promise<LinkIndex> {
-    const threadsDir = path.join(loomRoot, 'threads');
+    const threadsDir = path.join(loomRoot, 'weaves');
     const index = createEmptyIndex();
     
     if (!fs.existsSync(threadsDir)) {
