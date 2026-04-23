@@ -11,6 +11,7 @@ export { DesignDoc, DesignStatus } from './entities/design';
 export { PlanDoc, PlanStatus, PlanStep } from './entities/plan';
 export { CtxDoc, CtxStatus } from './entities/ctx';
 export { ChatDoc, ChatStatus } from './entities/chat';
+export { DoneDoc, DoneStatus } from './entities/done';
 export { Weave, WeaveStatus, WeavePhase } from './entities/weave';
 export { LoomState, LoomMode } from './entities/state';
 

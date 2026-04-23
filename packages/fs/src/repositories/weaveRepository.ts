@@ -7,6 +7,7 @@ import { IdeaDoc } from '../../../core/dist/entities/idea';
 import { PlanDoc } from '../../../core/dist/entities/plan';
 import { CtxDoc } from '../../../core/dist/entities/ctx';
 import { ChatDoc } from '../../../core/dist/entities/chat';
+import { DoneDoc } from '../../../core/dist/entities/done';
 import { loadDoc, FrontmatterParseError } from '../serializers/frontmatterLoader';
 import { saveDoc } from '../serializers/frontmatterSaver';
 import { findMarkdownFiles } from '../utils/pathUtils';
@@ -54,6 +55,7 @@ export async function loadWeave(loomRoot: string, weaveId: string, index?: LinkI
     const ideas = docs.filter(d => d.type === 'idea') as IdeaDoc[];
     const designs = docs.filter(d => d.type === 'design') as DesignDoc[];
     const plans = docs.filter(d => d.type === 'plan') as PlanDoc[];
+    const dones = docs.filter(d => d.type === 'done') as DoneDoc[];
     const contexts = docs.filter(d => d.type === 'ctx') as CtxDoc[];
     const chats = docs.filter(d => d.type === 'chat') as ChatDoc[];
     
@@ -80,6 +82,7 @@ export async function loadWeave(loomRoot: string, weaveId: string, index?: LinkI
         ideas,
         designs,
         plans,
+        dones,
         contexts,
         chats,
         allDocs: docs,
@@ -96,6 +99,7 @@ function determinePathForDoc(doc: any, loomRoot: string, weaveId: string): strin
             if (doc.source_version !== undefined) return path.join(weavePath, `${weaveId}-ctx.md`);
             return path.join(weavePath, 'ctx', `${doc.id}.md`);
         }
+        case 'done': return path.join(weavePath, 'done', `${doc.id}.md`);
         default: throw new Error(`Unknown document type: ${doc.type}`);
     }
 }

@@ -64,6 +64,24 @@ export async function summarise(
 
     const ideaLines = weave.ideas.map((i: any) => `- ${i.title} (${i.status})`).join('\n') || '(none)';
 
+    const doneLines = (weave.dones ?? []).map((d: any) => {
+        const decisions = (d.content ?? '')
+            .split('\n')
+            .filter((l: string) => l.startsWith('- '))
+            .slice(0, 5)
+            .join('\n');
+        const openItems = (() => {
+            const openIdx = (d.content ?? '').indexOf('## Open items');
+            if (openIdx === -1) return '';
+            return d.content.slice(openIdx + '## Open items'.length).trim().split('\n').filter((l: string) => l.startsWith('- ')).slice(0, 5).join('\n');
+        })();
+        return [
+            `### ${d.title} (parent: ${d.parent_id})`,
+            decisions ? `**Decisions made:**\n${decisions}` : '',
+            openItems ? `**Open items:**\n${openItems}` : '',
+        ].filter(Boolean).join('\n');
+    }).join('\n\n') || '(none)';
+
     const userMessage = [
         `Weave: ${input.weaveId}`,
         `Primary design: ${primaryDesign.title} (v${primaryDesign.version})`,
@@ -76,6 +94,9 @@ export async function summarise(
         '',
         '=== Plans ===',
         planLines,
+        '',
+        '=== Done docs (implementation records) ===',
+        doneLines,
     ].join('\n');
 
     const messages: Message[] = [

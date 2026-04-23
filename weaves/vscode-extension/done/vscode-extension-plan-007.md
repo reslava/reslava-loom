@@ -2,7 +2,7 @@
 type: plan
 id: vscode-extension-plan-007
 title: "Step Execution UX — Do Steps, AI Chat, Complete Steps"
-status: draft
+status: done
 created: 2026-04-23
 version: 1
 tags: [vscode, plan-steps, ai, complete-step, do-step, ux]
@@ -27,7 +27,7 @@ Give users a clear, AI-assisted workflow for executing plan steps inside VS Code
 | ✅ | 3 | AI writes implementation notes into the chat doc (appends under `## AI:`); stops and waits when a blocking decision is needed | `app/src/doStep.ts` | Step 2 |
 | ✅ | 4 | Enhance `loom.completeStep` — Quick Pick of pending steps, marks selected steps done in plan frontmatter, refreshes tree | `commands/completeStep.ts`, `app/src/completeStep.ts` | |
 | ✅ | 5 | Add AI enabled/disabled context key — set on activation based on `reslava-loom.ai.apiKey`; hide AI commands in menus when disabled | `extension.ts`, `package.json` | |
-| | 6 | Add `loom.closePlan` command — marks plan `done`, triggers AI to generate a `-done.md` implementation record alongside the plan | `extension.ts`, `commands/closePlan.ts`, `app/src/closePlan.ts` | Step 4, `done-doc-idea` design |
+| ✅ | 6 | Add `loom.closePlan` command — marks plan `done`, triggers AI to generate a `-done.md` implementation record alongside the plan | `extension.ts`, `commands/closePlan.ts`, `app/src/closePlan.ts` | Step 4, `done-doc-idea` design |
 
 ## Notes
 

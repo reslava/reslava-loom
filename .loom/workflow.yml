@@ -22,7 +22,7 @@ documents:
     staled_field: "staled"
 
   - type: plan
-    file_pattern: "**/*-plan-*.md"
+    file_pattern: ["**/*-plan-*.md", "**/done/*-plan-*.md"]
     statuses: [draft, active, implementing, done, blocked, cancelled]
     initial_status: draft
     child_of: design                      # parent_id → primary or supporting design
@@ -36,6 +36,13 @@ documents:
     child_of: design
     version_field: "version"
     staled_field: "staled"
+
+  - type: done
+    file_pattern: "**/done/*-done.md"
+    statuses: [final]
+    initial_status: final
+    child_of: [plan]
+    version_field: "version"
 
 events:
   # ─── Idea events ────────────────────────────────────────────────────────────

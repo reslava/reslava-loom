@@ -21,6 +21,7 @@ import { promoteToPlanCommand } from './commands/promoteToPlan';
 import { refineIdeaCommand } from './commands/refineIdea';
 import { refinePlanCommand } from './commands/refinePlan';
 import { doStepCommand } from './commands/doStep';
+import { closePlanCommand } from './commands/closePlan';
 import { setIconBaseUri } from './icons';
 import { updateDiagnostics } from './diagnostics';
 
@@ -71,7 +72,8 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('loom.promoteToPlan', () => promoteToPlanCommand(treeProvider)),
         vscode.commands.registerCommand('loom.refineIdea', () => refineIdeaCommand(treeProvider)),
         vscode.commands.registerCommand('loom.refinePlan', () => refinePlanCommand(treeProvider)),
-        vscode.commands.registerCommand('loom.doStep', (node?: TreeNode) => doStepCommand(treeProvider, node))
+        vscode.commands.registerCommand('loom.doStep', (node?: TreeNode) => doStepCommand(treeProvider, node)),
+        vscode.commands.registerCommand('loom.closePlan', (node?: TreeNode) => closePlanCommand(treeProvider, node))
     );
 
     function syncAiContext(): void {

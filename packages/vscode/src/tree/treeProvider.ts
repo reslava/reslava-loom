@@ -9,6 +9,7 @@ import { Weave } from '@reslava-loom/core/dist/entities/weave';
 import { Document } from '@reslava-loom/core/dist/entities/document';
 import { PlanDoc } from '@reslava-loom/core/dist/entities/plan';
 import { ChatDoc } from '@reslava-loom/core/dist/entities/chat';
+import { DoneDoc } from '@reslava-loom/core/dist/entities/done';
 import { getWeaveStatus } from '@reslava-loom/core/dist/derived';
 import { ViewStateManager } from '../view/viewStateManager';
 import { GroupingMode, ViewState } from '../view/viewState';
@@ -222,7 +223,10 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         if (weave.plans.length > 0) {
             children.push(this.createSectionNode(
                 'Plans',
-                weave.plans.map(p => this.createPlanNode(p, weave.id))
+                weave.plans.map(p => {
+                    const doneDoc = ((weave as any).dones ?? [] as DoneDoc[]).find((d: DoneDoc) => d.parent_id === p.id);
+                    return this.createPlanNode(p, weave.id, doneDoc);
+                })
             ));
         }
 
@@ -296,8 +300,9 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         return { ...node, doc: chat, weaveId, children: [] };
     }
 
-    private createPlanNode(plan: PlanDoc, weaveId?: string): TreeNode {
-        const node = new vscode.TreeItem(plan.title || plan.id, vscode.TreeItemCollapsibleState.None);
+    private createPlanNode(plan: PlanDoc, weaveId?: string, doneDoc?: DoneDoc): TreeNode {
+        const hasDone = !!doneDoc;
+        const node = new vscode.TreeItem(plan.title || plan.id, hasDone ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
         const doneSteps = plan.steps?.filter(s => s.done).length ?? 0;
         const totalSteps = plan.steps?.length ?? 0;
         const nextStep = plan.steps?.find(s => !s.done);
@@ -327,6 +332,26 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
             };
         }
 
-        return { ...node, doc: plan, weaveId, children: [] };
+        const children: TreeNode[] = doneDoc ? [this.createDoneDocNode(doneDoc, weaveId)] : [];
+        return { ...node, doc: plan, weaveId, children };
+    }
+
+    private createDoneDocNode(done: DoneDoc, weaveId?: string): TreeNode {
+        const node = new vscode.TreeItem(done.title || done.id, vscode.TreeItemCollapsibleState.None);
+        node.description = 'final';
+        node.iconPath = new vscode.ThemeIcon('check-all');
+        node.contextValue = 'done';
+        node.tooltip = `done doc — ${done.id}`;
+
+        const filePath = (done as any)._path;
+        if (filePath) {
+            node.command = {
+                command: 'vscode.open',
+                title: 'Open Done Doc',
+                arguments: [vscode.Uri.file(filePath)],
+            };
+        }
+
+        return { ...node, doc: done, weaveId, children: [] };
     }
 }

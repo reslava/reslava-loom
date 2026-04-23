@@ -164,6 +164,12 @@
         "title": "Do Step(s)",
         "category": "Loom",
         "icon": "$(sparkle)"
+      },
+      {
+        "command": "loom.closePlan",
+        "title": "Close Plan",
+        "category": "Loom",
+        "icon": "$(archive)"
       }
     ],
     "configuration": {
@@ -311,6 +317,11 @@
           "command": "loom.refinePlan",
           "when": "view == loom.threads && viewItem =~ /^plan-/ && loom.aiEnabled",
           "group": "inline@2"
+        },
+        {
+          "command": "loom.closePlan",
+          "when": "view == loom.threads && viewItem =~ /^plan-(implementing|done)$/ && loom.aiEnabled",
+          "group": "inline@3"
         }
       ]
     }
