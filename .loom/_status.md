@@ -22,9 +22,10 @@ weaves/vscode-extension/vscode-extension-design.md
 
 
 ## Last session
-2026-04-22 — Session setup: fused CLAUDE.md+CLAUDE2.md, fixed linkRepository.ts
-             (threads→weaves bug), created vscode-extension-ctx, loom-reference,
-             and loom-analysis-reference docs. Active front is vscode-extension.
+2026-04-23 — Implemented core-tests-plan-001 (all 8 steps): DoneDoc entity tests,
+             weaveRepository done/ loading, planReducer, completeStep use-case,
+             closePlan (mock AI), doStep (mock AI), summarise (mock AI), test-all.sh.
+             Full suite passes (10 test files). Next: vscode-tests-plan-001.
 
 ---
 <!-- STAGE 1 MAINTENANCE INSTRUCTIONS (delete this block when Stage → 2)

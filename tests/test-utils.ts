@@ -94,3 +94,53 @@ export function assert(condition: boolean, message?: string): void {
         throw new Error(message || 'Assertion failed');
     }
 }
+
+export function mockAIClient(response: string) {
+    return {
+        complete: async (_messages: any[]) => response,
+    };
+}
+
+export async function createPlanDoc(
+    weavePath: string,
+    planId: string,
+    options?: { status?: string; steps?: Array<{ order: number; description: string; done: boolean }> }
+): Promise<string> {
+    const plansDir = path.join(weavePath, 'plans');
+    await fs.ensureDir(plansDir);
+    const planPath = path.join(plansDir, `${planId}.md`);
+
+    const steps = options?.steps ?? [
+        { order: 1, description: 'First step', done: false, files_touched: [], blocked_by: [] },
+        { order: 2, description: 'Second step', done: false, files_touched: [], blocked_by: [] },
+    ];
+
+    const stepsTable = steps.map(s =>
+        `| ${s.done ? '✅' : '🔳'} | ${s.order} | ${s.description} | src/ | — |`
+    ).join('\n');
+
+    const content = `---
+type: plan
+id: ${planId}
+title: Test Plan ${planId}
+status: ${options?.status ?? 'implementing'}
+created: ${new Date().toISOString().split('T')[0]}
+version: 1
+tags: []
+parent_id: null
+child_ids: []
+requires_load: []
+---
+
+# Goal
+Test plan.
+
+## Steps
+| Done | # | Step | Files touched | Blocked by |
+|------|---|------|---------------|------------|
+${stepsTable}
+`;
+
+    await fs.outputFile(planPath, content);
+    return planPath;
+}

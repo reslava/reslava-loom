@@ -84,3 +84,49 @@ Two plans:
 2. **`vscode-tests-plan-001`** — end-to-end tests using a real workspace at `j:/temp/loom` (app layer + eventual Extension Host)
 
 Creating both plan docs now.
+
+## Rafa:
+- `weaves/core-engine/plans/core-tests-plan-001.md`
+- `weaves/vscode-extension/plans/vscode-tests-plan-001.md`
+
+## Rafa:
+
+### reference docs & requires_load
+For all AI integration, we always should know and provide all
+`requires_load: []` of document being processed
+and the weave, global -reference docs
+
+we should include a kind of:
+`when needed to be loaded` section in -reference docs
+for the AI to know exact kind of tasks when need to read it
+another loom filter could be:
+`load_when: [idea, design, plan, implementing]`: meaning
+   generating an idea, design, or plan or when implementing a plan
+   this system filter will be used for loom to filter docs before passing them to AI
+
+`-reference` should appear in vscode 
+`requires_load` of any should be able to easyly filled up by UX
+
+document references in `requires_load` should be only by id 
+
+### Tokens
+At least we should be aware if token consumption, it could be high at the beggining but we should have less tokens usage than usual AI chat windows driven workflow when loom projects advance
+
+### AI API vs CLI subscription
+Currently we are using API Key, but what happen for devs using subscriptions? Including them is easy?
+
+### vscode polish
+idea inline buttons shows `Weave Design` and `Promote To Design`, should only appear `Promote To Design`
+
+### Loom terminology
+You said: "The vocabulary alone is a barrier — weave, thread, plan, design, idea, ctx."
+I asked you for Loom vocabulary for this project before changing it and you told me you like it.
+Now you changed your opinion and this is confusing me.
+Should we use developers terminology and change alll again when do the migration?
+
+### Tutorial
+We should design an incredible step by step tutorial than shows how easy, how fast, how intutive is the happy flow and end with an idea implemented having for context documentation.
+Install -> Idea -> Design -> Plan -> Implement -> Done
+- Install proccess should be extremely easy, just create a local loom.
+- Idea -> Design -> Plan -> Implement -> Done. Create an idea that makes AI create a design that makes AI to create a plan with 2 steps, implement, close plan.
+Must be so simple and short that we should include it in main README.md includingf a GIF animation-
