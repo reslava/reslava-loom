@@ -90,7 +90,6 @@ Creating both plan docs now.
 - `weaves/vscode-extension/plans/vscode-tests-plan-001.md`
 
 ## Rafa:
-
 ### reference docs & requires_load
 For all AI integration, we always should know and provide all
 `requires_load: []` of document being processed
@@ -130,3 +129,127 @@ Install -> Idea -> Design -> Plan -> Implement -> Done
 - Install proccess should be extremely easy, just create a local loom.
 - Idea -> Design -> Plan -> Implement -> Done. Create an idea that makes AI create a design that makes AI to create a plan with 2 steps, implement, close plan.
 Must be so simple and short that we should include it in main README.md includingf a GIF animation-
+
+## AI:
+
+### Reference docs & requires_load
+
+The `load_when` filter is a strong idea — it solves a real problem (AI getting too much context) without making the author think about it each time. The semantics are clean:
+
+```yaml
+load_when: [implementing]   # only load during step execution
+load_when: [design, plan]   # load during AI-assisted design and planning
+load_when: [*]              # always load (global references)
+```
+
+My recommended additions to the reference doc format:
+
+```yaml
+---
+type: reference
+id: fs-extra-esm-reference
+load_when: [implementing]        # only relevant when writing test code
+---
+```
+
+And a `## When to load` section in the body (which I actually already planned for the fs-extra reference — consistent with your idea). The VS Code UX for `requires_load` — autocomplete from the weave's doc index — is straightforward to build once the link index is available from `buildLinkIndex`. Filling it by ID only (no `.md` suffix) is already how it works.
+
+One question before designing this further: should `load_when` be evaluated by the AI (the AI decides whether to load) or enforced by loom (loom filters the docs list before passing to AI)? The second is more reliable but requires loom to know what "operation mode" it's currently in (idea generation vs. implementing a step). That operation mode already exists implicitly — `loom do-step` vs. `loom weave-idea` — so loom can drive this. I'd go with loom enforcing it, not AI deciding.
+
+---
+
+### Tokens
+
+Token awareness is the right concern. Loom's structural advantage is that `requires_load` creates *intentional* context instead of "dump everything." The hypothesis: a session with 3 targeted reference docs + 1 design doc + 1 plan doc is cheaper *and* more accurate than an open chat window with the user copy-pasting context ad hoc.
+
+Measuring this is worth doing once we have a few real sessions logged. The done doc + ctx system gives us the data.
+
+---
+
+### AI API vs CLI subscription
+
+Including subscription users is possible but not trivial. The Anthropic API (`claude-sonnet-4-6`, etc.) takes an API key. The Claude.ai subscription is a separate product — it does not expose the same API endpoint. Subscribers would need to use a different transport.
+
+Options:
+1. **API key only (current)** — simplest, no change needed. Target: developers.
+2. **Claude.ai web integration** — possible via browser extension injection, but fragile and not officially supported.
+3. **Model-agnostic adapter** — accept any OpenAI-compatible endpoint. This also covers Ollama (local), OpenRouter, and GitHub Copilot's API. The `aiClient` interface in Loom is already an abstraction (`{ complete(messages) }`), so swapping the transport is just a different adapter.
+
+**My recommendation:** document the API key requirement clearly in the tutorial, and in the adapter interface add a comment that it's designed to accept alternative providers. Don't build more than that now — it's a post-MVP concern.
+
+---
+
+### VS Code polish — idea inline buttons
+
+Agree. On the idea node, only `Promote To Design` should appear inline. `Weave Design` is redundant at that stage (there's no design yet). I'll note this for plan-006 (toolbar/actions step).
+
+---
+
+### Loom terminology
+
+You're right to push back. I said I liked the vocabulary earlier and I should not have reversed that. The terminology is *yours*, it's consistent, and it already has internal meaning: weave = project scope, thread = workstream, plan = implementation plan, design = architecture doc, ctx = context summary. That precision is a feature.
+
+The risk I was flagging is first-impression friction for new users — but that's a tutorial/UX problem, not a renaming problem. A good tutorial that shows the vocabulary in action (Idea → Design → Plan → Step → Done) makes it intuitive within 5 minutes. Rename nothing.
+
+---
+
+### Tutorial
+
+The flow you described is exactly right:
+
+```
+Install → Idea → Design → Plan → Implement → Done
+```
+
+And the GIF is the right format — showing the VS Code tree view updating in real time as each step happens. The install should be `ext install reslava.loom` + `loom init` in one terminal command. That's it.
+
+For the README, the tutorial should be a single scrollable section: install command, one GIF, then the five steps with one sentence each. Under 200 words total. The GIF does the heavy lifting.
+
+This is worth designing as a formal plan step in plan-006 or a dedicated `tutorial-plan-001` once the extension commands are stable. The tutorial can only be finalised once the UX is locked — it should be one of the last things written.
+
+---
+
+**Next for this thread:** are any of these items blocking current plan work, or are they all backlog? The `load_when` filter and the inline button fix are actionable now; the rest (tutorial, subscription support) are post-MVP. Waiting for direction.
+
+## Rafa:
+
+### Reference docs & requires_load
+- Enforced by loom
+- Create a design
+
+### Tokens
+- Create a derefed idea
+
+### AI API vs CLI subscription
+- Create a defered idea
+
+### VS Code polish — idea inline buttons
+- Update plan-006 (toolbar/actions step).
+
+### Tutorial
+- Create `tutorial-plan-001`
+
+After this we will go back to `vscode-tests-plan-001.md`
+But creating docs for ideas, design and plans... they will not be forgotten
+
+## AI:
+
+Clear. Here's the plan:
+
+1. **Reference docs & `load_when`** → create a design doc (`load-when-design.md`)
+2. **Tokens** → create a deferred idea (`token-awareness-idea.md`)
+3. **AI API vs subscription** → create a deferred idea (`ai-transport-idea.md`)
+4. **VS Code polish — idea inline buttons** → update plan-006 to include the fix
+5. **Tutorial** → create `tutorial-plan-001`
+
+Then back to `vscode-tests-plan-001.md`.
+
+Creating all docs now. Done:
+
+- `weaves/ai-integration/load-when-design.md` — `load_when` filter, extends `reference-load-context-design`, Loom-enforced, maps operation modes to commands
+- `weaves/ai-integration/token-awareness-idea.md` — deferred idea (status: deferred)
+- `weaves/ai-integration/ai-transport-idea.md` — deferred idea (status: deferred), notes that `aiClient` interface is already an abstraction
+- `weaves/vscode-extension/plans/vscode-extension-plan-008.md` — 1-step plan: fix idea node `contextValue` + `when` clause in `package.json`
+- `weaves/docs-infra/plans/tutorial-plan-001.md` — 5-step plan, blocked on extension UX being locked
+
+Back to `vscode-tests-plan-001.md` when ready.

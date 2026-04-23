@@ -8,7 +8,7 @@ version: 1
 tags: [tests, vscode, extension, e2e, workspace, j-temp]
 parent_id: vscode-extension-design
 child_ids: []
-requires_load: [vscode-extension-design]
+requires_load: [vscode-extension-design, weaves/tests/references/fs-extra-esm-reference.md]
 design_version: 1
 ---
 
