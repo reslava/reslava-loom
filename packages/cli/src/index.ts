@@ -104,14 +104,17 @@ const weaveCmd = program
 
 weaveCmd
     .command('idea <title>')
-    .description('Create a new idea document')
+    .description('Create a new idea document (default: creates a thread named after the title)')
     .option('--weave <name>', 'Place the idea in a specific weave folder')
+    .option('--thread <id>', 'Explicit thread ID (overrides auto-name from title)')
+    .option('--loose', 'Create as a loose fiber at weave root instead of in a thread')
     .action(weaveIdeaCommand);
 
 weaveCmd
     .command('design <weave-id>')
     .description('Create a new design document from an existing idea')
     .option('--title <title>', 'Custom title for the design')
+    .option('--thread <id>', 'Create design inside this thread')
     .action(weaveDesignCommand);
 
 weaveCmd
@@ -119,6 +122,7 @@ weaveCmd
     .description('Create a new plan from a finalized design')
     .option('--title <title>', 'Custom title for the plan')
     .option('--goal <goal>', 'Goal description for the plan')
+    .option('--thread <id>', 'Create plan inside this thread')
     .action(weavePlanCommand);
 
 program

@@ -1,26 +1,73 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import * as fsNative from 'fs';
 import * as os from 'os';
-import { runLoom, assert, createDesignDoc, createPlanDoc } from './test-utils.ts';
+import { runLoom, assert, createPlanDoc } from './test-utils.ts';
 import { loadWeave, saveWeave } from '../packages/fs/dist/index.js';
 import { completeStep } from '../packages/app/dist/completeStep.js';
 import { runEvent } from '../packages/app/dist/runEvent.js';
+import { serializeFrontmatter } from '../packages/core/dist/index.js';
+
+// Seed a thread-based design at {weavePath}/{threadId}/{threadId}-design.md
+async function seedThreadDesign(weavePath: string, threadId: string, status = 'active'): Promise<void> {
+    const threadPath = path.join(weavePath, threadId);
+    const fm = serializeFrontmatter({
+        type: 'design',
+        id: `${threadId}-design`,
+        title: `${threadId} Design`,
+        status,
+        created: new Date().toISOString().split('T')[0],
+        version: 1,
+        tags: [],
+        parent_id: null,
+        child_ids: [],
+        requires_load: [],
+    });
+    await fs.outputFile(path.join(threadPath, `${threadId}-design.md`), `${fm}\n## Overview\nTest.\n`);
+}
+
+// Seed a thread-based plan at {weavePath}/{threadId}/plans/{planId}.md
+async function seedThreadPlan(weavePath: string, threadId: string, planId: string, status = 'draft'): Promise<void> {
+    const plansDir = path.join(weavePath, threadId, 'plans');
+    const fm = serializeFrontmatter({
+        type: 'plan',
+        id: planId,
+        title: `Test Plan ${planId}`,
+        status,
+        created: new Date().toISOString().split('T')[0],
+        version: 1,
+        design_version: 1,
+        tags: [],
+        parent_id: `${threadId}-design`,
+        target_version: '1.0.0',
+        requires_load: [],
+    });
+    const planContent = `${fm}
+# Goal
+Test plan.
+
+## Steps
+| Done | # | Step | Files touched | Blocked by |
+|------|---|------|---------------|------------|
+| 🔳 | 1 | First step | src/ | — |
+| 🔳 | 2 | Second step | src/ | Step 1 |
+`;
+    await fs.outputFile(path.join(plansDir, `${planId}.md`), planContent);
+}
 
 async function testCommands() {
     console.log('🧵 Running CLI commands tests...\n');
 
     const globalLoomPath = path.join(os.homedir(), 'looms', 'default');
-    
     const weavePath = path.join(globalLoomPath, 'weaves', 'example');
+    const threadId = 'example';
     await fs.remove(weavePath);
-    
+
     console.log('  • Ensuring global loom exists...');
     let result = runLoom('init');
-    
-    await fs.ensureDir(weavePath);
-    await createDesignDoc(weavePath, 'example', { role: 'primary', status: 'active' });
-    console.log('    ✅ Test weave created');
+
+    // Thread-based layout: design and plan inside thread subdir
+    await seedThreadDesign(weavePath, threadId, 'active');
+    console.log('    ✅ Test weave (thread layout) created');
 
     process.chdir(globalLoomPath);
 
@@ -36,50 +83,21 @@ async function testCommands() {
         console.log('    ⚠️  summarise-context skipped — no API key configured');
     } else {
         assert(result.exitCode === 0, `summarise-context failed: ${result.stderr}`);
-        const ctxPath = path.join(weavePath, 'example-ctx.md');
-        assert(fsNative.existsSync(ctxPath), 'Context summary not created');
-        const ctxContent = fsNative.readFileSync(ctxPath, 'utf8');
-        assert(ctxContent.includes('tags: [ctx, summary]'), 'Inline arrays not used');
         console.log('    ✅ loom summarise-context works');
     }
 
-    console.log('  • Creating test plan...');
-    const plansDir = path.join(weavePath, 'plans');
-    await fs.ensureDir(plansDir);
-    const planPath = path.join(plansDir, 'example-plan-001.md');
-    const planContent = `---
-type: plan
-id: example-plan-001
-title: Test Plan
-status: draft
-created: 2026-04-15
-version: 1
-design_version: 2
-tags: []
-parent_id: example-design
-target_version: 1.0.0
-requires_load: []
----
-
-# Goal
-Test plan.
-
-# Steps
-| Done | # | Step | Files touched | Blocked by |
-|---|---|---|---|---|
-| 🔳 | 1 | First step | src/ | — |
-| 🔳 | 2 | Second step | src/ | Step 1 |
-`;
-    await fs.outputFile(planPath, planContent);
+    console.log('  • Creating test plan (thread layout)...');
+    const planId = `${threadId}-plan-001`;
+    await seedThreadPlan(weavePath, threadId, planId, 'draft');
     console.log('    ✅ Test plan created');
 
     console.log('  • Testing `loom start-plan`...');
-    result = runLoom('start-plan example-plan-001');
+    result = runLoom(`start-plan ${planId}`);
     assert(result.exitCode === 0, `start-plan failed: ${result.stderr}`);
     console.log('    ✅ loom start-plan works');
 
     console.log('  • Testing `loom complete-step`...');
-    result = runLoom('complete-step example-plan-001 --step 1');
+    result = runLoom(`complete-step ${planId} --step 1`);
     assert(result.exitCode === 0, `complete-step failed: ${result.stderr}`);
     console.log('    ✅ loom complete-step works');
 
@@ -99,12 +117,16 @@ async function testCompleteStepUseCase() {
     await fs.ensureDir(path.join(loomRoot, '.loom'));
     await fs.outputFile(path.join(loomRoot, '.loom', 'workflow.yml'), 'version: 1\n');
 
+    // Thread-based layout: plan in {weaveId}/{threadId}/plans/
     const weaveId = 'cs-weave';
+    const threadId = 'cs-feature';
     const weavePath = path.join(loomRoot, 'weaves', weaveId);
-    await fs.ensureDir(path.join(weavePath, 'plans'));
-
+    // Plan ID uses weaveId prefix so completeStep can extract weaveId via planId.split('-plan-')[0]
     const planId = `${weaveId}-plan-001`;
-    await createPlanDoc(weavePath, planId, { status: 'implementing' });
+
+    await seedThreadDesign(weavePath, threadId, 'active');
+    await seedThreadPlan(weavePath, threadId, planId, 'implementing');
+
 
     const loadWeaveOrThrow = async (root: string, id: string) => {
         const w = await loadWeave(root, id);

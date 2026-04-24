@@ -12,21 +12,28 @@ export async function weavePlanCommand(treeProvider: LoomTreeProvider, node?: Tr
     }
 
     const weaveId = node?.weaveId ?? await vscode.window.showInputBox({
-        prompt: 'Thread ID',
+        prompt: 'Weave ID',
         placeHolder: 'e.g., payment-system',
     });
     if (!weaveId) return;
 
-    // When triggered from a design node, link the plan to that design
-    const parentId = node?.doc?.id;
+    // threadId from thread or design node
+    let threadId = node?.threadId;
+    if (!threadId) {
+        threadId = await vscode.window.showInputBox({
+            prompt: 'Thread ID (optional)',
+            placeHolder: 'e.g., state-management — leave blank for loose plan',
+        }) || undefined;
+    }
 
-    // Optional custom title
+    // When triggered from a design node, link the plan to that design
+    const parentId = node?.doc?.type === 'design' ? node.doc.id : undefined;
+
     const customTitle = await vscode.window.showInputBox({
         prompt: 'Plan title (optional)',
         placeHolder: 'Leave blank to use thread ID',
     });
 
-    // Optional goal
     const goal = await vscode.window.showInputBox({
         prompt: 'Goal (optional)',
         placeHolder: 'Brief description of what this plan implements',
@@ -34,7 +41,7 @@ export async function weavePlanCommand(treeProvider: LoomTreeProvider, node?: Tr
 
     try {
         const result = await weavePlan(
-            { weaveId, title: customTitle || undefined, goal: goal || undefined, parentId },
+            { weaveId, title: customTitle || undefined, goal: goal || undefined, parentId, threadId },
             {
                 loomRoot: workspaceRoot,
                 loadWeave,

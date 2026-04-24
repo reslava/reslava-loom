@@ -1,10 +1,9 @@
 import { assert } from './test-utils.ts';
-import { serializeFrontmatter } from '../packages/core/dist/index.js';
+import { serializeFrontmatter, getThreadStatus, getWeaveStatus } from '../packages/core/dist/index.js';
 
 async function testDoneDocEntity() {
     console.log('📄 Running DoneDoc entity tests...\n');
 
-    // DoneDoc shape
     const done = {
         type: 'done' as const,
         id: 'my-weave-plan-001-done',
@@ -47,7 +46,113 @@ async function testDoneDocEntity() {
     console.log('\n✨ All DoneDoc entity tests passed!\n');
 }
 
-testDoneDocEntity().catch(err => {
+function makePlan(id: string, status: string) {
+    return {
+        type: 'plan' as const,
+        id,
+        title: id,
+        status: status as any,
+        created: '2026-04-23',
+        version: 1,
+        design_version: 1,
+        target_version: '0.3.0',
+        tags: [],
+        parent_id: null,
+        child_ids: [],
+        requires_load: [],
+        steps: [],
+        content: '',
+    };
+}
+
+function makeThread(id: string, weaveId: string, plans: any[]) {
+    return {
+        id,
+        weaveId,
+        plans,
+        dones: [],
+        chats: [],
+        allDocs: [...plans],
+    };
+}
+
+async function testThreadEntity() {
+    console.log('🧶 Running Thread entity tests...\n');
+
+    // Thread shape
+    const plan1 = makePlan('state-mgmt-plan-001', 'implementing');
+    const plan2 = makePlan('state-mgmt-plan-002', 'draft');
+    const thread = makeThread('state-management', 'core-engine', [plan1, plan2]);
+
+    console.log('  • thread has id and weaveId...');
+    assert(thread.id === 'state-management', 'thread id must be set');
+    assert(thread.weaveId === 'core-engine', 'thread weaveId must be set');
+    console.log('    ✅ id and weaveId correct');
+
+    console.log('  • thread has plans...');
+    assert(thread.plans.length === 2, 'thread must have 2 plans');
+    console.log('    ✅ plans length: 2');
+
+    // getThreadStatus — implementing wins
+    console.log('  • getThreadStatus — implementing wins...');
+    const status1 = getThreadStatus(thread);
+    assert(status1 === 'IMPLEMENTING', `expected IMPLEMENTING, got ${status1}`);
+    console.log('    ✅ IMPLEMENTING');
+
+    // getThreadStatus — all draft → ACTIVE
+    console.log('  • getThreadStatus — all draft → ACTIVE...');
+    const draftThread = makeThread('event-bus', 'core-engine', [makePlan('eb-plan-001', 'draft')]);
+    const status2 = getThreadStatus(draftThread);
+    assert(status2 === 'ACTIVE', `expected ACTIVE, got ${status2}`);
+    console.log('    ✅ ACTIVE');
+
+    // getThreadStatus — empty plans → ACTIVE (fallback)
+    console.log('  • getThreadStatus — no plans → ACTIVE (fallback)...');
+    const emptyThread = makeThread('empty', 'core-engine', []);
+    const status3 = getThreadStatus(emptyThread);
+    assert(status3 === 'ACTIVE', `expected ACTIVE (fallback), got ${status3}`);
+    console.log('    ✅ ACTIVE (fallback)');
+
+    console.log('\n✨ All Thread entity tests passed!\n');
+}
+
+async function testWeaveWithThreads() {
+    console.log('🧵 Running Weave-with-threads aggregation tests...\n');
+
+    const thread1 = makeThread('state-management', 'core-engine', [
+        makePlan('sm-plan-001', 'implementing'),
+    ]);
+    const thread2 = makeThread('event-bus', 'core-engine', [
+        makePlan('eb-plan-001', 'draft'),
+    ]);
+
+    const weave = {
+        id: 'core-engine',
+        threads: [thread1, thread2],
+        looseFibers: [],
+        chats: [],
+        allDocs: [...thread1.allDocs, ...thread2.allDocs],
+    };
+
+    // getWeaveStatus — implementing in thread1 wins
+    console.log('  • getWeaveStatus — implementing in any thread wins...');
+    const status = getWeaveStatus(weave);
+    assert(status === 'IMPLEMENTING', `expected IMPLEMENTING, got ${status}`);
+    console.log('    ✅ IMPLEMENTING');
+
+    // Two threads: verify both plans counted
+    console.log('  • allDocs aggregates across threads...');
+    assert(weave.allDocs.length === 2, `expected 2 allDocs, got ${weave.allDocs.length}`);
+    console.log('    ✅ allDocs length: 2');
+
+    console.log('\n✨ All Weave-with-threads tests passed!\n');
+}
+
+Promise.all([
+    testDoneDocEntity(),
+    testThreadEntity(),
+    testWeaveWithThreads(),
+]).catch(err => {
     console.error('❌ entity.test.ts failed:', err.message);
     process.exit(1);
 });

@@ -24,3 +24,8 @@ export { currentLoom, CurrentLoomInfo, CurrentDeps } from './current';
 // Use‑Cases — State
 // ============================================================================
 export { getState, GetStateDeps, GetStateInput } from './getState';
+
+// ============================================================================
+// Utilities
+// ============================================================================
+export { resolveThread } from './utils/resolveThread';

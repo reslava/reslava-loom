@@ -1,113 +1,82 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { Weave } from '../../../core/dist/entities/weave';
+import { Thread } from '../../../core/dist/entities/thread';
 import { Document } from '../../../core/dist/entities/document';
-import { DesignDoc } from '../../../core/dist/entities/design';
-import { IdeaDoc } from '../../../core/dist/entities/idea';
-import { PlanDoc } from '../../../core/dist/entities/plan';
-import { CtxDoc } from '../../../core/dist/entities/ctx';
 import { ChatDoc } from '../../../core/dist/entities/chat';
-import { DoneDoc } from '../../../core/dist/entities/done';
 import { loadDoc, FrontmatterParseError } from '../serializers/frontmatterLoader';
 import { saveDoc } from '../serializers/frontmatterSaver';
-import { findMarkdownFiles } from '../utils/pathUtils';
-import { resolveWeavePath } from '../utils/workspaceUtils';
-import {
-    validateParentExists,
-    getDanglingChildIds,
-} from '../../../core/dist/validation';
+import { listThreadDirs } from '../utils/pathUtils';
+import { loadThread, saveThread } from './threadRepository';
 import { LinkIndex } from '../../../core/dist/linkIndex';
 
-/**
- * Loads a weave by its ID.
- *
- * @param loomRoot - The absolute path to the loom root.
- * @param weaveId - The weave identifier.
- * @param index - Optional pre‑built link index for validation warnings.
- * @returns A promise resolving to the Weave, or null if the folder is empty.
- */
 export async function loadWeave(loomRoot: string, weaveId: string, index?: LinkIndex): Promise<Weave | null> {
-    const weavePath = resolveWeavePath(weaveId, loomRoot);
+    const weavePath = path.join(loomRoot, 'weaves', weaveId);
     if (!await fs.pathExists(weavePath)) {
         throw new Error(`Weave directory not found: ${weavePath}`);
     }
-    
-    const files = await findMarkdownFiles(weavePath);
-    const docs: Document[] = [];
-    
-    for (const file of files) {
+
+    // Load threads
+    const threadIds = await listThreadDirs(weavePath);
+    const threads: Thread[] = [];
+    for (const threadId of threadIds) {
+        threads.push(await loadThread(loomRoot, weaveId, threadId, index));
+    }
+
+    // Load loose fibers: .md files directly at weave root
+    const looseFibers: Document[] = [];
+    const rootEntries = await fs.readdir(weavePath, { withFileTypes: true });
+    for (const entry of rootEntries) {
+        if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
         try {
-            docs.push(await loadDoc(file) as Document);
+            looseFibers.push(await loadDoc(path.join(weavePath, entry.name)) as Document);
         } catch (e) {
             if (e instanceof FrontmatterParseError) {
-                console.warn(`Skipping ${file}: ${e.message}`);
-            } else {
-                throw e;
-            }
-        }
-    }
-    
-    // Empty folder is not a weave
-    if (docs.length === 0) {
-        return null;
-    }
-    
-    const ideas = docs.filter(d => d.type === 'idea') as IdeaDoc[];
-    const designs = docs.filter(d => d.type === 'design') as DesignDoc[];
-    const plans = docs.filter(d => d.type === 'plan') as PlanDoc[];
-    const dones = docs.filter(d => d.type === 'done') as DoneDoc[];
-    const contexts = docs.filter(d => d.type === 'ctx') as CtxDoc[];
-    const chats = docs.filter(d => d.type === 'chat') as ChatDoc[];
-    
-    // Validation warnings (if index provided)
-    if (index) {
-        for (const doc of docs) {
-            if (doc.parent_id && !validateParentExists(doc, index)) {
-                console.warn(`⚠️  [${doc.id}] Broken parent_id: ${doc.parent_id}`);
-            }
-            const dangling = getDanglingChildIds(doc, index);
-            for (const childId of dangling) {
-                console.warn(`⚠️  [${doc.id}] Dangling child_id: ${childId}`);
-            }
-        }
-        
-        // Warn if multiple designs exist (informational)
-        if (designs.length > 1) {
-            console.warn(`⚠️  [${weaveId}] Multiple designs found.`);
+                console.warn(`Skipping ${entry.name}: ${e.message}`);
+            } else throw e;
         }
     }
 
-    return {
-        id: weaveId,
-        ideas,
-        designs,
-        plans,
-        dones,
-        contexts,
-        chats,
-        allDocs: docs,
-    };
-}
-
-function determinePathForDoc(doc: any, loomRoot: string, weaveId: string): string {
-    const weavePath = resolveWeavePath(weaveId, loomRoot);
-    switch (doc.type) {
-        case 'idea': return path.join(weavePath, `${weaveId}-idea.md`);
-        case 'design': return path.join(weavePath, `${doc.id}.md`);
-        case 'plan': return path.join(weavePath, 'plans', `${doc.id}.md`);
-        case 'ctx': {
-            if (doc.source_version !== undefined) return path.join(weavePath, `${weaveId}-ctx.md`);
-            return path.join(weavePath, 'ctx', `${doc.id}.md`);
+    // Load weave-level chats from ai-chats/
+    const chats: ChatDoc[] = [];
+    const chatsDir = path.join(weavePath, 'ai-chats');
+    if (await fs.pathExists(chatsDir)) {
+        const chatFiles = (await fs.readdir(chatsDir)).filter(f => f.endsWith('.md'));
+        for (const f of chatFiles) {
+            try {
+                const doc = await loadDoc(path.join(chatsDir, f)) as Document;
+                if (doc.type === 'chat') chats.push(doc as ChatDoc);
+            } catch (e) {
+                console.warn(`Skipping ${f}: ${(e as Error).message}`);
+            }
         }
-        case 'done': return path.join(weavePath, 'done', `${doc.id}.md`);
-        default: throw new Error(`Unknown document type: ${doc.type}`);
     }
+
+    const allDocs: Document[] = [
+        ...threads.flatMap(t => t.allDocs),
+        ...looseFibers,
+        ...chats,
+    ];
+
+    if (allDocs.length === 0) return null;
+
+    return { id: weaveId, threads, looseFibers, chats, allDocs };
 }
 
 export async function saveWeave(loomRoot: string, weave: Weave): Promise<void> {
-    for (const doc of weave.allDocs) {
-        let filePath = (doc as any)._path;
-        if (!filePath) filePath = determinePathForDoc(doc, loomRoot, weave.id);
-        await saveDoc(doc, filePath);
+    const weavePath = path.join(loomRoot, 'weaves', weave.id);
+
+    for (const thread of weave.threads) {
+        await saveThread(loomRoot, weave.id, thread);
+    }
+
+    for (const fiber of weave.looseFibers) {
+        const filePath = (fiber as any)._path ?? path.join(weavePath, `${fiber.id}.md`);
+        await saveDoc(fiber, filePath);
+    }
+
+    for (const chat of weave.chats) {
+        const filePath = (chat as any)._path ?? path.join(weavePath, 'ai-chats', `${chat.id}.md`);
+        await saveDoc(chat, filePath);
     }
 }

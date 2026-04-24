@@ -40,7 +40,7 @@ export async function summarise(
     deps: SummariseDeps
 ): Promise<{ ctxPath: string; generated: boolean }> {
     const weave = await deps.loadWeave(deps.loomRoot, input.weaveId);
-    const primaryDesign = weave.designs[0];
+    const primaryDesign = weave.threads.find((t: any) => t.design)?.design;
     if (!primaryDesign) {
         throw new Error(`Weave '${input.weaveId}' has no design document.`);
     }
@@ -56,15 +56,18 @@ export async function summarise(
         }
     }
 
-    const planLines = weave.plans.map((p: any) => {
+    const planLines = weave.threads.flatMap((t: any) => t.plans).map((p: any) => {
         const done = p.steps?.filter((s: any) => s.done).length ?? 0;
         const total = p.steps?.length ?? 0;
         return `- ${p.id} (${p.status}, ${done}/${total} steps)`;
     }).join('\n') || '(none)';
 
-    const ideaLines = weave.ideas.map((i: any) => `- ${i.title} (${i.status})`).join('\n') || '(none)';
+    const ideaLines = [
+        ...weave.threads.map((t: any) => t.idea).filter(Boolean),
+        ...weave.looseFibers.filter((f: any) => f.type === 'idea'),
+    ].map((i: any) => `- ${i.title} (${i.status})`).join('\n') || '(none)';
 
-    const doneLines = (weave.dones ?? []).map((d: any) => {
+    const doneLines = weave.threads.flatMap((t: any) => t.dones).map((d: any) => {
         const decisions = (d.content ?? '')
             .split('\n')
             .filter((l: string) => l.startsWith('- '))

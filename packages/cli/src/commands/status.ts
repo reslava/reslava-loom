@@ -89,18 +89,23 @@ export async function statusCommand(
 
             const weaveStatus = getWeaveStatus(weave);
             const phase = getWeavePhase(weave);
-            const designCount = weave.designs.length;
-            const primaryDesign = weave.designs[0];
+            const primaryDesign = weave.threads.find(t => t.design)?.design;
             const designTitle = primaryDesign?.title || 'No design';
             const designVersion = primaryDesign?.version || 0;
+            const threadCount = weave.threads.length;
+
+            const allPlans = weave.threads.flatMap(t => t.plans);
 
             console.log(chalk.bold(`\n🧵 Weave: ${weave.id}`));
-            console.log(`   Status: ${colorStatus(weaveStatus)}`);
-            console.log(`   Phase:  ${phase}`);
-            console.log(`   Designs: ${designCount} (primary: ${designTitle} v${designVersion})`);
-            console.log(`   Plans:  ${weave.plans.length} (${weave.plans.filter(p => p.status === 'done').length} done)`);
+            console.log(`   Status:  ${colorStatus(weaveStatus)}`);
+            console.log(`   Phase:   ${phase}`);
+            console.log(`   Threads: ${threadCount} (primary design: ${designTitle} v${designVersion})`);
+            console.log(`   Plans:   ${allPlans.length} (${allPlans.filter(p => p.status === 'done').length} done)`);
+            if (weave.looseFibers.length > 0) {
+                console.log(`   Loose:   ${weave.looseFibers.length} fiber(s)`);
+            }
 
-            const activePlan = weave.plans.find(
+            const activePlan = allPlans.find(
                 p => p.status === 'implementing' || p.status === 'active'
             );
 

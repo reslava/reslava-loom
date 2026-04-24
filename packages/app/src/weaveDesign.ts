@@ -11,6 +11,7 @@ import { DesignDoc, IdeaDoc } from '../../core/dist';
 export interface WeaveDesignInput {
     weaveId: string;
     title?: string;
+    threadId?: string;
 }
 
 export interface WeaveDesignDeps {
@@ -103,7 +104,27 @@ export async function weaveDesign(
 ): Promise<{ id: string; filePath: string; autoFinalized: boolean }> {
     const loomRoot = deps.getActiveLoomRoot();
     const weavePath = path.join(loomRoot, 'weaves', input.weaveId);
-    
+
+    if (input.threadId) {
+        const threadPath = path.join(weavePath, input.threadId);
+        await deps.fs.ensureDir(threadPath);
+        const ideaPath = path.join(threadPath, `${input.threadId}-idea.md`);
+        let parentId: string | null = null;
+        let designTitle = input.title || input.threadId;
+        if (await deps.fs.pathExists(ideaPath)) {
+            const idea = await deps.loadDoc(ideaPath) as IdeaDoc;
+            parentId = idea.id;
+            designTitle = input.title || idea.title;
+        }
+        const designId = `${input.threadId}-design`;
+        const frontmatter = createBaseFrontmatter('design', designId, designTitle, parentId);
+        const content = generateDesignBody(designTitle, 'User');
+        const doc: DesignDoc = { ...frontmatter, content } as DesignDoc;
+        const filePath = path.join(threadPath, `${designId}.md`);
+        await deps.saveDoc(doc, filePath);
+        return { id: designId, filePath, autoFinalized: false };
+    }
+
     await deps.fs.ensureDir(weavePath);
     
     // Look for an existing idea

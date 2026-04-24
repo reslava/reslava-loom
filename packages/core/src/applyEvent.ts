@@ -1,7 +1,12 @@
 import { Weave } from './entities/weave';
+import { Thread } from './entities/thread';
 import { WorkflowEvent } from './events/workflowEvent';
+import { IdeaDoc } from './entities/idea';
 import { DesignDoc } from './entities/design';
 import { PlanDoc } from './entities/plan';
+import { DoneDoc } from './entities/done';
+import { ChatDoc } from './entities/chat';
+import { Document } from './entities/document';
 import { designReducer } from './reducers/designReducer';
 import { planReducer } from './reducers/planReducer';
 
@@ -59,21 +64,23 @@ export function applyEvent(weave: Weave, event: WorkflowEvent): Weave {
         }
     }
 
-    const ideas = updatedDocs.filter(d => d.type === 'idea') as any[];
-    const designs = updatedDocs.filter(d => d.type === 'design') as DesignDoc[];
-    const plans = updatedDocs.filter(d => d.type === 'plan') as PlanDoc[];
-    const dones = updatedDocs.filter(d => d.type === 'done') as any[];
-    const contexts = updatedDocs.filter(d => d.type === 'ctx') as any[];
-    const chats = updatedDocs.filter(d => d.type === 'chat') as any[];
+    const updatedById = new Map<string, Document>(updatedDocs.map(d => [d.id, d]));
+
+    const updatedThreads: Thread[] = weave.threads.map(thread => ({
+        ...thread,
+        idea: thread.idea ? updatedById.get(thread.idea.id) as IdeaDoc | undefined : undefined,
+        design: thread.design ? updatedById.get(thread.design.id) as DesignDoc | undefined : undefined,
+        plans: thread.plans.map(p => (updatedById.get(p.id) as PlanDoc) ?? p),
+        dones: thread.dones.map(d => (updatedById.get(d.id) as DoneDoc) ?? d),
+        chats: thread.chats.map(c => (updatedById.get(c.id) as ChatDoc) ?? c),
+        allDocs: thread.allDocs.map(d => updatedById.get(d.id) ?? d),
+    }));
 
     return {
         id: weave.id,
-        ideas,
-        designs,
-        plans,
-        dones,
-        contexts,
-        chats,
+        threads: updatedThreads,
+        looseFibers: weave.looseFibers.map(f => updatedById.get(f.id) ?? f),
+        chats: weave.chats.map(c => (updatedById.get(c.id) as ChatDoc) ?? c),
         allDocs: updatedDocs,
     };
 }

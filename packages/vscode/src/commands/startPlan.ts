@@ -33,7 +33,7 @@ export async function startPlanCommand(treeProvider: LoomTreeProvider, node?: Tr
             runEvent(wid, evt, { loadWeave: loadWeaveOrThrow, saveWeave, loomRoot });
 
         const weave = await loadWeaveOrThrow(loomRoot, weaveId);
-        const plan = weave.plans.find((p: any) => p.id === planId);
+        const plan = weave.threads.flatMap((t: any) => t.plans).find((p: any) => p.id === planId);
         if (!plan) {
             vscode.window.showErrorMessage(`Plan '${planId}' not found in weave '${weaveId}'.`);
             return;

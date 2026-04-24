@@ -15,7 +15,7 @@ async function testIdManagement() {
 
     console.log('  • Testing `loom weave idea` generates temporary ID...');
     process.chdir(globalLoomPath);
-    let result = runLoom('weave idea "Temporary Test" --weave id-test');
+    let result = runLoom('weave idea "Temporary Test" --weave id-test --loose');
     assert(result.exitCode === 0, `weave idea failed: ${result.stderr}`);
     
     const tempIdMatch = result.stdout.match(/new-\d+-idea/);
@@ -65,7 +65,7 @@ async function testIdManagement() {
     console.log('    ✅ Rename updated references correctly');
 
     console.log('  • Testing draft rejection...');
-    result = runLoom('weave idea "Draft Test" --weave id-test');
+    result = runLoom('weave idea "Draft Test" --weave id-test --loose');
     const draftIdMatch = result.stdout.match(/new-\d+-idea/);
     const draftId = draftIdMatch![0];
     

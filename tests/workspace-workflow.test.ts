@@ -1,15 +1,13 @@
 import * as path from 'path';
-import { ensureDir, pathExists, remove } from 'fs-extra';
-import { readdir } from 'fs/promises';
+import { ensureDir, pathExists, remove, readdir } from 'fs-extra';
 import { assert, mockAIClient } from './test-utils.ts';
-import { WORKSPACE_ROOT, setupWorkspace, seedWeave, fileExists, readFile } from './workspace-utils.ts';
+import { setupWorkspace, seedWeaveWithThread, seedThread, seedLooseFiber, seedDoneInThread, fileExists, readFile } from './workspace-utils.ts';
 import { loadWeave, saveWeave, saveDoc } from '../packages/fs/dist/index.js';
 import { completeStep } from '../packages/app/dist/completeStep.js';
 import { closePlan } from '../packages/app/dist/closePlan.js';
 import { doStep } from '../packages/app/dist/doStep.js';
 import { runEvent } from '../packages/app/dist/runEvent.js';
 
-// fs adapter — named imports only (see weaves/tests/references/fs-extra-esm-reference.md)
 const fsDeps = {
     ensureDir,
     pathExists,
@@ -33,25 +31,26 @@ function makeLoadWeave(loomRoot: string) {
 async function testWorkspaceWorkflow() {
     console.log('🏗️  Running workspace-workflow tests (j:/temp/loom)...\n');
 
-    // ── test 1: loadWeave surfaces design + plan from seeded workspace ────────
-    console.log('  • loadWeave: design and plan loaded from real workspace...');
+    // ── test 1: loadWeave surfaces thread + plan from seeded workspace ────────
+    console.log('  • loadWeave: thread and plan loaded from real workspace...');
     {
         const loomRoot = await setupWorkspace();
-        const { weavePath, planId } = await seedWeave(loomRoot, 'ww-weave1');
+        const { planId } = await seedWeaveWithThread(loomRoot, 'ww-weave1', 'feature-a');
 
         const weave = await loadWeave(loomRoot, 'ww-weave1');
         assert(weave !== null, 'weave must load');
-        assert(weave!.designs.length === 1, 'must have 1 design');
-        assert(weave!.plans.length === 1, 'must have 1 plan');
-        assert(weave!.plans[0].id === planId, 'plan id must match');
-        console.log('    ✅ loadWeave surfaces design + plan');
+        assert(weave!.threads.length === 1, `expected 1 thread, got ${weave!.threads.length}`);
+        assert(weave!.threads[0].design !== undefined, 'thread must have a design');
+        assert(weave!.threads[0].plans.length === 1, 'thread must have 1 plan');
+        assert(weave!.threads[0].plans[0].id === planId, 'plan id must match');
+        console.log('    ✅ loadWeave surfaces thread + plan');
     }
 
     // ── test 2: completeStep marks step done; last step auto-closes plan ──────
     console.log('  • completeStep: step marked done; all steps done → autoCompleted...');
     {
         const loomRoot = await setupWorkspace();
-        const { planId } = await seedWeave(loomRoot, 'ww-weave2', { steps: 2 });
+        const { planId } = await seedWeaveWithThread(loomRoot, 'ww-weave2', 'feature-b', { steps: 2 });
 
         const deps = {
             loadWeave: makeLoadWeave(loomRoot),
@@ -59,25 +58,23 @@ async function testWorkspaceWorkflow() {
             loomRoot,
         };
 
-        // Complete step 1 — plan stays implementing
         const r1 = await completeStep({ planId, step: 1 }, deps);
         assert(r1.autoCompleted === false, 'step 1 must not auto-complete plan');
         assert(r1.plan.steps[0].done === true, 'step 1 must be marked done');
 
-        // Complete step 2 — plan auto-completes
         const r2 = await completeStep({ planId, step: 2 }, deps);
         assert(r2.autoCompleted === true, 'all steps done must auto-complete plan');
         assert(r2.plan.status === 'done', 'plan status must be done after auto-complete');
         console.log('    ✅ completeStep + auto-complete works');
     }
 
-    // ── test 3: closePlan — done/ folder layout ───────────────────────────────
-    console.log('  • closePlan: done/ layout — done doc + moved plan + original deleted...');
+    // ── test 3: closePlan — thread layout: done doc in thread/done/, plan updated in place ─
+    console.log('  • closePlan: thread layout — done doc in thread/done/, plan stays in plans/...');
     {
         const loomRoot = await setupWorkspace();
-        const { weavePath, planId } = await seedWeave(loomRoot, 'ww-weave3', { planStatus: 'done' });
+        const { threadPath, planId } = await seedWeaveWithThread(loomRoot, 'ww-weave3', 'feature-c', { planStatus: 'done' });
 
-        const result = await closePlan(
+        await closePlan(
             { planId },
             {
                 loadWeave: makeLoadWeave(loomRoot),
@@ -88,30 +85,27 @@ async function testWorkspaceWorkflow() {
             }
         );
 
-        const doneDoneDoc = path.join(weavePath, 'done', `${planId}-done.md`);
-        const movedPlan   = path.join(weavePath, 'done', `${planId}.md`);
-        const oldPlan     = path.join(weavePath, 'plans', `${planId}.md`);
+        const doneDoneDoc = path.join(threadPath, 'done', `${planId}-done.md`);
+        const planInPlace = path.join(threadPath, 'plans', `${planId}.md`);
 
-        assert(fileExists(doneDoneDoc), 'done doc must exist at done/{planId}-done.md');
-        assert(fileExists(movedPlan),   'plan must be moved to done/{planId}.md');
-        assert(!fileExists(oldPlan),    'original plans/{planId}.md must be deleted');
+        assert(fileExists(doneDoneDoc), 'done doc must exist at thread/done/{planId}-done.md');
+        assert(fileExists(planInPlace), 'plan must remain at thread/plans/{planId}.md');
 
         const doneContent = readFile(doneDoneDoc);
-        assert(doneContent.includes('type: done'),         'done doc must have type: done');
+        assert(doneContent.includes('type: done'), 'done doc must have type: done');
         assert(doneContent.includes(`parent_id: ${planId}`), 'done doc must link to plan');
-        assert(doneContent.includes('What was built'),     'AI body must appear in done doc');
+        assert(doneContent.includes('What was built'), 'AI body must appear in done doc');
 
-        const movedContent = readFile(movedPlan);
-        assert(movedContent.includes('status: done'), 'moved plan must have status: done');
-
-        console.log('    ✅ closePlan done/ layout correct');
+        const planContent = readFile(planInPlace);
+        assert(planContent.includes('status: done'), 'plan must have status: done');
+        console.log('    ✅ closePlan thread layout correct');
     }
 
-    // ── test 4: doStep — chat doc created in weave root ──────────────────────
-    console.log('  • doStep: chat doc created with correct structure...');
+    // ── test 4: doStep — chat doc created in weave ai-chats/ dir ─────────────
+    console.log('  • doStep: chat doc created in ai-chats/ with correct structure...');
     {
         const loomRoot = await setupWorkspace();
-        const { weavePath, planId } = await seedWeave(loomRoot, 'ww-weave4');
+        const { planId } = await seedWeaveWithThread(loomRoot, 'ww-weave4', 'feature-d');
 
         const result = await doStep(
             { planId, steps: [1] },
@@ -125,22 +119,22 @@ async function testWorkspaceWorkflow() {
         );
 
         assert(fileExists(result.chatPath), 'chat doc must exist');
+        assert(result.chatPath.includes('ai-chats'), 'chat must be in ai-chats/ dir');
         const content = readFile(result.chatPath);
-        assert(content.includes('# CHAT'),            'chat doc must have # CHAT header');
-        assert(content.includes('## Rafa:'),           'chat doc must have ## Rafa: section');
-        assert(content.includes('## AI:'),             'chat doc must have ## AI: section');
-        assert(content.includes('Do this and that.'),  'AI response must appear in chat doc');
+        assert(content.includes('# CHAT'), 'chat doc must have # CHAT header');
+        assert(content.includes('## Rafa:'), 'chat doc must have ## Rafa: section');
+        assert(content.includes('## AI:'), 'chat doc must have ## AI: section');
+        assert(content.includes('Do this and that.'), 'AI response must appear in chat doc');
         assert(content.includes(`parent_id: ${planId}`), 'parent_id must link to plan');
-        console.log('    ✅ doStep creates chat doc correctly');
+        console.log('    ✅ doStep creates chat doc in ai-chats/ correctly');
     }
 
     // ── test 5 (data layer): loadWeave after full workflow ───────────────────
-    console.log('  • data layer: loadWeave surfaces plans, dones, chats after full workflow...');
+    console.log('  • data layer: loadWeave surfaces threads, dones, chats after full workflow...');
     {
         const loomRoot = await setupWorkspace();
-        const { planId } = await seedWeave(loomRoot, 'ww-weave5', { planStatus: 'implementing', steps: 1 });
+        const { planId } = await seedWeaveWithThread(loomRoot, 'ww-weave5', 'feature-e', { planStatus: 'implementing', steps: 1 });
 
-        // Run doStep → closePlan (single-step plan, status already implementing)
         const loadW = makeLoadWeave(loomRoot);
 
         await doStep(
@@ -155,13 +149,47 @@ async function testWorkspaceWorkflow() {
 
         const weave = await loadWeave(loomRoot, 'ww-weave5');
         assert(weave !== null, 'weave must load');
-        assert(weave!.chats.length >= 1,  'weave must surface chat doc');
-        assert(weave!.dones.length === 1,  'weave must surface done doc');
-        assert(weave!.designs.length === 1, 'weave must still surface design');
-        // Plan is moved to done/ — weaveRepository loads plans from both plans/ and done/
-        const allPlans = weave!.plans;
-        assert(allPlans.length >= 1, 'moved plan must still be surfaced');
-        console.log('    ✅ data layer: plans, dones, chats all surfaced after full workflow');
+        assert(weave!.chats.length >= 1, 'weave must surface chat doc from ai-chats/');
+        assert(weave!.threads.length === 1, 'must have 1 thread');
+        assert(weave!.threads[0].dones.length === 1, 'thread must surface done doc');
+        assert(weave!.threads[0].design !== undefined, 'thread must still surface design');
+        assert(weave!.threads[0].plans.length === 1, 'thread must still surface plan');
+        assert(weave!.threads[0].plans[0].status === 'done', 'plan must have status done');
+        console.log('    ✅ data layer: threads, dones, chats all surfaced after full workflow');
+    }
+
+    // ── test 6: multi-thread weave — 2 threads + loose fiber surfaced by loadWeave ─
+    console.log('  • multi-thread: 2 threads + loose fiber all surfaced by loadWeave...');
+    {
+        const loomRoot = await setupWorkspace();
+        await seedWeaveWithThread(loomRoot, 'ww-weave6', 'thread-alpha');
+        await seedThread(loomRoot, 'ww-weave6', 'thread-beta');
+        await seedLooseFiber(loomRoot, 'ww-weave6', 'floating-idea');
+
+        const weave = await loadWeave(loomRoot, 'ww-weave6');
+        assert(weave !== null, 'weave must load');
+        assert(weave!.threads.length === 2, `expected 2 threads, got ${weave!.threads.length}`);
+        const threadIds = weave!.threads.map(t => t.id).sort();
+        assert(threadIds[0] === 'thread-alpha', `first thread must be thread-alpha, got ${threadIds[0]}`);
+        assert(threadIds[1] === 'thread-beta', `second thread must be thread-beta, got ${threadIds[1]}`);
+        assert(weave!.looseFibers.length === 1, `expected 1 loose fiber, got ${weave!.looseFibers.length}`);
+        assert(weave!.looseFibers[0].id === 'floating-idea', 'loose fiber must have id floating-idea');
+        console.log('    ✅ multi-thread: 2 threads + loose fiber surfaced correctly');
+    }
+
+    // ── test 7: seedDoneInThread — done doc surfaced in thread.dones[] ───────
+    console.log('  • seedDoneInThread: done doc surfaced in thread.dones[]...');
+    {
+        const loomRoot = await setupWorkspace();
+        const { planId } = await seedWeaveWithThread(loomRoot, 'ww-weave7', 'feature-f', { planStatus: 'done', steps: 1 });
+        await seedDoneInThread(loomRoot, 'ww-weave7', 'feature-f', planId);
+
+        const weave = await loadWeave(loomRoot, 'ww-weave7');
+        assert(weave !== null, 'weave must load');
+        assert(weave!.threads.length === 1, 'must have 1 thread');
+        assert(weave!.threads[0].dones.length === 1, `expected 1 done doc, got ${weave!.threads[0].dones.length}`);
+        assert(weave!.threads[0].dones[0].id === `${planId}-done`, 'done doc must have correct id');
+        console.log('    ✅ seedDoneInThread: done doc surfaced in thread.dones[]');
     }
 
     console.log('\n✨ All workspace-workflow tests passed!\n');

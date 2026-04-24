@@ -52,8 +52,10 @@ export async function closePlan(
     if (!weaveId) throw new Error(`Invalid plan ID: "${input.planId}"`);
 
     const weave = await deps.loadWeave(deps.loomRoot, weaveId);
-    const plan = weave.plans.find((p: PlanDoc) => p.id === input.planId) as PlanDoc | undefined;
+    const plan = weave.threads.flatMap((t: any) => t.plans).find((p: PlanDoc) => p.id === input.planId) as PlanDoc | undefined;
     if (!plan) throw new Error(`Plan '${input.planId}' not found in weave '${weaveId}'.`);
+
+    const thread = weave.threads.find((t: any) => t.plans.some((p: any) => p.id === input.planId)) as any;
 
     const stepLines = (plan.steps ?? [])
         .map(s => `${s.done ? '✅' : '⬜'} Step ${s.order}: ${s.description}`)
@@ -76,10 +78,10 @@ export async function closePlan(
     const aiBody = await deps.aiClient.complete(messages);
 
     const weavePath = path.join(deps.loomRoot, 'weaves', weaveId);
-    const doneDirPath = path.join(weavePath, 'done');
+    const threadPath = thread ? path.join(weavePath, thread.id) : null;
+    const doneDirPath = threadPath ? path.join(threadPath, 'done') : path.join(weavePath, 'done');
     await deps.fs.ensureDir(doneDirPath);
 
-    // Build and save the done doc
     const doneId = `${input.planId}-done`;
     const doneDoc: DoneDoc = {
         type: 'done',
@@ -98,18 +100,23 @@ export async function closePlan(
     const donePath = path.join(doneDirPath, `${doneId}.md`);
     await deps.saveDoc(doneDoc, donePath);
 
-    // Apply FINISH_PLAN and move plan file to done/
     let updatedPlan = plan;
     if (plan.status === 'implementing') {
         updatedPlan = planReducer(plan, { type: 'FINISH_PLAN' });
     }
 
-    const newPlanPath = path.join(doneDirPath, `${input.planId}.md`);
-    await deps.saveDoc(updatedPlan, newPlanPath);
-
-    const oldPlanPath = (plan as any)._path as string | undefined;
-    if (oldPlanPath && await deps.fs.pathExists(oldPlanPath)) {
-        await deps.fs.remove(oldPlanPath);
+    if (threadPath) {
+        // Thread plan: update in place; done doc is the separate record
+        const planPath = (plan as any)._path ?? path.join(threadPath, 'plans', `${input.planId}.md`);
+        await deps.saveDoc(updatedPlan, planPath);
+    } else {
+        // Flat/loose plan: move to done/
+        const newPlanPath = path.join(doneDirPath, `${input.planId}.md`);
+        await deps.saveDoc(updatedPlan, newPlanPath);
+        const oldPlanPath = (plan as any)._path as string | undefined;
+        if (oldPlanPath && await deps.fs.pathExists(oldPlanPath)) {
+            await deps.fs.remove(oldPlanPath);
+        }
     }
 
     return { donePath, planId: input.planId };

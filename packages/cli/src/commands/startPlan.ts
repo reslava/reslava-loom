@@ -19,11 +19,11 @@ export async function startPlanCommand(planId: string): Promise<void> {
             return thread;
         };
 
-        const thread = await loadWeaveOrThrow(loomRoot, weaveId);
-        const plan = thread.plans.find((p: any) => p.id === planId);
-        
+        const weave = await loadWeaveOrThrow(loomRoot, weaveId);
+        const plan = weave.threads.flatMap((t: any) => t.plans).find((p: any) => p.id === planId);
+
         if (!plan) {
-            throw new Error(`Plan '${planId}' not found in thread '${weaveId}'`);
+            throw new Error(`Plan '${planId}' not found in weave '${weaveId}'`);
         }
 
         const runEventWithDeps = (tid: string, evt: any) =>

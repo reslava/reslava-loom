@@ -10,6 +10,7 @@ import { IdeaDoc } from '../../core/dist';
 export interface WeaveIdeaInput {
     title: string;
     weave?: string;
+    threadId?: string;
 }
 
 export interface WeaveIdeaDeps {
@@ -27,19 +28,24 @@ export async function weaveIdea(
     const weaveName = input.weave || toKebabCaseId(input.title);
     const weavePath = path.join(weavesDir, weaveName);
 
-    await deps.fs.ensureDir(weavePath);
+    if (input.threadId) {
+        const threadPath = path.join(weavePath, input.threadId);
+        await deps.fs.ensureDir(threadPath);
+        const ideaId = `${input.threadId}-idea`;
+        const frontmatter = createBaseFrontmatter('idea', ideaId, input.title);
+        const content = generateIdeaBody(input.title);
+        const doc: IdeaDoc = { ...frontmatter, content } as IdeaDoc;
+        const filePath = path.join(threadPath, `${ideaId}.md`);
+        await deps.saveDoc(doc, filePath);
+        return { tempId: ideaId, filePath };
+    }
 
+    await deps.fs.ensureDir(weavePath);
     const tempId = generateTempId('idea');
     const frontmatter = createBaseFrontmatter('idea', tempId, input.title);
     const content = generateIdeaBody(input.title);
-
-    const doc: IdeaDoc = {
-        ...frontmatter,
-        content,
-    } as IdeaDoc;
-
+    const doc: IdeaDoc = { ...frontmatter, content } as IdeaDoc;
     const filePath = path.join(weavePath, `${tempId}.md`);
     await deps.saveDoc(doc, filePath);
-
     return { tempId, filePath };
 }

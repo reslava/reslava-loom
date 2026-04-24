@@ -13,6 +13,7 @@ export { CtxDoc, CtxStatus } from './entities/ctx';
 export { ChatDoc, ChatStatus } from './entities/chat';
 export { DoneDoc, DoneStatus } from './entities/done';
 export { Weave, WeaveStatus, WeavePhase } from './entities/weave';
+export { Thread, ThreadStatus, Fiber } from './entities/thread';
 export { LoomState, LoomMode } from './entities/state';
 
 // ============================================================================
@@ -34,7 +35,7 @@ export { planReducer } from './reducers/planReducer';
 // Core Utilities
 // ============================================================================
 export { applyEvent } from './applyEvent';
-export { getWeaveStatus, getWeavePhase, isPlanStale, getStalePlans } from './derived';
+export { getWeaveStatus, getWeavePhase, isPlanStale, getStalePlans, getThreadStatus } from './derived';
 export { createBaseFrontmatter, serializeFrontmatter } from './frontmatterUtils';
 export { toKebabCaseId, ensureUniqueId, generateTempId, generatePermanentId, generatePlanId, generateChatId } from './idUtils';
 export { ConfigRegistry } from './registry';

@@ -8,4 +8,5 @@ export { saveDoc, FileWriteError, FilePermissionError } from './serializers/fron
 
 // Repositories
 export { loadWeave, saveWeave } from './repositories/weaveRepository';
+export { loadThread, saveThread } from './repositories/threadRepository';
 export { buildLinkIndex, updateIndexForFile } from './repositories/linkRepository';

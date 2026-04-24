@@ -29,9 +29,9 @@ suite('Tree Provider', () => {
         assert.strictEqual(weaveNode.contextValue, 'weave', 'node must have contextValue "weave"');
     });
 
-    test('weave children include primary design and Plans section', async () => {
+    test('weave children include thread node', async () => {
         const weaveId = 'tree-test-2';
-        seedWeave(weaveId);
+        const { threadId } = seedWeave(weaveId);
 
         treeProvider.setWorkspaceRoot(WORKSPACE_ROOT);
         const roots: any[] = await treeProvider.getChildren();
@@ -39,15 +39,33 @@ suite('Tree Provider', () => {
         assert.ok(weaveNode, 'Weave node must exist');
 
         const children: any[] = await treeProvider.getChildren(weaveNode);
-        const design = children.find((n: any) => n.contextValue === 'primary-design');
-        assert.ok(design, 'Primary design node must exist in weave children');
+        const threadNode = children.find((n: any) => n.contextValue === 'thread' && n.threadId === threadId);
+        assert.ok(threadNode, `Thread node '${threadId}' must exist in weave children`);
+    });
 
-        const plansSection = children.find((n: any) => n.label === 'Plans');
-        assert.ok(plansSection, 'Plans section must exist in weave children');
+    test('thread children include design node and Plans section', async () => {
+        const weaveId = 'tree-test-3';
+        const { threadId } = seedWeave(weaveId);
+
+        treeProvider.setWorkspaceRoot(WORKSPACE_ROOT);
+        const roots: any[] = await treeProvider.getChildren();
+        const weaveNode = roots.find((n: any) => n.weaveId === weaveId);
+        assert.ok(weaveNode, 'Weave node must exist');
+
+        const weaveChildren: any[] = await treeProvider.getChildren(weaveNode);
+        const threadNode = weaveChildren.find((n: any) => n.contextValue === 'thread');
+        assert.ok(threadNode, 'Thread node must exist');
+
+        const threadChildren: any[] = await treeProvider.getChildren(threadNode);
+        const designNode = threadChildren.find((n: any) => n.contextValue === 'design');
+        assert.ok(designNode, 'Design node must exist in thread children');
+
+        const plansSection = threadChildren.find((n: any) => n.label === 'Plans');
+        assert.ok(plansSection, 'Plans section must exist in thread children');
     });
 
     test('Plans section contains plan node; done doc appears as child after closePlan', async () => {
-        const weaveId = 'tree-test-3';
+        const weaveId = 'tree-test-4';
         const { planId } = seedWeave(weaveId, 'implementing', 1);
         seedDoneDoc(weaveId, planId);
 
@@ -56,8 +74,12 @@ suite('Tree Provider', () => {
         const weaveNode = roots.find((n: any) => n.weaveId === weaveId);
         assert.ok(weaveNode, 'Weave node must exist');
 
-        const children: any[] = await treeProvider.getChildren(weaveNode);
-        const plansSection = children.find((n: any) => n.label === 'Plans');
+        const weaveChildren: any[] = await treeProvider.getChildren(weaveNode);
+        const threadNode = weaveChildren.find((n: any) => n.contextValue === 'thread');
+        assert.ok(threadNode, 'Thread node must exist');
+
+        const threadChildren: any[] = await treeProvider.getChildren(threadNode);
+        const plansSection = threadChildren.find((n: any) => n.label === 'Plans');
         assert.ok(plansSection, 'Plans section must exist');
 
         const planNodes: any[] = await treeProvider.getChildren(plansSection);

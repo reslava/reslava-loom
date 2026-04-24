@@ -15,39 +15,47 @@ export function cleanWeaves(): void {
     fs.mkdirSync(dir, { recursive: true });
 }
 
+/**
+ * Seeds a weave with a single thread (threadId = weaveId for simplicity).
+ * Layout:
+ *   weaves/{weaveId}/{threadId}/{threadId}-design.md
+ *   weaves/{weaveId}/{threadId}/plans/{planId}.md
+ * planId uses weaveId prefix (critical invariant: planId.split('-plan-')[0] == weaveId).
+ */
 export function seedWeave(
     weaveId: string,
     planStatus = 'implementing',
     stepCount = 2
-): { planId: string; weavePath: string } {
+): { planId: string; weavePath: string; threadId: string; threadPath: string } {
     const weavePath = path.join(WORKSPACE_ROOT, 'weaves', weaveId);
+    const threadId = weaveId;
+    const threadPath = path.join(weavePath, threadId);
     const planId = `${weaveId}-plan-001`;
 
-    fs.mkdirSync(weavePath, { recursive: true });
+    fs.mkdirSync(threadPath, { recursive: true });
     fs.writeFileSync(
-        path.join(weavePath, `${weaveId}-design.md`),
-        `---\ntype: design\nid: ${weaveId}-design\ntitle: "${weaveId} Design"\nstatus: active\ncreated: 2026-04-23\nversion: 1\ntags: []\nparent_id: null\nchild_ids: ["${planId}"]\nrequires_load: []\n---\n\n## Overview\nTest design.\n`
+        path.join(threadPath, `${threadId}-design.md`),
+        `---\ntype: design\nid: ${threadId}-design\ntitle: "${weaveId} Design"\nstatus: active\ncreated: 2026-04-23\nversion: 1\ntags: []\nparent_id: null\nchild_ids: ["${planId}"]\nrequires_load: []\n---\n\n## Overview\nTest design.\n`
     );
 
     const rows = Array.from({ length: stepCount }, (_, i) =>
         `| 🔳 | ${i + 1} | Step ${i + 1} | src/ | — |`
     ).join('\n');
-    fs.mkdirSync(path.join(weavePath, 'plans'), { recursive: true });
+    fs.mkdirSync(path.join(threadPath, 'plans'), { recursive: true });
     fs.writeFileSync(
-        path.join(weavePath, 'plans', `${planId}.md`),
-        `---\ntype: plan\nid: ${planId}\ntitle: "Test Plan ${weaveId}"\nstatus: ${planStatus}\ncreated: 2026-04-23\nversion: 1\ntags: []\nparent_id: ${weaveId}-design\nchild_ids: []\nrequires_load: []\n---\n\n## Steps\n\n| Done | # | Step | Files touched | Blocked by |\n|------|---|------|---------------|------------|\n${rows}\n`
+        path.join(threadPath, 'plans', `${planId}.md`),
+        `---\ntype: plan\nid: ${planId}\ntitle: "Test Plan ${weaveId}"\nstatus: ${planStatus}\ncreated: 2026-04-23\nversion: 1\ntags: []\nparent_id: ${threadId}-design\nchild_ids: []\nrequires_load: []\n---\n\n## Steps\n\n| Done | # | Step | Files touched | Blocked by |\n|------|---|------|---------------|------------|\n${rows}\n`
     );
 
-    return { planId, weavePath };
+    return { planId, weavePath, threadId, threadPath };
 }
 
 export function seedDoneDoc(weaveId: string, planId: string): void {
-    const weavePath = path.join(WORKSPACE_ROOT, 'weaves', weaveId);
-    const doneDir = path.join(weavePath, 'done');
+    const threadId = weaveId;
+    const threadPath = path.join(WORKSPACE_ROOT, 'weaves', weaveId, threadId);
+    const doneDir = path.join(threadPath, 'done');
     fs.mkdirSync(doneDir, { recursive: true });
 
-    // Add done doc to done/ (tree provider links it to the plan via parent_id)
-    // Plan stays as-is in plans/ so the default status filter (active/implementing/draft) keeps it visible
     fs.writeFileSync(
         path.join(doneDir, `${planId}-done.md`),
         `---\ntype: done\nid: ${planId}-done\ntitle: "Done — ${planId}"\nstatus: final\ncreated: 2026-04-23\nversion: 1\ntags: []\nparent_id: ${planId}\nchild_ids: []\nrequires_load: []\n---\n\n## What was built\nTest implementation.\n`

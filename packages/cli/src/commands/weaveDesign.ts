@@ -3,10 +3,10 @@ import { weaveDesign } from '../../../app/dist/weaveDesign';
 import { getActiveLoomRoot, saveDoc, loadDoc } from '../../../fs/dist';
 import * as fs from 'fs-extra';
 
-export async function weaveDesignCommand(weaveId: string, options: { title?: string }): Promise<void> {
+export async function weaveDesignCommand(weaveId: string, options: { title?: string; thread?: string }): Promise<void> {
     try {
         const result = await weaveDesign(
-            { weaveId, title: options.title },
+            { weaveId, title: options.title, threadId: options.thread },
             { getActiveLoomRoot, saveDoc, loadDoc, fs }
         );
         if (result.autoFinalized) {

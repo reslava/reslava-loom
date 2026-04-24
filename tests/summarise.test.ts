@@ -53,8 +53,11 @@ async function writeDoneDoc(weavePath: string, planId: string, decisions: string
         requires_load: [],
     });
 
-    await ensureDir(path.join(weavePath, 'done'));
-    await outputFile(path.join(weavePath, 'done', `${doneId}.md`), `${frontmatter}\n${body}\n`);
+    // Thread layout: done doc inside {threadId}/done/ (threadId = weaveId prefix from planId)
+    const threadId = planId.split('-plan-')[0];
+    const doneDir = path.join(weavePath, threadId, 'done');
+    await ensureDir(doneDir);
+    await outputFile(path.join(doneDir, `${doneId}.md`), `${frontmatter}\n${body}\n`);
 }
 
 async function testSummarise() {
@@ -66,7 +69,7 @@ async function testSummarise() {
         const loomRoot = await makeLoomRoot();
         const weaveId = 'sum-weave';
         const weavePath = path.join(loomRoot, 'weaves', weaveId);
-        await createDesignDoc(weavePath, weaveId);
+        await createDesignDoc(weavePath, weaveId, { threadId: weaveId });
 
         const planId = `${weaveId}-plan-001`;
         await createPlanDoc(weavePath, planId, { status: 'done', steps: [{ order: 1, description: 'Done', done: true, files_touched: [], blocked_by: [] }] } as any);
@@ -110,7 +113,7 @@ async function testSummarise() {
         const loomRoot = await makeLoomRoot();
         const weaveId = 'sum-weave2';
         const weavePath = path.join(loomRoot, 'weaves', weaveId);
-        await createDesignDoc(weavePath, weaveId);
+        await createDesignDoc(weavePath, weaveId, { threadId: weaveId });
 
         const loadWeaveOrThrow = async (root: string, id: string) => {
             const w = await loadWeave(root, id);
@@ -144,7 +147,7 @@ async function testSummarise() {
         const loomRoot = await makeLoomRoot();
         const weaveId = 'sum-weave3';
         const weavePath = path.join(loomRoot, 'weaves', weaveId);
-        await createDesignDoc(weavePath, weaveId);
+        await createDesignDoc(weavePath, weaveId, { threadId: weaveId });
 
         const loadWeaveOrThrow = async (root: string, id: string) => {
             const w = await loadWeave(root, id);
@@ -176,7 +179,7 @@ async function testSummarise() {
         const loomRoot = await makeLoomRoot();
         const weaveId = 'sum-weave4';
         const weavePath = path.join(loomRoot, 'weaves', weaveId);
-        await createDesignDoc(weavePath, weaveId);
+        await createDesignDoc(weavePath, weaveId, { threadId: weaveId });
 
         const loadWeaveOrThrow = async (root: string, id: string) => {
             const w = await loadWeave(root, id);

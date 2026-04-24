@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import { weaveIdea } from '@reslava-loom/app/dist/weaveIdea';
 import { getActiveLoomRoot, saveDoc } from '@reslava-loom/fs/dist';
+import { toKebabCaseId } from '@reslava-loom/core/dist';
 import * as fs from 'fs-extra';
-import { LoomTreeProvider } from '../tree/treeProvider';
+import { LoomTreeProvider, TreeNode } from '../tree/treeProvider';
 
-export async function weaveIdeaCommand(treeProvider: LoomTreeProvider): Promise<void> {
+export async function weaveIdeaCommand(treeProvider: LoomTreeProvider, node?: TreeNode): Promise<void> {
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceRoot) {
         vscode.window.showErrorMessage('No workspace open.');
@@ -17,9 +18,22 @@ export async function weaveIdeaCommand(treeProvider: LoomTreeProvider): Promise<
     });
     if (!title) return;
 
+    // weave (folder name): from node context or derive from title
+    let weave = node?.weaveId;
+    if (!weave) {
+        weave = await vscode.window.showInputBox({
+            prompt: 'Weave ID',
+            placeHolder: 'e.g., payment-system',
+        });
+        if (!weave) return;
+    }
+
+    // threadId: from thread node context, or auto-generate from title
+    const threadId: string | undefined = node?.threadId ?? toKebabCaseId(title);
+
     try {
         const result = await weaveIdea(
-            { title },
+            { title, weave, threadId },
             {
                 getActiveLoomRoot: () => workspaceRoot,
                 saveDoc,

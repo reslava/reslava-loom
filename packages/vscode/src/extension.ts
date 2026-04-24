@@ -57,7 +57,7 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
 
     context.subscriptions.push(
         vscode.commands.registerCommand('loom.refresh', syncAndRefresh),
-        vscode.commands.registerCommand('loom.weaveIdea', () => weaveIdeaCommand(treeProvider)),
+        vscode.commands.registerCommand('loom.weaveIdea', (node?: TreeNode) => weaveIdeaCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.weaveDesign', (node?: TreeNode) => weaveDesignCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.weavePlan', (node?: TreeNode) => weavePlanCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.finalize', (node?: TreeNode) => finalizeCommand(treeProvider, node)),

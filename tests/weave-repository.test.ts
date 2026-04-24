@@ -2,7 +2,8 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import { assert } from './test-utils.ts';
-import { loadWeave } from '../packages/fs/dist/index.js';
+import { loadWeave, buildLinkIndex } from '../packages/fs/dist/index.js';
+import { serializeFrontmatter } from '../packages/core/dist/index.js';
 
 const TMP = path.join(os.tmpdir(), 'loom-repo-tests');
 
@@ -11,126 +12,213 @@ async function setupLoomRoot(loomRoot: string): Promise<void> {
     await fs.outputFile(path.join(loomRoot, '.loom', 'workflow.yml'), 'version: 1\n');
 }
 
-async function setupWeave(loomRoot: string, weaveId: string): Promise<string> {
-    const weavePath = path.join(loomRoot, 'weaves', weaveId);
-    await fs.ensureDir(path.join(weavePath, 'plans'));
-    await fs.ensureDir(path.join(weavePath, 'done'));
-    return weavePath;
+function makeFrontmatter(fields: Record<string, unknown>): string {
+    return serializeFrontmatter({
+        tags: [],
+        parent_id: null,
+        child_ids: [],
+        requires_load: [],
+        ...fields,
+    });
 }
 
-async function writePlan(dir: string, id: string, status = 'implementing'): Promise<void> {
-    await fs.outputFile(path.join(dir, `${id}.md`), `---
-type: plan
-id: ${id}
-title: Plan ${id}
-status: ${status}
-created: 2026-04-23
-version: 1
-tags: []
-parent_id: null
-child_ids: []
-requires_load: []
----
+async function seedThread(
+    loomRoot: string,
+    weaveId: string,
+    threadId: string,
+    planStatus = 'implementing',
+): Promise<void> {
+    const threadPath = path.join(loomRoot, 'weaves', weaveId, threadId);
+    const planId = `${threadId}-plan-001`;
 
-## Steps
-| Done | # | Step | Files touched | Blocked by |
-|------|---|------|---------------|------------|
-| 🔳 | 1 | First step | src/ | — |
-`);
+    const designFm = makeFrontmatter({
+        type: 'design',
+        id: `${threadId}-design`,
+        title: `${threadId} Design`,
+        status: 'active',
+        created: '2026-04-23',
+        version: 1,
+        child_ids: [planId],
+    });
+    await fs.outputFile(path.join(threadPath, `${threadId}-design.md`), `${designFm}\n## Overview\nTest.\n`);
+
+    const planFm = makeFrontmatter({
+        type: 'plan',
+        id: planId,
+        title: `Plan ${planId}`,
+        status: planStatus,
+        created: '2026-04-23',
+        version: 1,
+        parent_id: `${threadId}-design`,
+    });
+    await fs.outputFile(
+        path.join(threadPath, 'plans', `${planId}.md`),
+        `${planFm}\n## Steps\n| Done | # | Step | Files | Blocked by |\n|------|---|------|-------|------------|\n| 🔳 | 1 | Do it | src/ | — |\n`,
+    );
 }
 
-async function writeDoneDoc(dir: string, id: string, parentId: string): Promise<void> {
-    await fs.outputFile(path.join(dir, `${id}.md`), `---
-type: done
-id: ${id}
-title: Done — ${parentId}
-status: final
-created: 2026-04-23
-version: 1
-tags: []
-parent_id: ${parentId}
-child_ids: []
-requires_load: []
----
-
-## What was built
-Test done doc.
-`);
+async function seedDoneInThread(
+    loomRoot: string,
+    weaveId: string,
+    threadId: string,
+    planId: string,
+): Promise<void> {
+    const donePath = path.join(loomRoot, 'weaves', weaveId, threadId, 'done');
+    const doneId = `${planId}-done`;
+    const fm = makeFrontmatter({
+        type: 'done',
+        id: doneId,
+        title: `Done — ${planId}`,
+        status: 'final',
+        created: '2026-04-23',
+        version: 1,
+        parent_id: planId,
+    });
+    await fs.outputFile(path.join(donePath, `${doneId}.md`), `${fm}\n## What was built\nDone.\n`);
 }
 
-async function testWeaveRepository() {
-    console.log('📦 Running weaveRepository tests...\n');
+async function seedLooseFiber(
+    loomRoot: string,
+    weaveId: string,
+    docId: string,
+): Promise<void> {
+    const fm = makeFrontmatter({
+        type: 'idea',
+        id: docId,
+        title: `Loose: ${docId}`,
+        status: 'draft',
+        created: '2026-04-23',
+        version: 1,
+    });
+    await fs.outputFile(
+        path.join(loomRoot, 'weaves', weaveId, `${docId}.md`),
+        `${fm}\n## Summary\nLoose fiber.\n`,
+    );
+}
+
+async function testLoadWeaveWithThreads() {
+    console.log('📦 Running loadWeave (thread-based) tests...\n');
 
     await fs.remove(TMP);
     const loomRoot = TMP;
     await setupLoomRoot(loomRoot);
 
-    // ── test 1: load weave with done docs in done/ ──────────────────────────
-    console.log('  • loadWeave: done docs in done/ populate weave.dones...');
+    // ── test 1: 2 threads loaded with correct structure ─────────────────────
+    console.log('  • loadWeave: 2 threads correctly loaded...');
     {
-        const weaveId = 'repo-test-weave';
-        const weavePath = await setupWeave(loomRoot, weaveId);
+        const weaveId = 'core-engine';
+        await seedThread(loomRoot, weaveId, 'state-management', 'implementing');
+        await seedThread(loomRoot, weaveId, 'event-bus', 'draft');
 
-        await writePlan(path.join(weavePath, 'plans'), `${weaveId}-plan-001`);
-        await writeDoneDoc(path.join(weavePath, 'done'), `${weaveId}-plan-001-done`, `${weaveId}-plan-001`);
+        const weave = await loadWeave(loomRoot, weaveId);
+
+        assert(weave !== null, 'loadWeave must return a weave');
+        assert(weave!.threads.length === 2, `expected 2 threads, got ${weave!.threads.length}`);
+
+        const sm = weave!.threads.find(t => t.id === 'state-management');
+        assert(sm !== undefined, 'state-management thread must exist');
+        assert(sm!.design !== undefined, 'state-management thread must have a design');
+        assert(sm!.plans.length === 1, 'state-management thread must have 1 plan');
+
+        const eb = weave!.threads.find(t => t.id === 'event-bus');
+        assert(eb !== undefined, 'event-bus thread must exist');
+        assert(eb!.plans[0].status === 'draft', 'event-bus plan status must be "draft"');
+
+        assert(weave!.allDocs.length === 4, `expected 4 allDocs (2 designs + 2 plans), got ${weave!.allDocs.length}`);
+        console.log('    ✅ 2 threads loaded correctly');
+    }
+
+    // ── test 2: loose fiber at weave root ───────────────────────────────────
+    console.log('  • loadWeave: loose fiber at weave root...');
+    {
+        const weaveId = 'ai-integration';
+        await seedLooseFiber(loomRoot, weaveId, 'ai-integration-idea');
+
+        const weave = await loadWeave(loomRoot, weaveId);
+
+        assert(weave !== null, 'loadWeave must return a weave');
+        assert(weave!.threads.length === 0, `expected 0 threads, got ${weave!.threads.length}`);
+        assert(weave!.looseFibers.length === 1, `expected 1 loose fiber, got ${weave!.looseFibers.length}`);
+        assert(weave!.looseFibers[0].id === 'ai-integration-idea', 'loose fiber id wrong');
+        console.log('    ✅ loose fiber loaded correctly');
+    }
+
+    // ── test 3: done doc inside thread ──────────────────────────────────────
+    console.log('  • loadWeave: done doc inside thread...');
+    {
+        const weaveId = 'vscode-extension';
+        const threadId = 'tree-view';
+        await seedThread(loomRoot, weaveId, threadId, 'implementing');
+        await seedDoneInThread(loomRoot, weaveId, threadId, `${threadId}-plan-001`);
+
+        const weave = await loadWeave(loomRoot, weaveId);
+
+        assert(weave !== null, 'loadWeave must return a weave');
+        const thread = weave!.threads.find(t => t.id === threadId);
+        assert(thread !== undefined, 'tree-view thread must exist');
+        assert(thread!.dones.length === 1, `expected 1 done, got ${thread!.dones.length}`);
+        assert(thread!.dones[0].parent_id === `${threadId}-plan-001`, 'done parent_id must link to plan');
+        console.log('    ✅ done doc inside thread correct');
+    }
+
+    // ── test 4: reserved subdirs not treated as threads ──────────────────────
+    console.log('  • loadWeave: reserved subdirs (plans/, done/, ai-chats/) not treated as threads...');
+    {
+        const weaveId = 'docs-infra';
+        // Write a loose fiber so weave is non-empty
+        await seedLooseFiber(loomRoot, weaveId, 'docs-infra-idea');
+        // Create reserved subdirs with .md files
+        const weavePath = path.join(loomRoot, 'weaves', weaveId);
+        const legacyPlanFm = makeFrontmatter({ type: 'plan', id: 'docs-infra-plan-001', title: 'Plan', status: 'draft', created: '2026-04-23', version: 1 });
+        await fs.outputFile(path.join(weavePath, 'plans', 'docs-infra-plan-001.md'), `${legacyPlanFm}\n## Steps\n| Done | # | Step | Files | Blocked by |\n|------|---|------|-------|------------|\n| 🔳 | 1 | Step | src/ | — |\n`);
 
         const weave = await loadWeave(loomRoot, weaveId);
         assert(weave !== null, 'loadWeave must return a weave');
-        assert(weave.dones.length === 1, `Expected 1 done doc, got ${weave.dones.length}`);
-        assert(weave.dones[0].type === 'done', 'done doc type must be "done"');
-        assert(weave.dones[0].parent_id === `${weaveId}-plan-001`, 'done doc parent_id must link to plan');
-        assert(weave.dones[0].status === 'final', 'done doc status must be "final"');
-        console.log('    ✅ weave.dones populated correctly');
-    }
-
-    // ── test 2: moved plan (status:done in done/) appears in weave.plans ────
-    console.log('  • loadWeave: moved plan in done/ appears in weave.plans...');
-    {
-        const weaveId = 'repo-test-weave2';
-        const weavePath = await setupWeave(loomRoot, weaveId);
-
-        // Active plan in plans/
-        await writePlan(path.join(weavePath, 'plans'), `${weaveId}-plan-001`, 'implementing');
-        // Completed plan moved to done/ (type is still 'plan')
-        await writePlan(path.join(weavePath, 'done'), `${weaveId}-plan-002`, 'done');
-        await writeDoneDoc(path.join(weavePath, 'done'), `${weaveId}-plan-002-done`, `${weaveId}-plan-002`);
-
-        const weave = await loadWeave(loomRoot, weaveId);
-        assert(weave !== null, 'loadWeave must return a weave');
-        assert(weave.plans.length === 2, `Expected 2 plans (1 active + 1 moved), got ${weave.plans.length}`);
-        assert(weave.dones.length === 1, `Expected 1 done doc, got ${weave.dones.length}`);
-
-        const movedPlan = weave.plans.find((p: any) => p.id === `${weaveId}-plan-002`);
-        assert(movedPlan !== undefined, 'moved plan must appear in weave.plans');
-        assert(movedPlan.status === 'done', 'moved plan status must be "done"');
-        console.log('    ✅ moved plan found in weave.plans');
-    }
-
-    // ── test 3: multiple done docs each link to their plan ──────────────────
-    console.log('  • loadWeave: multiple done docs with correct parent links...');
-    {
-        const weaveId = 'repo-test-weave3';
-        const weavePath = await setupWeave(loomRoot, weaveId);
-
-        await writePlan(path.join(weavePath, 'done'), `${weaveId}-plan-001`, 'done');
-        await writeDoneDoc(path.join(weavePath, 'done'), `${weaveId}-plan-001-done`, `${weaveId}-plan-001`);
-        await writePlan(path.join(weavePath, 'done'), `${weaveId}-plan-002`, 'done');
-        await writeDoneDoc(path.join(weavePath, 'done'), `${weaveId}-plan-002-done`, `${weaveId}-plan-002`);
-
-        const weave = await loadWeave(loomRoot, weaveId);
-        assert(weave.dones.length === 2, `Expected 2 done docs, got ${weave.dones.length}`);
-
-        const ids = weave.dones.map((d: any) => d.parent_id).sort();
-        assert(ids[0] === `${weaveId}-plan-001`, 'first done doc parent_id wrong');
-        assert(ids[1] === `${weaveId}-plan-002`, 'second done doc parent_id wrong');
-        console.log('    ✅ multiple done docs parent links correct');
+        assert(weave!.threads.length === 0, `reserved subdirs must not become threads, got ${weave!.threads.length}`);
+        console.log('    ✅ reserved subdirs ignored as threads');
     }
 
     await fs.remove(TMP);
-    console.log('\n✨ All weaveRepository tests passed!\n');
+    console.log('\n✨ All loadWeave tests passed!\n');
 }
 
-testWeaveRepository().catch(err => {
-    console.error('❌ weave-repository.test.ts failed:', err.message);
-    process.exit(1);
-});
+async function testBuildLinkIndexThreadId() {
+    console.log('🔗 Running buildLinkIndex threadId tests...\n');
+
+    await fs.remove(TMP);
+    const loomRoot = TMP;
+    await setupLoomRoot(loomRoot);
+
+    console.log('  • buildLinkIndex: thread docs have threadId, weave-root docs do not...');
+    {
+        const weaveId = 'core-engine';
+        await seedThread(loomRoot, weaveId, 'state-management', 'implementing');
+        await seedLooseFiber(loomRoot, weaveId, 'core-engine-idea');
+
+        const index = await buildLinkIndex(loomRoot);
+
+        const designEntry = index.documents.get('state-management-design');
+        assert(designEntry !== undefined, 'state-management-design must be in index');
+        assert(designEntry!.threadId === 'state-management', `expected threadId "state-management", got "${designEntry!.threadId}"`);
+
+        const planEntry = index.documents.get('state-management-plan-001');
+        assert(planEntry !== undefined, 'state-management-plan-001 must be in index');
+        assert(planEntry!.threadId === 'state-management', `plan must have threadId "state-management"`);
+
+        const looseEntry = index.documents.get('core-engine-idea');
+        assert(looseEntry !== undefined, 'core-engine-idea must be in index');
+        assert(looseEntry!.threadId === undefined, `loose fiber must have no threadId, got "${looseEntry!.threadId}"`);
+
+        console.log('    ✅ threadId set correctly on thread docs, absent on loose fibers');
+    }
+
+    await fs.remove(TMP);
+    console.log('\n✨ All buildLinkIndex threadId tests passed!\n');
+}
+
+testLoadWeaveWithThreads()
+    .then(() => testBuildLinkIndexThreadId())
+    .catch(err => {
+        console.error('❌ weave-repository.test.ts failed:', err.message);
+        process.exit(1);
+    });

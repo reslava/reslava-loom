@@ -83,21 +83,24 @@ export async function getState(deps: GetStateDeps, input?: GetStateInput): Promi
     const activeWeaves = filteredWeaves.filter(w => getWeaveStatus(w) === 'ACTIVE').length;
     const implementingWeaves = filteredWeaves.filter(w => getWeaveStatus(w) === 'IMPLEMENTING').length;
     const doneWeaves = filteredWeaves.filter(w => getWeaveStatus(w) === 'DONE').length;
-    const totalPlans = filteredWeaves.reduce((sum, w) => sum + w.plans.length, 0);
+    const totalPlans = filteredWeaves.reduce((sum, w) =>
+        sum + w.threads.reduce((s, t) => s + t.plans.length, 0), 0);
     const stalePlans = filteredWeaves.reduce((sum, w) => {
-        return sum + w.plans.filter(p => {
-            const parentDesign = w.designs.find(d => d.id === p.parent_id);
-            return parentDesign ? p.design_version < parentDesign.version : false;
-        }).length;
+        return sum + w.threads.reduce((ts, thread) => {
+            if (!thread.design) return ts;
+            return ts + thread.plans.filter(p => p.design_version < thread.design!.version).length;
+        }, 0);
     }, 0);
-    
+
     let blockedSteps = 0;
     for (const weave of filteredWeaves) {
-        for (const plan of weave.plans) {
-            if (!plan.steps) continue;
-            for (const step of plan.steps) {
-                if (!step.done && isStepBlocked(step, plan, index)) {
-                    blockedSteps++;
+        for (const thread of weave.threads) {
+            for (const plan of thread.plans) {
+                if (!plan.steps) continue;
+                for (const step of plan.steps) {
+                    if (!step.done && isStepBlocked(step, plan, index)) {
+                        blockedSteps++;
+                    }
                 }
             }
         }

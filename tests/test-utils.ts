@@ -54,15 +54,22 @@ export async function cleanupTestLoom(loomPath: string): Promise<void> {
 export async function createDesignDoc(
     weavePath: string,
     weaveId: string,
-    options?: { role?: 'primary' | 'supporting'; status?: string }
+    options?: { role?: 'primary' | 'supporting'; status?: string; threadId?: string }
 ): Promise<void> {
-    const designPath = path.join(weavePath, `${weaveId}-design.md`);
+    // If threadId is given, create design inside thread subdir (new layout)
+    // Otherwise write as loose fiber at weave root (for legacy tests / test-3 pattern)
+    const threadId = options?.threadId;
+    const designId = threadId ? `${threadId}-design` : `${weaveId}-design`;
+    const designPath = threadId
+        ? path.join(weavePath, threadId, `${threadId}-design.md`)
+        : path.join(weavePath, `${weaveId}-design.md`);
+    if (threadId) await fs.ensureDir(path.join(weavePath, threadId));
     const role = options?.role || 'primary';
     const status = options?.status || 'active';
 
     const frontmatter = {
         type: 'design',
-        id: `${weaveId}-design`,
+        id: designId,
         title: `${weaveId} Design`,
         status,
         created: new Date().toISOString().split('T')[0],
@@ -104,9 +111,12 @@ export function mockAIClient(response: string) {
 export async function createPlanDoc(
     weavePath: string,
     planId: string,
-    options?: { status?: string; steps?: Array<{ order: number; description: string; done: boolean }> }
+    options?: { status?: string; steps?: Array<{ order: number; description: string; done: boolean }>; threadId?: string }
 ): Promise<string> {
-    const plansDir = path.join(weavePath, 'plans');
+    // Use weaveId-prefix as threadId (critical invariant: planId.split('-plan-')[0] == weaveId)
+    const threadId = options?.threadId ?? planId.split('-plan-')[0];
+    const threadPath = path.join(weavePath, threadId);
+    const plansDir = path.join(threadPath, 'plans');
     await fs.ensureDir(plansDir);
     const planPath = path.join(plansDir, `${planId}.md`);
 

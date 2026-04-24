@@ -36,7 +36,7 @@ export async function doStep(
     if (!weaveId) throw new Error(`Invalid plan ID: "${input.planId}"`);
 
     const weave = await deps.loadWeave(deps.loomRoot, weaveId);
-    const plan = weave.plans.find((p: PlanDoc) => p.id === input.planId) as PlanDoc | undefined;
+    const plan = weave.threads.flatMap((t: any) => t.plans).find((p: PlanDoc) => p.id === input.planId) as PlanDoc | undefined;
     if (!plan) throw new Error(`Plan '${input.planId}' not found in weave '${weaveId}'.`);
 
     const selectedSteps = input.steps
@@ -71,12 +71,13 @@ export async function doStep(
     const aiResponse = await deps.aiClient.complete(messages);
 
     const weavePath = path.join(deps.loomRoot, 'weaves', weaveId);
-    await deps.fs.ensureDir(weavePath);
+    const chatsDir = path.join(weavePath, 'ai-chats');
+    await deps.fs.ensureDir(chatsDir);
 
-    const existingFiles = await deps.fs.readdir(weavePath).catch(() => [] as string[]);
+    const existingFiles = await deps.fs.readdir(chatsDir).catch(() => [] as string[]);
     const existingChatIds = existingFiles
-        .filter(f => f.match(/-chat(-\d+)?\.md$/))
-        .map(f => f.replace(/\.md$/, ''));
+        .filter((f: string) => f.match(/-chat(-\d+)?\.md$/))
+        .map((f: string) => f.replace(/\.md$/, ''));
 
     const chatId = generateChatId(weaveId, existingChatIds);
     const stepLabel = input.steps.length === 1 ? `Step ${input.steps[0]}` : `Steps ${input.steps.join(', ')}`;
@@ -93,7 +94,7 @@ export async function doStep(
         content: chatContent,
     };
 
-    const chatPath = path.join(weavePath, `${chatId}.md`);
+    const chatPath = path.join(chatsDir, `${chatId}.md`);
     await deps.saveDoc(doc, chatPath);
 
     return { chatPath, chatId };

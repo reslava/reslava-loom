@@ -25,11 +25,11 @@ export async function completeStep(
 
     const stepIndex = input.step - 1;
 
-    const thread = await deps.loadWeave(deps.loomRoot, weaveId);
-    const plan = thread.plans.find((p: any) => p.id === input.planId);
-    
+    const weave = await deps.loadWeave(deps.loomRoot, weaveId);
+    const plan = weave.threads.flatMap((t: any) => t.plans).find((p: any) => p.id === input.planId);
+
     if (!plan) {
-        throw new Error(`Plan '${input.planId}' not found in thread '${weaveId}'`);
+        throw new Error(`Plan '${input.planId}' not found in weave '${weaveId}'`);
     }
 
     if (plan.status !== 'implementing') {
@@ -46,8 +46,8 @@ export async function completeStep(
 
     await deps.runEvent(weaveId, { type: 'COMPLETE_STEP', planId: input.planId, stepIndex } as WorkflowEvent);
 
-    const updatedThread = await deps.loadWeave(deps.loomRoot, weaveId);
-    const updatedPlan = updatedThread.plans.find((p: any) => p.id === input.planId)!;
+    const updatedWeave = await deps.loadWeave(deps.loomRoot, weaveId);
+    const updatedPlan = updatedWeave.threads.flatMap((t: any) => t.plans).find((p: any) => p.id === input.planId)!;
     const autoCompleted = updatedPlan.status === 'done';
 
     return { plan: updatedPlan, autoCompleted };

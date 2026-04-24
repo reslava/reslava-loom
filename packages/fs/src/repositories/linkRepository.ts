@@ -6,26 +6,39 @@ import { LinkIndex, createEmptyIndex, DocumentEntry, StepBlocker } from '../../.
 import { Document } from '../../../core/dist/entities/document';
 import { PlanDoc } from '../../../core/dist/entities/plan';
 
+const RESERVED_SUBDIR_NAMES = new Set(['plans', 'done', 'ai-chats', 'ctx', 'references', '_archive']);
+
+function extractThreadId(filePath: string, weavesDir: string): string | undefined {
+    const rel = path.relative(weavesDir, filePath);
+    const parts = rel.split(path.sep);
+    // parts[0]=weaveId, parts[1]=possible threadId, parts[2+]=rest
+    if (parts.length < 3) return undefined;
+    const candidate = parts[1];
+    if (RESERVED_SUBDIR_NAMES.has(candidate) || candidate.endsWith('.md')) return undefined;
+    return candidate;
+}
+
 export async function buildLinkIndex(loomRoot: string): Promise<LinkIndex> {
     const threadsDir = path.join(loomRoot, 'weaves');
     const index = createEmptyIndex();
-    
+
     if (!fs.existsSync(threadsDir)) {
         return index;
     }
-    
+
     const allFiles = await findMarkdownFiles(threadsDir);
-    
+
     for (const filePath of allFiles) {
         try {
             const doc = await loadDoc(filePath) as Document;
             const docId = doc.id;
-            
+
             const entry: DocumentEntry = {
                 path: filePath,
                 type: doc.type,
                 exists: true,
                 archived: filePath.includes('_archive'),
+                threadId: extractThreadId(filePath, threadsDir),
             };
             index.documents.set(docId, entry);
             
@@ -83,6 +96,7 @@ export async function updateIndexForFile(
     filePath: string,
     event: 'create' | 'change' | 'delete'
 ): Promise<void> {
+    const weavesDir = path.join(loomRoot, 'weaves');
     const docId = path.basename(filePath, '.md');
     removeDocumentFromIndex(index, docId);
     if (event === 'delete') {
@@ -91,7 +105,7 @@ export async function updateIndexForFile(
     }
     try {
         const doc = await loadDoc(filePath) as Document;
-        index.documents.set(docId, { path: filePath, type: doc.type, exists: true, archived: filePath.includes('_archive') });
+        index.documents.set(docId, { path: filePath, type: doc.type, exists: true, archived: filePath.includes('_archive'), threadId: extractThreadId(filePath, weavesDir) });
         if (doc.parent_id) index.parent.set(docId, doc.parent_id);
         if (doc.child_ids) {
             for (const childId of doc.child_ids) {

@@ -47,8 +47,10 @@ async function testClosePlan() {
         const AI_BODY = '## What was built\nBuilt the thing.\n\n## Decisions made\n- Used approach A\n\n## Open items\n- Review B';
         const result = await closePlan({ planId }, makeDeps(loomRoot, AI_BODY));
 
-        // done doc exists at done/{planId}-done.md
-        const donePath = path.join(weavePath, 'done', `${planId}-done.md`);
+        // Thread layout: done doc inside {threadId}/done/
+        const threadId = planId.split('-plan-')[0]; // weaveId prefix
+        const threadPath = path.join(weavePath, threadId);
+        const donePath = path.join(threadPath, 'done', `${planId}-done.md`);
         assert(await fs.pathExists(donePath), `done doc must exist at ${donePath}`);
         const doneContent = fsNative.readFileSync(donePath, 'utf8');
         assert(doneContent.includes('type: done'), 'done doc must have type: done');
@@ -57,17 +59,12 @@ async function testClosePlan() {
         assert(doneContent.includes('Built the thing.'), 'done doc must include AI body');
         console.log('    ✅ done doc written correctly');
 
-        // plan moved to done/{planId}.md with status: done
-        const movedPlanPath = path.join(weavePath, 'done', `${planId}.md`);
-        assert(await fs.pathExists(movedPlanPath), `plan must be moved to ${movedPlanPath}`);
-        const movedContent = fsNative.readFileSync(movedPlanPath, 'utf8');
-        assert(movedContent.includes('status: done'), 'moved plan must have status: done');
-        console.log('    ✅ plan moved to done/ with status: done');
-
-        // original plans/{planId}.md deleted
-        const originalPath = path.join(weavePath, 'plans', `${planId}.md`);
-        assert(!(await fs.pathExists(originalPath)), 'original plan file must be deleted');
-        console.log('    ✅ original plan file deleted');
+        // Thread plan: stays in-place at {threadId}/plans/{planId}.md with status: done
+        const planPath = path.join(threadPath, 'plans', `${planId}.md`);
+        assert(await fs.pathExists(planPath), `plan must still exist at ${planPath}`);
+        const planContent = fsNative.readFileSync(planPath, 'utf8');
+        assert(planContent.includes('status: done'), 'plan must have status: done');
+        console.log('    ✅ plan updated in-place with status: done');
 
         assert(result.planId === planId, 'result.planId must match');
         assert(result.donePath === donePath, 'result.donePath must match');
@@ -88,10 +85,12 @@ async function testClosePlan() {
 
         await closePlan({ planId }, makeDeps(loomRoot));
 
-        const donePath = path.join(weavePath, 'done', `${planId}-done.md`);
+        const threadId2 = planId.split('-plan-')[0];
+        const threadPath2 = path.join(weavePath, threadId2);
+        const donePath = path.join(threadPath2, 'done', `${planId}-done.md`);
         assert(await fs.pathExists(donePath), 'done doc must exist for auto-completed plan');
-        const movedPlanPath = path.join(weavePath, 'done', `${planId}.md`);
-        assert(await fs.pathExists(movedPlanPath), 'plan must be moved');
+        const planPath2 = path.join(threadPath2, 'plans', `${planId}.md`);
+        assert(await fs.pathExists(planPath2), 'plan must still exist in thread plans/');
         console.log('    ✅ auto-completed plan closes without error');
     }
 

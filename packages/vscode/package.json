@@ -244,18 +244,33 @@
       ],
       "view/item/context": [
         {
-          "command": "loom.finalize",
-          "when": "view == loom.threads && viewItem =~ /^(idea|design|primary-design)-temp$/",
+          "command": "loom.weaveIdea",
+          "when": "view == loom.threads && viewItem == thread",
           "group": "inline@1"
         },
         {
+          "command": "loom.weaveDesign",
+          "when": "view == loom.threads && viewItem == thread",
+          "group": "inline@2"
+        },
+        {
           "command": "loom.weavePlan",
-          "when": "view == loom.threads && viewItem =~ /^(primary-design|design)$/",
+          "when": "view == loom.threads && (viewItem == thread || viewItem == design)",
+          "group": "inline@3"
+        },
+        {
+          "command": "loom.summarise",
+          "when": "view == loom.threads && (viewItem == weave || viewItem == thread) && loom.aiEnabled",
+          "group": "inline@4"
+        },
+        {
+          "command": "loom.finalize",
+          "when": "view == loom.threads && viewItem =~ /^(idea|design|loose-idea|loose-design)-temp$/",
           "group": "inline@1"
         },
         {
           "command": "loom.refineDesign",
-          "when": "view == loom.threads && viewItem =~ /^(primary-design|design)$/",
+          "when": "view == loom.threads && viewItem == design",
           "group": "inline@2"
         },
         {
@@ -274,11 +289,6 @@
           "group": "inline@2"
         },
         {
-          "command": "loom.summarise",
-          "when": "view == loom.threads && viewItem == weave && loom.aiEnabled",
-          "group": "inline@1"
-        },
-        {
           "command": "loom.validate",
           "when": "view == loom.threads && viewItem == weave",
           "group": "inline@2"
@@ -295,17 +305,17 @@
         },
         {
           "command": "loom.promoteToDesign",
-          "when": "view == loom.threads && viewItem =~ /^(chat|idea)/ && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem =~ /^(chat|idea|loose-idea)/ && loom.aiEnabled",
           "group": "inline@3"
         },
         {
           "command": "loom.promoteToPlan",
-          "when": "view == loom.threads && viewItem =~ /^(chat|idea|primary-design|design)/ && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem =~ /^(chat|idea|loose-idea|design)/ && loom.aiEnabled",
           "group": "inline@4"
         },
         {
           "command": "loom.refineIdea",
-          "when": "view == loom.threads && viewItem =~ /^idea/ && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem =~ /^(idea|loose-idea)/ && loom.aiEnabled",
           "group": "inline@1"
         },
         {
