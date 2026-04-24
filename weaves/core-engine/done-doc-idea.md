@@ -6,7 +6,7 @@ status: draft
 created: 2026-04-23
 version: 1
 tags: [done, plan, implementation-notes, doc-type]
-parent_id: core-engine-idea
+parent_id: null
 child_ids: []
 requires_load: []
 ---
