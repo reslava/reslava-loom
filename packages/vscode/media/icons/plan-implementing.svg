@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!--
+    Cycle 3.2s:
+      0.00 - 0.25 : empty checkbox (hollow visible, check hidden)
+      0.25 - 0.55 : check leg 1 appears (short), then leg 2 (long)
+      0.55 - 0.80 : hold filled state
+      0.80 - 1.00 : filled box scrolls out to the left, new empty box slides in from the right
+  -->
+
+  <!-- ============ CURRENT BOX (scrolls out left) ============ -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,0;0,0;-16,0;0,0" keyTimes="0;0.55;0.80;1;1" dur="3.2s" repeatCount="indefinite"></animateTransform>
+
+    <!-- Frame -->
+    <rect x="2" y="2" width="12" height="12" rx="2" fill="#7D4620"></rect>
+    <!-- Hollow interior (only visible while "empty") -->
+    <rect x="3.2" y="3.2" width="9.6" height="9.6" rx="1.4" fill="#E8791A">
+      <animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0;0.25;0.45;0.95;1" dur="3.2s" repeatCount="indefinite"></animate>
+    </rect>
+
+    <!-- Check leg 1 (short, bottom-left) — pops in first -->
+    <line x1="4.5" y1="8.5" x2="7" y2="11" stroke="#FFC85A" stroke-width="1.7" stroke-linecap="round" opacity="0">
+      <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.25;0.35;0.95;0.96;1" dur="3.2s" repeatCount="indefinite"></animate>
+    </line>
+    <!-- Check leg 2 (long, up-right) — pops in next -->
+    <line x1="7" y1="11" x2="11.5" y2="5.5" stroke="#FFC85A" stroke-width="1.7" stroke-linecap="round" opacity="0">
+      <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.45;0.55;0.95;0.96;1" dur="3.2s" repeatCount="indefinite"></animate>
+    </line>
+  </g>
+
+  <!-- ============ INCOMING FRESH EMPTY BOX (slides in from right) ============ -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="16,0;16,0;16,0;0,0;16,0" keyTimes="0;0.55;0.80;1;1" dur="3.2s" repeatCount="indefinite"></animateTransform>
+    <rect x="2" y="2" width="12" height="12" rx="2" fill="#7D4620"></rect>
+    <rect x="3.2" y="3.2" width="9.6" height="9.6" rx="1.4" fill="#E8791A"></rect>
+  </g>
+</svg>

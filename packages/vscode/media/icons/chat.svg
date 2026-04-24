@@ -1,13 +1,100 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
-  
-  <rect x="5" y="4" width="10" height="6.5" rx="2" fill="#2E7DB8"></rect>
-  <polygon points="7,10.5 5.5,13 9,10.5" fill="#2E7DB8"></polygon>
-  <line x1="7" y1="6.5" x2="13" y2="6.5" stroke="#8FC4E8" stroke-width="0.9" stroke-linecap="round"></line>
-  <line x1="7" y1="8.5" x2="11.5" y2="8.5" stroke="#8FC4E8" stroke-width="0.9" stroke-linecap="round"></line>
-
-  
-  <rect x="1" y="1.5" width="9" height="6" rx="2" fill="#E8791A"></rect>
-  <polygon points="3,7.5 1.5,10 5,7.5" fill="#E8791A"></polygon>
-  <line x1="3" y1="3.8" x2="8" y2="3.8" stroke="#FFC85A" stroke-width="0.9" stroke-linecap="round"></line>
-  <line x1="3" y1="5.5" x2="7" y2="5.5" stroke="#FFC85A" stroke-width="0.9" stroke-linecap="round"></line>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 16 16"
+   width="16"
+   height="16"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="chat-center.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="namedview4"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="57.125"
+     inkscape:cx="7.9912473"
+     inkscape:cy="8"
+     inkscape:window-width="1920"
+     inkscape:window-height="1057"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" />
+  <g
+     id="g4"
+     transform="translate(0,0.75)">
+    <rect
+       x="5"
+       y="4"
+       width="10"
+       height="6.5"
+       rx="2"
+       fill="#2e7db8"
+       id="rect1"
+       ry="2" />
+    <polygon
+       points="5.5,13 9,10.5 7,10.5 "
+       fill="#2e7db8"
+       id="polygon1" />
+    <line
+       x1="7"
+       y1="6.5"
+       x2="13"
+       y2="6.5"
+       stroke="#8fc4e8"
+       stroke-width="0.9"
+       stroke-linecap="round"
+       id="line1" />
+    <line
+       x1="7"
+       y1="8.5"
+       x2="11.5"
+       y2="8.5"
+       stroke="#8fc4e8"
+       stroke-width="0.9"
+       stroke-linecap="round"
+       id="line2" />
+    <rect
+       x="1"
+       y="1.5"
+       width="9"
+       height="6"
+       rx="2"
+       fill="#e8791a"
+       id="rect2"
+       ry="2" />
+    <polygon
+       points="1.5,10 5,7.5 3,7.5 "
+       fill="#e8791a"
+       id="polygon2" />
+    <line
+       x1="3"
+       y1="3.8"
+       x2="8"
+       y2="3.8"
+       stroke="#ffc85a"
+       stroke-width="0.9"
+       stroke-linecap="round"
+       id="line3" />
+    <line
+       x1="3"
+       y1="5.5"
+       x2="7"
+       y2="5.5"
+       stroke="#ffc85a"
+       stroke-width="0.9"
+       stroke-linecap="round"
+       id="line4" />
+  </g>
 </svg>
