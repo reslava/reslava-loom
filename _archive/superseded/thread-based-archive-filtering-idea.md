@@ -11,6 +11,9 @@ child_ids: []
 requires_load: []
 ---
 
+# Superseded
+By `weaves/vscode-extension/thread-status-filter/thread-status-filter-idea.md`
+
 # Filtering Tooling for Thread‑Based Archive
 
 ## Problem
