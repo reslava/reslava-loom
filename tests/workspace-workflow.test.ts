@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { ensureDir, pathExists, remove, readdir } from 'fs-extra';
 import { assert, mockAIClient } from './test-utils.ts';
-import { setupWorkspace, seedWeaveWithThread, fileExists, readFile } from './workspace-utils.ts';
+import { setupWorkspace, seedWeaveWithThread, seedThread, seedLooseFiber, seedDoneInThread, fileExists, readFile } from './workspace-utils.ts';
 import { loadWeave, saveWeave, saveDoc } from '../packages/fs/dist/index.js';
 import { completeStep } from '../packages/app/dist/completeStep.js';
 import { closePlan } from '../packages/app/dist/closePlan.js';
@@ -156,6 +156,40 @@ async function testWorkspaceWorkflow() {
         assert(weave!.threads[0].plans.length === 1, 'thread must still surface plan');
         assert(weave!.threads[0].plans[0].status === 'done', 'plan must have status done');
         console.log('    ✅ data layer: threads, dones, chats all surfaced after full workflow');
+    }
+
+    // ── test 6: multi-thread weave — 2 threads + loose fiber surfaced by loadWeave ─
+    console.log('  • multi-thread: 2 threads + loose fiber all surfaced by loadWeave...');
+    {
+        const loomRoot = await setupWorkspace();
+        await seedWeaveWithThread(loomRoot, 'ww-weave6', 'thread-alpha');
+        await seedThread(loomRoot, 'ww-weave6', 'thread-beta');
+        await seedLooseFiber(loomRoot, 'ww-weave6', 'floating-idea');
+
+        const weave = await loadWeave(loomRoot, 'ww-weave6');
+        assert(weave !== null, 'weave must load');
+        assert(weave!.threads.length === 2, `expected 2 threads, got ${weave!.threads.length}`);
+        const threadIds = weave!.threads.map(t => t.id).sort();
+        assert(threadIds[0] === 'thread-alpha', `first thread must be thread-alpha, got ${threadIds[0]}`);
+        assert(threadIds[1] === 'thread-beta', `second thread must be thread-beta, got ${threadIds[1]}`);
+        assert(weave!.looseFibers.length === 1, `expected 1 loose fiber, got ${weave!.looseFibers.length}`);
+        assert(weave!.looseFibers[0].id === 'floating-idea', 'loose fiber must have id floating-idea');
+        console.log('    ✅ multi-thread: 2 threads + loose fiber surfaced correctly');
+    }
+
+    // ── test 7: seedDoneInThread — done doc surfaced in thread.dones[] ───────
+    console.log('  • seedDoneInThread: done doc surfaced in thread.dones[]...');
+    {
+        const loomRoot = await setupWorkspace();
+        const { planId } = await seedWeaveWithThread(loomRoot, 'ww-weave7', 'feature-f', { planStatus: 'done', steps: 1 });
+        await seedDoneInThread(loomRoot, 'ww-weave7', 'feature-f', planId);
+
+        const weave = await loadWeave(loomRoot, 'ww-weave7');
+        assert(weave !== null, 'weave must load');
+        assert(weave!.threads.length === 1, 'must have 1 thread');
+        assert(weave!.threads[0].dones.length === 1, `expected 1 done doc, got ${weave!.threads[0].dones.length}`);
+        assert(weave!.threads[0].dones[0].id === `${planId}-done`, 'done doc must have correct id');
+        console.log('    ✅ seedDoneInThread: done doc surfaced in thread.dones[]');
     }
 
     console.log('\n✨ All workspace-workflow tests passed!\n');

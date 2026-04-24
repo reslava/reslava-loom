@@ -114,9 +114,9 @@ Every layer is affected: core entities, fs loaders, app use-cases, CLI, VS Code 
 
 | Done | # | Step | Files touched | Blocked by |
 |------|---|------|---------------|------------|
-| 🔳 | 23 | Rewrite `tests/workspace-utils.ts` with thread-aware seeders: `seedWeave`, `seedThread`, `seedLooseFiber`, `seedDoneInThread`. | `tests/workspace-utils.ts` | Step 14 |
-| 🔳 | 24 | Full workspace-workflow integration test: multi-thread scenario (2 threads in one weave, loose fiber at root), all use-cases exercised. | `tests/workspace-workflow.test.ts` | Step 23 |
-| 🔳 | 25 | Run the full suite (`scripts/test-all.sh` + `scripts/test-vscode.sh`). All green before Phase 7. | entire tests dir | Steps 17, 22, 24 |
+| ✅ | 23 | Rewrite `tests/workspace-utils.ts` with thread-aware seeders: `seedWeave`, `seedThread`, `seedLooseFiber`, `seedDoneInThread`. | `tests/workspace-utils.ts` | Step 14 |
+| ✅ | 24 | Full workspace-workflow integration test: multi-thread scenario (2 threads in one weave, loose fiber at root), all use-cases exercised. | `tests/workspace-workflow.test.ts` | Step 23 |
+| ✅ | 25 | Run the full suite (`scripts/test-all.sh` + `scripts/test-vscode.sh`). All green before Phase 7. | entire tests dir | Steps 17, 22, 24 |
 
 ### Phase 7 — Migration Script
 
