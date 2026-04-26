@@ -188,3 +188,16 @@ now they are correct
 continue with commit
 
 reply inside this doc
+
+## AI:
+
+Phase 1, 2, 3 committed — `cddce8f`.
+
+180 files: `weaves/` → `loom/`, `references/` → `loom/refs/`, `_archive/` → `loom/.archive/` (all 3 levels).
+
+Next: Phase 4 (docs) or waiting for direction.
+
+## Rafa:
+
+Do Phases 4, 5, 6
+Commit

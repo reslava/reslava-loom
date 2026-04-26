@@ -14,7 +14,7 @@ load_when: [idea, design, plan, implementing]
 
 > **Note:** This reference describes the **target structure** (post-migration).
 > Migration from `weaves/` + `references/` to `loom/` + `.loom/` is tracked in
-> `weaves/core-engine/directory-structure/plans/directory-structure-plan-001.md`.
+> `loom/core-engine/directory-structure/plans/directory-structure-plan-001.md`.
 
 ---
 

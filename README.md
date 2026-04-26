@@ -25,7 +25,9 @@ The cause isn't model quality — it's that there's no persistent memory of what
 Loom stores project memory as a typed, linked markdown document graph:
 
 ```
-weaves/
+loom/
+  ctx.md                       ← global project summary (read first every session)
+  refs/                        ← static architectural facts (architecture.md, etc.)
   {weave}/                     ← workstream (e.g. "auth", "payment-system")
     ctx.md                     ← AI-generated weave summary
     {thread}/                  ← feature thread
@@ -37,8 +39,6 @@ weaves/
         {done-id}.md           ← post-implementation summary
       ctx/                     ← AI-generated thread summary
       chats/                   ← AI conversation logs
-weaves/ctx.md                  ← global project summary (read first every session)
-references/                    ← static architectural facts (architecture.md, etc.)
 ```
 
 Every document has typed frontmatter. Status is derived from documents — there is no central state
@@ -153,7 +153,7 @@ No layer imports upward. All MCP tools delegate to `app` — no bypassing.
 | App use-cases (idea, design, plan, step, finalize, rename, archive) | ✅ Shipped |
 | CLI commands | ✅ Shipped |
 | VS Code extension (tree view, toolbar, commands) | ✅ Shipped (v0.3.x) |
-| Global ctx (`weaves/ctx.md`) | 🔧 Planned |
+| Global ctx (`loom/ctx.md`) | 🔧 Planned |
 | MCP server (`loom mcp`, resources, tools, prompts) | 🔧 In design (v0.5.0) |
 | MCP sampling (VS Code AI buttons via agent) | 🔧 Planned (v0.5.0) |
 | `loom init` with CLAUDE.md fusion | 🔧 Planned |
@@ -194,11 +194,11 @@ API keys.
 
 | Document | Purpose |
 |----------|---------|
-| [Architecture Reference](./references/loom/architecture.md) | Package relationships, AI integration, frontmatter fields, directory structure |
-| [CLI Commands Reference](./references/cli-commands-reference.md) | Every `loom` command |
-| [VS Code Commands Reference](./references/vscode-commands-reference.md) | All VS Code commands and keybindings |
-| [Workspace Structure Reference](./references/workspace-directory-structure-reference.md) | Directory layout and file naming |
-| [Claude's Vision of Loom](./references/loom-claude-own-vision.md) | AI perspective on what Loom changes |
+| [Architecture Reference](./loom/refs/architecture-reference.md) | Package relationships, AI integration, frontmatter fields, directory structure |
+| [CLI Commands Reference](./loom/refs/cli-commands-reference.md) | Every `loom` command |
+| [VS Code Commands Reference](./loom/refs/vscode-commands-reference.md) | All VS Code commands and keybindings |
+| [Workspace Structure Reference](./loom/refs/workspace-directory-structure-reference.md) | Directory layout and file naming |
+| [Claude's Vision of Loom](./loom/refs/loom-claude-own-vision.md) | AI perspective on what Loom changes |
 
 ---
 

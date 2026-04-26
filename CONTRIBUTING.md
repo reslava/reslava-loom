@@ -101,7 +101,7 @@ npm run watch:cli    # Rebuilds CLI on file changes
 │   ├── COLLABORATION.md
 │   ├── TROUBLESHOOTING.md
 │   └── DOCUMENTATION_GUIDE.md
-├── references/               # Reference materials (CLI commands, directory structure)
+├── loom/refs/                # Reference materials (CLI commands, directory structure)
 ├── packages/
 │   ├── core/                 # Shared core engine (reducers, derived state)
 │   │   ├── src/
@@ -243,7 +243,7 @@ npm run test:extension
 Documentation is a critical part of REslava Loom. Improvements to clarity, examples, and structure are highly valued.
 
 - **User Docs:** `README.md`, `docs/ARCHITECTURE.md`, `docs/WORKFLOW_YML.md`, `docs/EFFECTS.md`, `docs/AI_INTEGRATION.md`, `docs/CONFIGURATION.md`, `docs/COLLABORATION.md`, `docs/TROUBLESHOOTING.md`
-- **Reference Docs:** `references/cli-commands-reference.md`, `references/vscode-commands-reference.md`, `references/workspace-directory-structure-reference.md`
+- **Reference Docs:** `loom/refs/cli-commands-reference.md`, `loom/refs/vscode-commands-reference.md`, `loom/refs/workspace-directory-structure-reference.md`
 - **Templates:** `.loom/templates/`
 - **Code Comments:** Use JSDoc for public APIs.
 

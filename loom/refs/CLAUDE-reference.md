@@ -2,7 +2,7 @@
 
 > **This is the target CLAUDE.md for when Loom's MCP server is live.**
 > Replace `CLAUDE.md` with this content once `packages/mcp/` ships and MCP is the active agent surface.
-> Maintained at `references/CLAUDE-reference.md` during development.
+> Maintained at `loom/refs/CLAUDE-reference.md` during development.
 
 ---
 
@@ -16,7 +16,7 @@ ideas → designs → plans → done) that any MCP-compatible agent can read, wr
 It gives stateless AI agents persistent context, workflow state, and approval gates so multi-session
 work stays coherent.
 
-This repository *uses its own workflow* to build itself. The `weaves/` directory contains the living
+This repository *uses its own workflow* to build itself. The `loom/` directory contains the living
 design documents. The `packages/` directory contains the implementation.
 
 ---
@@ -35,8 +35,8 @@ packages/
   vscode/     Human surface. Tree view, commands, toolbar, inline buttons.
   mcp/        Agent surface. Resources, Tools, Prompts, Sampling via MCP.
 
-weaves/       Design documents in Weave/Thread graph layout.
-references/   Static architectural facts, patterns, API notes.
+loom/         Design documents in Weave/Thread graph layout.
+loom/refs/    Static architectural facts, patterns, API notes.
 ```
 
 **Dependency rule:** `cli / vscode / mcp → app → core + fs`. Layers never import upward.
@@ -49,7 +49,7 @@ references/   Static architectural facts, patterns, API notes.
 
 | Term | Meaning |
 |------|---------|
-| **Weave** | A project folder under `weaves/`. Also the core domain entity (`Weave` interface). |
+| **Weave** | A project folder under `loom/`. Also the core domain entity (`Weave` interface). |
 | **Thread** | A workstream subfolder inside a Weave. Contains idea, design, plans, done docs, chats. |
 | **Loose fiber** | A doc at weave root (no thread). Idea or design not yet grouped into a thread. |
 | **Loom** | The tool itself (CLI + VS Code extension + MCP server). Also a workspace instance. |
@@ -57,7 +57,7 @@ references/   Static architectural facts, patterns, API notes.
 | **Design** | A design doc (`*-design.md`). Contains the design conversation log. |
 | **Ctx** | A context summary doc, AI-generated. Three scopes: global, weave, thread. |
 
-Thread layout: `weaves/{weave-id}/{thread-id}/{thread-id}-idea.md`, `{thread-id}-design.md`, `plans/`, `done/`.
+Thread layout: `loom/{weave-id}/{thread-id}/{thread-id}-idea.md`, `{thread-id}-design.md`, `plans/`, `done/`.
 
 ---
 
@@ -171,12 +171,12 @@ resolves the full chain recursively.
 Three layers. Read from global → weave → thread for orientation; thread-level ctx is the most specific.
 
 ```
-weaves/ctx.md                          ← global ctx
-weaves/{weave}/ctx.md                  ← weave ctx
-weaves/{weave}/{thread}/ctx/           ← thread ctx
+loom/ctx.md                          ← global ctx
+loom/{weave}/ctx.md                  ← weave ctx
+loom/{weave}/{thread}/ctx/           ← thread ctx
 ```
 
-- **Global ctx** (`weaves/ctx.md`) — architecture refs + `load: always` docs + active weaves roster + project health
+- **Global ctx** (`loom/ctx.md`) — architecture refs + `load: always` docs + active weaves roster + project health
 - **Weave ctx** — all threads in weave, statuses, active plan summary, key decisions
 - **Thread ctx** — idea + design decisions + plan progress + open questions
 
@@ -200,7 +200,7 @@ Ctx docs are AI-generated. Regenerate stale ones with `loom_refresh_ctx`. Check 
 
 **These reads are mandatory at the start of every session.**
 
-1. Read `weaves/ctx.md` — global ctx: overall project state, active weaves, recent decisions.
+1. Read `loom/ctx.md` — global ctx: overall project state, active weaves, recent decisions.
 2. If working on a specific thread, call `loom://thread-context/{weaveId}/{threadId}` — loads idea + design + active plan + ctx bundle.
 3. If implementing a plan step, use the `do-next-step` prompt — it auto-loads all `requires_load` docs.
 

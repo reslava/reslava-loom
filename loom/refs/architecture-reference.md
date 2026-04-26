@@ -105,7 +105,7 @@ Loom MCP config (Claude Code):
 | `done` | `{thread}/done/{done-id}.md` | Post-implementation summary |
 | `chat` | `{thread}/chats/{chat-id}.md` or `{weave}/chats/{id}.md` | AI conversation log |
 | `ctx` | `{thread}/ctx/` or `{weave}/ctx.md` | AI-optimised context summary (source of truth for agents) |
-| `reference` | `references/{scope}/{id}.md` | Static/semi-static architectural facts |
+| `reference` | `loom/refs/{scope}/{id}.md` | Static/semi-static architectural facts |
 
 ### Frontmatter fields (canonical order)
 
@@ -169,11 +169,15 @@ AI agents are stateless: each session starts from zero. Loom solves this by bein
 {workspace}/
   .loom/
     _status.md              ← Stage 1 only; manual session state
-  weaves/
+  loom/
+    ctx.md                  ← global context summary
+    refs/                   ← static architectural facts
+    chats/                  ← project-level AI chat docs
+    .archive/               ← archived project-level docs
     {weave-id}/
       ctx.md                ← weave-level context summary
       chats/                ← weave-level AI chat docs
-      _archive/             ← archived weave-level docs
+      .archive/             ← archived weave-level docs
       {thread-id}/
         {thread-id}-idea.md
         {thread-id}-design.md
@@ -183,10 +187,7 @@ AI agents are stateless: each session starts from zero. Loom solves this by bein
           {plan-id}.md
         done/
           {done-id}.md
-        _archive/
-  references/
-    {scope}/
-      {id}.md               ← reference docs (architecture, patterns, API notes)
+        .archive/
   packages/
     core/                   ← domain: entities, reducers, events, validation
     fs/                     ← infrastructure: repositories, serializers, link index

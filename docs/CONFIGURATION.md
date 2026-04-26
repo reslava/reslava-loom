@@ -117,4 +117,4 @@ For local Ollama:
 - [AI Integration & Handshake Protocol](./AI_INTEGRATION.md) — Details on Chat Mode and Action Mode.
 - [Built‑in Effects Catalog](./EFFECTS.md) — Complete reference for all built‑in effects.
 - [Workflow Configuration](./WORKFLOW_YML.md) — Customizing document types and transitions.
-- [CLI Commands Reference](./references/cli-commands-reference.md) — Every `loom` command documented.
+- [CLI Commands Reference](../loom/refs/cli-commands-reference.md) — Every `loom` command documented.

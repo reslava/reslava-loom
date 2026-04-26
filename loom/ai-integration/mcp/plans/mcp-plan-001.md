@@ -183,7 +183,7 @@ Sampling lets the MCP server request the host agent to run an LLM inference. Thi
 |------|---|------|---------------|------------|
 | ☐ | 45 | Update `CLAUDE.md` — add MCP config snippet, note that `loom://thread-context` and `do-next-step` prompt are the primary entry points; add rule "always use Loom MCP tools for workflow state changes, never edit Loom docs directly" | `CLAUDE.md` | 43 |
 | ☐ | 46 | Create `.cursor/rules/loom.md` — Cursor-compatible context file; same essence as CLAUDE.md addition but formatted for Cursor rules | `.cursor/rules/loom.md` | 43 |
-| ☐ | 47 | Update `mcp-design.md` status `draft` → `active`; bump version; update `_status.md` | `weaves/ai-integration/mcp/mcp-design.md`, `.loom/_status.md` | 44 |
+| ☐ | 47 | Update `mcp-design.md` status `draft` → `active`; bump version; update `_status.md` | `loom/ai-integration/mcp/mcp-design.md`, `.loom/_status.md` | 44 |
 
 ---
 
@@ -261,7 +261,7 @@ Config file location: `~/.claude.json` (global) or `{workspace}/.claude/mcp.json
 
 ### Key invariant
 
-The agent has direct file access to `weaves/`. It *could* edit Loom docs directly but that bypasses frontmatter invariants, link index updates, and plan-step parsing. Every tool description includes: "use this tool to modify Loom documents — do not edit weave files directly." This rule is also in `CLAUDE.md`.
+The agent has direct file access to `loom/`. It *could* edit Loom docs directly but that bypasses frontmatter invariants, link index updates, and plan-step parsing. Every tool description includes: "use this tool to modify Loom documents — do not edit weave files directly." This rule is also in `CLAUDE.md`.
 
 ### Dependency on existing app use cases
 

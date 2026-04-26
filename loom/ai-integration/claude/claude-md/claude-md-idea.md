@@ -25,8 +25,8 @@ Loom needs a CLAUDE.md in every project it's installed in, but:
 | Document | Audience | Content |
 |----------|----------|---------|
 | `CLAUDE.md` (this repo) | Claude Code working on Loom | Loom-specific rules, Stage 1/2 protocol |
-| `references/CLAUDE-reference.md` | Handoff target for Stage 2 | Full MCP-era CLAUDE.md for Loom's own repo |
-| `references/CLAUDE-template-reference.md` | Loom end users | Project-agnostic Loom section template |
+| `loom/refs/CLAUDE-reference.md` | Handoff target for Stage 2 | Full MCP-era CLAUDE.md for Loom's own repo |
+| `loom/refs/CLAUDE-template-reference.md` | Loom end users | Project-agnostic Loom section template |
 
 ## Idea: section markers for safe fusion
 
