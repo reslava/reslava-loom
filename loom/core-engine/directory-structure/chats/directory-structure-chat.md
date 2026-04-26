@@ -201,3 +201,13 @@ Next: Phase 4 (docs) or waiting for direction.
 
 Do Phases 4, 5, 6
 Commit
+
+## AI:
+
+Phases 4, 5, 6 committed — `cf54d80`.
+
+11 docs updated: `CLAUDE.md`, `CLAUDE-reference.md`, `CLAUDE-template-reference.md`, `architecture-reference.md`, `README.md`, `CONTRIBUTING.md`, `docs/CONFIGURATION.md`, `mcp-plan-001.md`, `global-ctx-idea.md`, `claude-md-idea.md`, `workspace-directory-structure-reference.md`.
+
+Remaining `weaves/` hits are all historical chat logs (preserved as written). Tests clean (1 pre-existing failure unrelated to migration).
+
+Migration complete.
