@@ -4,14 +4,14 @@ id: mcp-design
 title: "Loom MCP Server — Exposing Loom State to AI Agents"
 status: active
 created: 2026-04-25
-version: 1
+version: 2
 tags: [ai, mcp, integration, agent, loom]
 parent_id: null
 child_ids: [mcp-plan-001]
 requires_load: [ai-integration-design]
 role: primary
 target_release: "0.5.0"
-actual_release: null
+actual_release: "0.4.0"
 ---
 
 # Loom MCP Server — Exposing Loom State to AI Agents

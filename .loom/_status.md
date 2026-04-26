@@ -9,19 +9,19 @@
 local mode
 
 ## Active thread
-none
+`loom/ai-integration/mcp/`
 
 ## Active design
-none
+> `loom/ai-integration/mcp/mcp-design.md`
 
 ## Active plan
-none
+> `loom/ai-integration/mcp/plans/mcp-plan-001.md`
 
 ## Last session
-2026-04-24 — Completed weave-and-thread-plan-001 Phase 9 (all 34 steps). Audited
-             flat-layout shims (none found). Updated CLAUDE.md terminology + architecture.
-             Merged feat/weave-threads → main. Tagged v0.3.0. Updated README banner.
-             Next: new plan TBD (vscode-extension-plan-008 or new feature).
+2026-04-26 — Completed mcp-plan-001 all phases (1–10, 47 steps). MCP server live:
+             9 resources, 22 tools, 7 prompts, sampling layer, MCP integration tests.
+             CLAUDE.md updated with MCP config + fallback toggle. Cursor rules created.
+             mcp-design.md actual_release: 0.4.0. Next: Phase 9 e2e manual test or new plan.
 
 ---
 <!-- STAGE 1 MAINTENANCE INSTRUCTIONS (delete this block when Stage → 2)

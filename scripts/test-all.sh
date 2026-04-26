@@ -49,6 +49,9 @@ run_test tests/id-management.test.ts
 run_test tests/multi-loom.test.ts
 # tests/weave-workflow.test.ts — pending Phase 6 rewrite (tests old flat-layout CLI workflow)
 
+# MCP integration tests (spawns loom mcp subprocess)
+run_test packages/mcp/tests/integration.test.ts
+
 echo "══════════════════════════════════════════"
 echo "  ✅ All tests passed"
 echo "══════════════════════════════════════════"
