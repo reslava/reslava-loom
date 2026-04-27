@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import { execSync } from 'child_process';
 import { LoomTreeProvider, TreeNode } from './tree/treeProvider';
 import { ViewStateManager } from './view/viewStateManager';
 import { weaveIdeaCommand } from './commands/weaveIdea';
@@ -95,7 +96,16 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         vscode.commands.registerCommand('loom.doStep', (node?: TreeNode) => doStepCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.closePlan', (node?: TreeNode) => closePlanCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.delete', (node?: TreeNode) => deleteItemCommand(treeProvider, node)),
-        vscode.commands.registerCommand('loom.archive', (node?: TreeNode) => archiveItemCommand(treeProvider, node))
+        vscode.commands.registerCommand('loom.archive', (node?: TreeNode) => archiveItemCommand(treeProvider, node)),
+        vscode.commands.registerCommand('loom.install.openCliTerminal', () => {
+            const t = vscode.window.createTerminal('Loom CLI Install');
+            t.show();
+            t.sendText('npm install -g @reslava/loom');
+        }),
+        vscode.commands.registerCommand('loom.install.runInstall', () => runLoomInstall()),
+        vscode.commands.registerCommand('loom.install.openAiSettings', () =>
+            vscode.commands.executeCommand('workbench.action.openSettings', 'reslava-loom.ai')
+        )
     );
 
     let aiEnabled = false;
@@ -107,23 +117,87 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
     syncAiContext();
     context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration(e => {
-            if (e.affectsConfiguration('reslava-loom.ai.apiKey')) syncAiContext();
+            if (e.affectsConfiguration('reslava-loom.ai.apiKey')) {
+                syncAiContext();
+                syncSetupContext();
+            }
         })
     );
 
-    // MCP connection detection — check for loom server in known config locations
+    // Context keys — drive walkthrough completion and notification targeting
+    async function syncSetupContext(): Promise<void> {
+        const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        const cliDetected = isLoomCliAvailable();
+        const workspaceInitialized = root ? fs.existsSync(path.join(root, '.loom')) : false;
+        const mcpConnected = root ? await detectMcpConfig(root) : false;
+        const aiConfigured = (vscode.workspace.getConfiguration('reslava-loom.ai').get<string>('apiKey') ?? '').length > 0;
+        const hasWeaves = root ? detectHasWeaves(root) : false;
+
+        const set = (key: string, val: boolean) => vscode.commands.executeCommand('setContext', key, val);
+        set('loom.cliDetected', cliDetected);
+        set('loom.workspaceInitialized', workspaceInitialized);
+        set('loom.mcpConnected', mcpConnected);
+        set('loom.aiConfigured', aiConfigured);
+        set('loom.hasWeaves', hasWeaves);
+
+        mcpStatusBar.text = mcpConnected ? '$(plug) Loom MCP' : '$(debug-disconnect) Loom MCP';
+        mcpStatusBar.show();
+    }
+
+    // MCP status bar
     const mcpStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 90);
     mcpStatusBar.tooltip = 'Loom MCP server connection status';
     context.subscriptions.push(mcpStatusBar);
 
-    async function syncMcpContext(): Promise<void> {
-        const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-        const connected = workspaceRoot ? await detectMcpConfig(workspaceRoot) : false;
-        vscode.commands.executeCommand('setContext', 'loom.mcpConnected', connected);
-        mcpStatusBar.text = connected ? '$(plug) Loom MCP' : '$(debug-disconnect) Loom MCP';
-        mcpStatusBar.show();
+    syncSetupContext();
+
+    // Partial-setup notification — shown at most once per workspace per session
+    async function showSetupNotification(): Promise<void> {
+        const shownKey = 'loom.setupNotificationShown';
+        if (context.workspaceState.get<boolean>(shownKey)) return;
+
+        const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!root) return;
+
+        const cliOk = isLoomCliAvailable();
+        const loomDirOk = fs.existsSync(path.join(root, '.loom'));
+        const mcpOk = await detectMcpConfig(root);
+        const claudeMdOk = fs.existsSync(path.join(root, '.loom', 'CLAUDE.md'));
+
+        let message: string | undefined;
+        let action: string | undefined;
+        let onAction: (() => void) | undefined;
+
+        if (!cliOk) {
+            message = 'Loom CLI not found. Install it to use Loom.';
+            action = 'Open Terminal';
+            onAction = () => {
+                const t = vscode.window.createTerminal('Loom Setup');
+                t.show();
+                t.sendText('npm install -g @reslava/loom');
+            };
+        } else if (!loomDirOk) {
+            message = 'Initialize Loom in this workspace?';
+            action = 'Initialize';
+            onAction = () => runLoomInstall();
+        } else if (!mcpOk) {
+            message = 'Set up Loom MCP for this workspace?';
+            action = 'Set up';
+            onAction = () => runLoomInstall();
+        } else if (!claudeMdOk) {
+            message = 'Update Loom session rules?';
+            action = 'Update';
+            onAction = () => runLoomInstall();
+        }
+
+        if (!message || !action || !onAction) return;
+
+        await context.workspaceState.update(shownKey, true);
+        const choice = await vscode.window.showInformationMessage(message, action, 'Not now');
+        if (choice === action) onAction();
     }
-    syncMcpContext();
+
+    setImmediate(() => showSetupNotification());
 
     context.subscriptions.push(
         vscode.workspace.onDidChangeWorkspaceFolders(() => syncAndRefresh())
@@ -135,6 +209,14 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
     context.subscriptions.push(watcher.onDidChange(debouncedRefresh));
     context.subscriptions.push(watcher.onDidDelete(debouncedRefresh));
     context.subscriptions.push(watcher);
+
+    // Watch .loom/ for install/upgrade events — re-sync context keys
+    const loomDirWatcher = vscode.workspace.createFileSystemWatcher('**/.loom/**');
+    const debouncedSyncSetup = debounce(() => syncSetupContext(), 500);
+    context.subscriptions.push(loomDirWatcher.onDidCreate(debouncedSyncSetup));
+    context.subscriptions.push(loomDirWatcher.onDidChange(debouncedSyncSetup));
+    context.subscriptions.push(loomDirWatcher.onDidDelete(debouncedSyncSetup));
+    context.subscriptions.push(loomDirWatcher);
 
     setImmediate(() => syncAndRefresh());
 
@@ -161,6 +243,26 @@ async function detectMcpConfig(workspaceRoot: string): Promise<boolean> {
         } catch { /* file missing or invalid JSON — continue */ }
     }
     return false;
+}
+
+function isLoomCliAvailable(): boolean {
+    try { execSync('loom --version', { stdio: 'ignore' }); return true; }
+    catch { return false; }
+}
+
+function detectHasWeaves(workspaceRoot: string): boolean {
+    const loomDir = path.join(workspaceRoot, 'loom');
+    try {
+        return fs.readdirSync(loomDir).some(entry =>
+            fs.statSync(path.join(loomDir, entry)).isDirectory()
+        );
+    } catch { return false; }
+}
+
+function runLoomInstall(): void {
+    const terminal = vscode.window.createTerminal('Loom Install');
+    terminal.show();
+    terminal.sendText('loom install');
 }
 
 function debounce(fn: () => void, ms: number): () => void {

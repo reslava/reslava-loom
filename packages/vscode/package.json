@@ -4,6 +4,12 @@
   "description": "Weave ideas into features with AI — document‑driven workflow for VS Code",
   "version": "0.1.0",
   "publisher": "reslava",
+  "license": "MIT",
+  "icon": "media/loom.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reslava/loom"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -11,7 +17,8 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:.loom/**"
+    "workspaceContains:.loom/**",
+    "onStartupFinished"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -43,13 +50,19 @@
         "command": "loom.weaveCreate",
         "title": "New Weave",
         "category": "Loom",
-        "icon": { "light": "media/icons/weave.svg", "dark": "media/icons/weave.svg" }
+        "icon": {
+          "light": "media/icons/weave.svg",
+          "dark": "media/icons/weave.svg"
+        }
       },
       {
         "command": "loom.threadCreate",
         "title": "Weave Thread",
         "category": "Loom",
-        "icon": { "light": "media/icons/thread.svg", "dark": "media/icons/thread.svg" }
+        "icon": {
+          "light": "media/icons/thread.svg",
+          "dark": "media/icons/thread.svg"
+        }
       },
       {
         "command": "loom.delete",
@@ -61,25 +74,37 @@
         "command": "loom.archive",
         "title": "Archive",
         "category": "Loom",
-        "icon": { "light": "media/icons/archive.svg", "dark": "media/icons/archive.svg" }
+        "icon": {
+          "light": "media/icons/archive.svg",
+          "dark": "media/icons/archive.svg"
+        }
       },
       {
         "command": "loom.weaveIdea",
         "title": "Weave Idea",
         "category": "Loom",
-        "icon": { "light": "media/icons/idea.svg", "dark": "media/icons/idea.svg" }
+        "icon": {
+          "light": "media/icons/idea.svg",
+          "dark": "media/icons/idea.svg"
+        }
       },
       {
         "command": "loom.weaveDesign",
         "title": "Weave Design",
         "category": "Loom",
-        "icon": { "light": "media/icons/design.svg", "dark": "media/icons/design.svg" }
+        "icon": {
+          "light": "media/icons/design.svg",
+          "dark": "media/icons/design.svg"
+        }
       },
       {
         "command": "loom.weavePlan",
         "title": "Weave Plan",
         "category": "Loom",
-        "icon": { "light": "media/icons/plan.svg", "dark": "media/icons/plan.svg" }
+        "icon": {
+          "light": "media/icons/plan.svg",
+          "dark": "media/icons/plan.svg"
+        }
       },
       {
         "command": "loom.finalize",
@@ -127,25 +152,37 @@
         "command": "loom.setGrouping",
         "title": "Set Grouping",
         "category": "Loom",
-        "icon": { "light": "media/icons/group.svg", "dark": "media/icons/group.svg" }
+        "icon": {
+          "light": "media/icons/group.svg",
+          "dark": "media/icons/group.svg"
+        }
       },
       {
         "command": "loom.setTextFilter",
         "title": "Filter",
         "category": "Loom",
-        "icon": { "light": "media/icons/filter.svg", "dark": "media/icons/filter.svg" }
+        "icon": {
+          "light": "media/icons/filter.svg",
+          "dark": "media/icons/filter.svg"
+        }
       },
       {
         "command": "loom.toggleArchived",
         "title": "Toggle Archived",
         "category": "Loom",
-        "icon": { "light": "media/icons/archive.svg", "dark": "media/icons/archive.svg" }
+        "icon": {
+          "light": "media/icons/archive.svg",
+          "dark": "media/icons/archive.svg"
+        }
       },
       {
         "command": "loom.chatNew",
         "title": "Weave Chat",
         "category": "Loom",
-        "icon": { "light": "media/icons/chat.svg", "dark": "media/icons/chat.svg" }
+        "icon": {
+          "light": "media/icons/chat.svg",
+          "dark": "media/icons/chat.svg"
+        }
       },
       {
         "command": "loom.chatReply",
@@ -157,19 +194,28 @@
         "command": "loom.promoteToIdea",
         "title": "Promote to Idea",
         "category": "Loom",
-        "icon": { "light": "media/icons/idea.svg", "dark": "media/icons/idea.svg" }
+        "icon": {
+          "light": "media/icons/idea.svg",
+          "dark": "media/icons/idea.svg"
+        }
       },
       {
         "command": "loom.promoteToDesign",
         "title": "Promote to Design",
         "category": "Loom",
-        "icon": { "light": "media/icons/design.svg", "dark": "media/icons/design.svg" }
+        "icon": {
+          "light": "media/icons/design.svg",
+          "dark": "media/icons/design.svg"
+        }
       },
       {
         "command": "loom.promoteToPlan",
         "title": "Promote to Plan",
         "category": "Loom",
-        "icon": { "light": "media/icons/plan.svg", "dark": "media/icons/plan.svg" }
+        "icon": {
+          "light": "media/icons/plan.svg",
+          "dark": "media/icons/plan.svg"
+        }
       },
       {
         "command": "loom.refineIdea",
@@ -206,7 +252,10 @@
         },
         "reslava-loom.ai.provider": {
           "type": "string",
-          "enum": ["deepseek", "openai"],
+          "enum": [
+            "deepseek",
+            "openai"
+          ],
           "default": "deepseek",
           "description": "AI provider. DeepSeek is recommended for cost-effective testing."
         },
@@ -228,6 +277,43 @@
         }
       }
     },
+    "walkthroughs": [
+      {
+        "id": "loom.getStarted",
+        "title": "Get Started with Loom",
+        "description": "Set up AI-assisted, document-driven workflow in your workspace.",
+        "steps": [
+          {
+            "id": "installCli",
+            "title": "Install Loom CLI",
+            "description": "Install the Loom CLI globally.\n\n[Open Terminal](command:loom.install.openCliTerminal)",
+            "completionEvents": ["onContext:loom.cliDetected"],
+            "media": { "image": "media/loom.png", "altText": "Loom" }
+          },
+          {
+            "id": "initWorkspace",
+            "title": "Initialize this workspace",
+            "description": "Run `loom install` to create `.loom/`, write the session contract, and set up MCP.\n\n[Initialize](command:loom.install.runInstall)",
+            "completionEvents": ["onContext:loom.workspaceInitialized"],
+            "media": { "image": "media/loom.png", "altText": "Loom" }
+          },
+          {
+            "id": "configureAi",
+            "title": "Configure an AI provider",
+            "description": "Add your DeepSeek or OpenAI API key to enable AI commands.\n\n[Open Settings](command:loom.install.openAiSettings)",
+            "completionEvents": ["onContext:loom.aiConfigured"],
+            "media": { "image": "media/loom.png", "altText": "Loom" }
+          },
+          {
+            "id": "createWeave",
+            "title": "Create your first weave",
+            "description": "Start a new project weave from the Loom panel toolbar.\n\n[New Weave](command:loom.weaveCreate)",
+            "completionEvents": ["onContext:loom.hasWeaves"],
+            "media": { "image": "media/loom.png", "altText": "Loom" }
+          }
+        ]
+      }
+    ],
     "menus": {
       "view/title": [
         {
@@ -386,9 +472,11 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run build",
-    "build": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "vscode:prepublish": "node esbuild.js --production",
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "typecheck": "tsc -p ./ --noEmit",
+    "package": "npx @vscode/vsce package --no-dependencies"
   },
   "dependencies": {
     "@reslava-loom/app": "file:../app",
@@ -398,6 +486,7 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/vscode": "^1.85.0",
+    "esbuild": "^0.28.0",
     "typescript": "^5.5.0"
   }
 }

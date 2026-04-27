@@ -1,15 +1,7 @@
 import * as fs from 'fs-extra';
 import { loadWeave, saveDoc } from '../../../fs/dist';
 import { closePlan as closePlanUseCase } from '../../../app/dist/closePlan';
-import { AIClient } from '../../../core/dist';
-
-function makeStubAiClient(notes?: string): AIClient {
-    return {
-        complete: async () =>
-            notes?.trim() ||
-            'TODO: Add implementation notes.\n\n(AI generation requires MCP sampling — Phase 8.)',
-    };
-}
+import { makeAiClient } from '../deepseekClient';
 
 export const toolDef = {
     name: 'loom_close_plan',
@@ -32,7 +24,7 @@ export async function handle(root: string, args: Record<string, unknown>) {
         loadWeave,
         saveDoc,
         fs,
-        aiClient: makeStubAiClient(notes),
+        aiClient: makeAiClient(),
         loomRoot: root,
     });
 

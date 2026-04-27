@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "loom": {
+      "command": "loom",
+      "args": ["mcp"],
+      "env": {
+        "LOOM_ROOT": "j:/src/loom"
+      }
+    }
+  }
+}

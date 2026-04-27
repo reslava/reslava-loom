@@ -62,6 +62,4 @@ docs/internal/
 *.pem
 
 # --- Claude / Cursor (local config, not committed) ---
-CLAUDE.md
-.claude/
 .cursor/

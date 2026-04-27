@@ -1,0 +1,17 @@
+src/**
+node_modules/**
+tsconfig.json
+tsconfig.tsbuildinfo
+esbuild.js
+package-old-loom.json
+*.vsix
+.vscode/**
+dist/diagnostics.js
+dist/diagnostics.js.map
+dist/icons.js
+dist/icons.js.map
+dist/extension.js.map
+dist/ai/**
+dist/commands/**
+dist/tree/**
+dist/view/**

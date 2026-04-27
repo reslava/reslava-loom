@@ -3,16 +3,11 @@ import { loadDoc, saveDoc, findDocumentById } from '../../../fs/dist';
 import { promoteToIdea } from '../../../app/dist/promoteToIdea';
 import { promoteToDesign } from '../../../app/dist/promoteToDesign';
 import { promoteToPlan } from '../../../app/dist/promoteToPlan';
-import { AIClient } from '../../../core/dist';
-
-const stubAiClient: AIClient = {
-    complete: async () =>
-        'TODO: Add generated content.\n\n(AI generation requires MCP sampling — Phase 8.)',
-};
+import { makeAiClient } from '../deepseekClient';
 
 export const toolDef = {
     name: 'loom_promote',
-    description: 'Promote a document to a new type (idea, design, or plan). Creates a new doc linked to the source. AI generation uses a placeholder until MCP sampling is wired (Phase 8). Use this tool to promote docs — do not edit weave files directly.',
+    description: 'Promote a document to a new type (idea, design, or plan). Creates a new doc linked to the source. AI generation uses DeepSeek when DEEPSEEK_API_KEY is set, otherwise a placeholder. Use this tool to promote docs — do not edit weave files directly.',
     inputSchema: {
         type: 'object' as const,
         properties: {
@@ -32,7 +27,7 @@ export async function handle(root: string, args: Record<string, unknown>) {
         throw new Error(`Source document not found: ${sourceId}`);
     }
 
-    const deps = { loadDoc, saveDoc, fs, aiClient: stubAiClient, loomRoot: root };
+    const deps = { loadDoc, saveDoc, fs, aiClient: makeAiClient(), loomRoot: root };
 
     let result: { filePath: string; title: string };
     if (targetType === 'idea') {
