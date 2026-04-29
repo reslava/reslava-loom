@@ -12,8 +12,8 @@ design documents. The `packages/` directory contains the implementation.
 
 ## Stage
 
-**Stage 1 — Manual simulation.** Rafa maintains `.loom/_status.md` manually after each session.
-Stage 2 begins when `loom status --init` takes over.
+**Stage 2 — MCP Active.** All state is served through MCP. No manual `_status.md` file.
+Claude Code and CLI both route through MCP for all state reads and mutations.
 
 ---
 
@@ -76,29 +76,24 @@ Thread layout: `loom/{weave-id}/{thread-id}/{thread-id}-idea.md`, `{thread-id}-d
 ## Current active work
 
 **Active design weaves:**
-- `loom/vscode-extension/` — VS Code extension (human surface), builds on `getState` + `app` use cases
-- `loom/ai-integration/` — MCP server (agent surface), global ctx, CLAUDE.md lifecycle
+- `loom/vscode-extension/` — VS Code extension refactoring to use MCP (human surface)
+  - New thread: `vscode-mcp-refactor/` — Refactor extension to call MCP instead of app
+  - Existing thread: `vscode-extension/` — Original extension architecture (for reference)
+- `loom/ai-integration/` — MCP server (agent surface), resources, tools, prompts, sampling
 
-## VS Code Extension
+## VS Code Extension — Refactoring Plan
 
-**Key design docs (thread-based paths):**
-- `loom/vscode-extension/vscode-extension/vscode-extension-design.md` — Architecture overview.
-- `loom/vscode-extension/vscode-extension-visual/vscode-extension-visual-design.md` — Visual blueprint.
-- `loom/vscode-extension/vscode-extension-toolbar/vscode-extension-toolbar-design.md` — ViewState and toolbar.
-- `loom/vscode-extension/vscode-extension-ctx.md` — Session context summary (load this first).
+**Active refactor thread:**
+- `loom/vscode-extension/vscode-mcp-refactor/` — Refactor VS Code extension to use MCP
+  - Idea: Why we're refactoring (single source of truth, decoupling, consistency)
+  - Design: Architecture, file structure, MCP client interface
+  - Plan: 5 implementation steps (mcp-client.ts, tree view, commands, remove imports)
 
-**What's implemented:**
-- `packages/vscode/src/extension.ts` — Activation, command registration, file watcher.
-- `packages/vscode/src/tree/treeProvider.ts` — LoomTreeProvider with Thread nodes, using `getState`.
-- `packages/vscode/src/icons.ts` — Unified icon system with Codicon fallback.
-- `packages/vscode/src/view/viewStateManager.ts` and `viewState.ts`.
-- `packages/vscode/src/commands/` — weaveIdea, weaveDesign, weavePlan, startPlan, grouping.
+**Architecture change:**
+- Before: `vscode → app → fs/core`
+- After: `vscode → mcp → app → fs/core`
 
-**What's missing:**
-- File watcher with incremental index updates.
-- Diagnostics for broken links.
-- Remaining commands (finalize, rename, refine, completeStep, validate, summarise).
-- Full test in VS Code Extension Host.
+This makes the extension a thin UI client with no direct app imports.
 
 ---
 
@@ -218,26 +213,45 @@ Add this to `{workspace}/.claude/mcp.json` (project-scoped) or `~/.claude.json` 
 - **When asked to read a file ending in `-chat.md`**: reply by writing inside that doc at the bottom under `## AI:`. Continue replying inside the doc for all follow-up messages until Rafa says `close`.
 - **MCP tools for Loom state changes:** All Loom state mutations (create doc, mark step done, rename, archive, promote) must go through MCP tools once MCP is active. Never edit weave markdown files directly to change state — doing so bypasses reducers, link index, and plan-step validation.
 
+### MCP visibility (required)
+
+When calling any MCP tool, output one line before the call:
+```
+🔧 MCP: loom_tool_name(key="value", ...)
+```
+
+When reading any MCP resource, output:
+```
+📡 MCP: loom://resource-uri
+```
+
+If MCP is unavailable and you must fall back to direct file editing, output:
+```
+⚠️ MCP unavailable — editing file directly
+```
+
+This makes MCP usage visible. If you don't see these prefixes, either MCP is not running or the AI is bypassing it (which the rules forbid).
+
 ---
 
 ## Session start protocol
 
-**These reads are mandatory at the start of every session — including when continuing from a compacted/summarized conversation. Never skip.**
+**Primary entry point for Stage 2: Call `do-next-step` prompt with the active planId.**
 
-1. Read `.loom/_status.md` — note Stage, active weave, active plan, last session.
-2. Load thread context:
-   - **Stage 2 (MCP active):** read `loom://thread-context/{weaveId}/{threadId}` resource — bundles idea, design, active plan, and `requires_load` refs in one call. Then call the `do-next-step` prompt with the active planId to get context + next step.
-   - **Stage 1 (manual):** read the active plan file and its `requires_load` docs directly.
-3. For VS Code extension work, load `loom/vscode-extension/vscode-extension-ctx.md` instead of reading all four design docs cold.
+The `do-next-step` prompt bundles everything needed:
+- Thread context (idea, design, current plan, requires_load docs)
+- Next incomplete step with instructions
+- Pre-filled `loom_complete_step` call ready to execute
 
-After completing the reads, output this block and **STOP**:
+**No manual `.loom/_status.md` file** — MCP's `loom://state` resource is the only source of truth.
+
+After the `do-next-step` call, if context is loaded, output this block and **STOP**:
 
 ```
-📋 Session start  [Stage {1|2}]
+📋 Session start  [Stage 2 — MCP]
 > Active weave:  {weave-id}
-> Active plan:   {plan title} — Step {N}  (or "no active plan")
-- Docs read: {doc1} ✓ · {doc2} ✓ · ...
-- Last session: {date} — {summary}
+> Active plan:   {plan title} — Step {N}
+- Next step: {step description}
 
 STOP — waiting for go
 ```
@@ -273,8 +287,7 @@ STOP — waiting for go
 - Ask Rafa if something is not clear before proceeding.
 - Clean approach always preferred — state the extra cost, never silently patch.
 - Reducers must stay pure — no filesystem or VS Code calls inside reducer functions.
-- Stage 1: always verify active plan step against actual file, not just `_status.md`.
-- `getState()` is the single query entry point — never traverse files directly from the extension.
 - `buildLinkIndex` must be called once per `getState`, then passed to `loadThread` — never N+1.
 - Cross-plan blockers in `isStepBlocked`: missing plan = blocked, existing plan = not blocked (best-effort).
 - `generatePlanId` regex matches plan IDs not filenames — no `.md` suffix in the pattern.
+- Stage 2: `getState()` is internal to MCP — extension must never call it directly. All state through MCP resources.

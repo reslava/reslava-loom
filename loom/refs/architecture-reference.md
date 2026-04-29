@@ -12,49 +12,43 @@ load_when: [design, plan]
 
 # Loom — Architecture Reference
 
-## 1. Package Relationships
+## 1. Package Relationships (Stage 2)
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                          Delivery Layer                              │
-├─────────────────┬──────────────────────────┬─────────────────────────┤
-│       CLI       │    VS Code Extension      │      MCP Server         │
-│  (packages/cli) │   (packages/vscode)       │   (packages/mcp)        │
-│                 │   Human surface:          │   Agent surface:        │
-│                 │   tree view, commands     │   resources, tools,     │
-│                 │   toolbar, inline buttons │   prompts, sampling     │
-└────────┬────────┴────────────┬─────────────┴────────────┬────────────┘
-         │                     │                           │
-         └──────────────────── │ ─────────────────────────┘
-                                │ calls
+CLI (packages/cli)          VSCode (packages/vscode)
+  │                              │
+  │                         thin MCP client
+  └──────────┬─────────────────┬─┘
+             │                 │
+             │                 ▼
+             │          MCP Server (packages/mcp)
+             │          resources, tools, prompts, sampling
+             │                 │
+             └─────────────────┤
                                 ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                      Application Layer (app)                         │
-│   Orchestration use-cases: weaveIdea, weaveDesign, weavePlan,       │
-│   finalize, rename, startPlan, completeStep, closePlan, chatNew,    │
-│   promoteToDesign, getState, summarise, validate, doStep            │
-└──────────────────────────┬──────────────────────────────────────────┘
-                            │ uses
-              ┌─────────────┴──────────────┐
-              ▼                             ▼
-┌─────────────────────────┐   ┌────────────────────────────────────────┐
-│     Domain Layer (core) │   │    Infrastructure Layer (fs)           │
-│  Entities, Events,      │   │  Repositories: weaveRepository,        │
-│  Reducers, Validation,  │   │  threadRepository, linkRepository      │
-│  Body generators,       │   │  Serializers: frontmatterLoader/Saver  │
-│  ID management,         │   │  Utils: pathUtils, findMarkdownFiles   │
-│  Plan utilities         │   │  Link index: buildLinkIndex            │
-└─────────────────────────┘   └────────────────────────────────────────┘
+         Application Layer (app)
+         Use-cases: weaveIdea, weaveDesign, weavePlan,
+         finalize, rename, startPlan, completeStep,
+         closePlan, chatNew, promoteToDesign, etc.
+                                │
+                 ┌──────────────┴──────────────┐
+                 ▼                             ▼
+         Domain Layer (core)    Infrastructure Layer (fs)
+         Entities, reducers,    Repositories, serializers,
+         events, validation     link index, path utils
 ```
 
-**Dependency rules (enforced):**
-- `cli`, `vscode`, `mcp` may **only** import from `app` (and `core` for types).
-- `app` may **only** import from `core` and `fs`.
-- `core` may **only** import from itself.
-- `fs` may **only** import from `core` and standard libraries.
-- No delivery layer may bypass `app` — all state changes go through app use cases.
+**Dependency rules (Stage 2):**
+- `cli` may call app directly (inspection) or MCP (mutations)
+- `vscode` **must** call MCP only — no direct app imports
+- `mcp` server may **only** import from `app` — it is the gate
+- `app` may **only** import from `core` and `fs`
+- `core` may **only** import from itself
+- `fs` may **only** import from `core` and standard libraries
 
-## 2. AI Agent Integration
+**Stage 2 principle:** MCP is the primary gate. The extension (human UI) routes exclusively through MCP.
+
+## 2. AI Agent Integration (Stage 2)
 
 ```
 User
@@ -70,13 +64,16 @@ Loom MCP config (Claude Code):
   { "mcpServers": { "loom": { "command": "loom", "args": ["mcp"], "env": { "LOOM_ROOT": "${workspaceFolder}" } } } }
 ```
 
+**Stage 2 — MCP is the single source of truth.** No manual `.loom/_status.md` file.
+Session start: call `do-next-step` prompt (loads context + step instructions).
+
 **Key resources:**
 - `loom://state?weaveId=&threadId=` — full Loom state JSON, filterable; single source of truth
 - `loom://thread-context/{weaveId}/{threadId}?mode=` — bundled idea+design+plan+ctx for a thread; primary agent entry point
 - `loom://plan/{id}` — plan doc with parsed steps array
 - `loom://requires-load/{id}` — recursively resolved `requires_load` chain
-- `loom://diagnostics` — broken links, dangling child_ids
-- `loom://status` — `.loom/_status.md` (Stage 1 only, deprecated in Stage 2)
+- `loom://diagnostics` — broken links, dangling child_ids, stale docs
+- `loom://summary` — health counts (weaves, threads, plans, open steps)
 
 **Key tools:**
 - `loom_complete_step` — mark a plan step done (idempotent)
@@ -168,7 +165,7 @@ AI agents are stateless: each session starts from zero. Loom solves this by bein
 ```
 {workspace}/
   .loom/
-    _status.md              ← Stage 1 only; manual session state
+    (no _status.md in Stage 2 — MCP is the source of truth)
   loom/
     ctx.md                  ← global context summary
     refs/                   ← static architectural facts
