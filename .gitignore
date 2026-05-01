@@ -13,7 +13,8 @@ pnpm-lock.yaml
 # Build output
 out/
 dist/
-*.vsix  # Keep ignored; store local copies in ~/vsix-archive/
+# Keep .vsix artifacts out; store local copies in ~/vsix-archive/
+*.vsix
 *.tsbuildinfo
 
 # --- VS Code Extension ---
