@@ -23,8 +23,8 @@ dist/
 
 # --- Workflow System ---
 # Derived state cache (local only)
-.wf/cache/
-.wf/prompts/
+.loom/cache/
+.loom/prompts/
 
 # Auto-generated context summaries (optional to ignore)
 # Uncomment if you prefer to regenerate summaries rather than version them
@@ -64,3 +64,5 @@ docs/internal/
 
 # --- Claude / Cursor (local config, not committed) ---
 .cursor/
+.claude/
+.continue/

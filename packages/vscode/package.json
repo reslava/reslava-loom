@@ -39,6 +39,18 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "loom.threads",
+        "contents": "No Loom workspace found.\n\nRun `loom install` to initialize Loom in this folder.\n\n[Initialize Workspace](command:loom.install.runInstall)",
+        "when": "!loom.workspaceInitialized"
+      },
+      {
+        "view": "loom.threads",
+        "contents": "No weaves yet.\n\nCreate your first weave to start organizing your work.\n\n[New Weave](command:loom.weaveCreate)",
+        "when": "loom.workspaceInitialized && !loom.hasWeaves"
+      }
+    ],
     "commands": [
       {
         "command": "loom.refresh",

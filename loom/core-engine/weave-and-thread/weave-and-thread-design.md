@@ -2,7 +2,7 @@
 type: design
 id: weave-and-thread-design
 title: "Weave and Thread — The True Graph Model"
-status: active
+status: done
 created: 2026-04-21
 version: 3
 tags: [domain-model, graph, terminology, directory-structure]

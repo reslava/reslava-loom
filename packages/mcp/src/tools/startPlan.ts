@@ -1,4 +1,4 @@
-import { loadWeave, saveWeave } from '../../../fs/dist';
+import { loadWeave, saveWeave, resolveWeaveIdForPlan } from '../../../fs/dist';
 import { runEvent } from '../../../app/dist/runEvent';
 
 export const toolDef = {
@@ -15,10 +15,7 @@ export const toolDef = {
 
 export async function handle(root: string, args: Record<string, unknown>) {
     const planId = args['planId'] as string;
-    const weaveId = planId.split('-plan-')[0];
-    if (!weaveId) {
-        throw new Error(`Invalid plan ID format. Expected "{weaveId}-plan-###", got "${planId}"`);
-    }
+    const weaveId = await resolveWeaveIdForPlan(root, planId);
 
     const loadWeaveStrict = async (r: string, w: string) => {
         const result = await loadWeave(r, w);

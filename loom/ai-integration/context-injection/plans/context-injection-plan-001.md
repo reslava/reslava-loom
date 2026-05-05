@@ -1,0 +1,52 @@
+---
+type: plan
+id: context-injection-plan-001
+title: "Context Injection — MVP Rule and Tool Metadata"
+status: active
+created: 2026-05-05
+version: 1
+tags: [ai, context, mcp, claude-md, mvp]
+parent_id: context-injection-design
+child_ids: []
+requires_load: [mvp-scope]
+design_version: 2
+---
+
+# Context Injection — Implementation Plan (MVP scope only)
+
+## Goal
+
+Lock in the MVP-scope context-injection rule ("first chat-reply in a thread loads thread context") in both `CLAUDE.md` surfaces, and confirm the MCP tools surface enough metadata for the AI to apply the rule correctly. Defer the delta-only optimization to a post-MVP plan.
+
+## Phases
+
+| Phase | Scope | Steps |
+|-------|-------|-------|
+| 1 | CLAUDE.md rule audit | 1 |
+| 2 | MCP tool metadata check | 2–3 |
+
+---
+
+## Phase 1 — CLAUDE.md rule audit
+
+| Done | # | Step | Files touched | Blocked by |
+|------|---|------|---------------|------------|
+|      | 1 | Audit the chat-reply context-injection rule in both `CLAUDE.md` and `LOOM_CLAUDE_MD` template. Confirm the three cases are documented (first reply → load + emit; subsequent same thread → tool-call line only; after refine/generate → re-load). Confirm the rule explicitly states the "is context already in transcript?" decision is AI-side, not server-side. Reconcile any drift between the two files. | `CLAUDE.md`, `packages/app/src/installWorkspace.ts` | — |
+
+---
+
+## Phase 2 — MCP tool metadata check
+
+| Done | # | Step | Files touched | Blocked by |
+|------|---|------|---------------|------------|
+|      | 2 | Inspect `loom_append_to_chat` and `loom_generate_chat_reply` tool handlers. Confirm the response includes `threadId` (or enough information for the AI to derive it) so the AI can call `loom://thread-context/{weave}/{threadId}` on the first reply. If the threadId is not exposed, add it to the response shape. | `packages/mcp/src/tools/appendToChat.ts`, `packages/mcp/src/tools/generateChatReply.ts` (paths approximate; verify in audit) | 1 |
+|      | 3 | If step 2 changes a tool response shape, update the matching MCP integration test to assert the new field. Run `cd packages/vscode && npm run package` to confirm the bundle still compiles. | `packages/mcp/tests/integration.test.ts` | 2 |
+
+**Notes:**
+- Steps 2 and 3 may turn out to be no-ops if the threadId is already in the response. If so, mark them done with a one-line "verified, no change needed" note.
+- The post-MVP delta-only optimization (server-side session state, transcript awareness) lives in a future `context-injection-plan-002`. Do not start it from this plan.
+
+## Out of scope
+
+- Server-side `loadedContexts` / `contextDirty` tracking — explicitly deferred per `mvp-scope` and the design's `### Where this state lives` section.
+- Bundling thread context into the chat-reply tool response (vs returning threadId only) — call this out as an open decision in step 2; if it requires architectural change, defer to plan-002.

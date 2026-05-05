@@ -2,7 +2,7 @@
 type: chat
 id: next-chat
 title: "Next Chat"
-status: active
+status: done
 created: 2026-04-22
 version: 1
 tags: []

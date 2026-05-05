@@ -1,17 +1,17 @@
 ---
 type: ctx
 id: loom-ctx
-title: "Loom — Global Context"
+title: Loom — Global Context
 status: active
-created: 2026-04-29
-version: 1
+created: "2026-04-29T00:00:00.000Z"
+updated: 2026-05-05
+version: 2
 tags: [ctx, vision, architecture, session-start]
 parent_id: null
 child_ids: []
 requires_load: [vision, workflow]
 load: always
 ---
-
 # Loom — Global Context
 
 **This is the global ctx doc. Read at the start of every session.** It bundles the
@@ -21,7 +21,8 @@ the deeper reference if needed.
 
 **Canonical refs (loaded via `requires_load`):**
 - [loom/refs/vision.md](refs/vision.md) — the north star: what Loom is for, why it exists, what manual steps it replaces. Use it for the vision-check rule before any design proposal.
-- [loom/refs/workflow.md](refs/workflow.md) — the canonical loop (`chat → {generate|refine} idea/design/plan/ctx → {implement step(s)} → done`), phase definitions, and transitions.
+- [loom/refs/workflow.md](refs/workflow.md) — the canonical loop, phase definitions, transitions, and the workflow diagram.
+- [loom/refs/architecture-reference.md](refs/architecture-reference.md) — package layers, MCP surface, doc types table, frontmatter schema, stale-detection rules.
 
 ---
 
@@ -31,47 +32,72 @@ Loom is a **collaboration medium between User and AI**, where **markdown documen
 are the shared context database**. The whole tool exists to make that collaboration
 durable, traceable, and resumable.
 
-**The loop:**
+**The canonical loop** (see [refs/workflow.md](refs/workflow.md) for phase definitions and transitions):
 
-1. **User and AI talk in chats** — free-form conversation grounded in the current
-   context (a thread, a design, a plan). Chats are the *thinking space*.
-2. When a conversation reaches something concrete, **the user clicks a button** to
-   ask the AI to **formalize** it into a structured doc — *idea*, *design*, or
-   *plan*. The button is the moment of promotion from chat → structured doc.
-3. Once a plan exists, **the user clicks another button** to ask the AI to
-   **implement the next step**. The AI writes code and records what it did in the
-   matching `-done.md`. The plan ticks forward.
-4. The chat keeps going in its own context — it's the conversation log, not the
-   workspace.
+```
+chat → {generate|refine} idea/design/plan/ctx → {implement step(s)} → done
+```
+
+In plain words:
+- Chats are where User and AI **think together** — free-form, no formal artifacts.
+- When a conversation reaches something concrete, the User **clicks a button** to ask AI to formalize it: *Generate Idea*, *Generate Design*, *Generate Plan*. AI writes the structured doc.
+- Once a plan exists, the User clicks **DoStep** to ask AI to implement the next step. AI writes code and records what it did in `{plan-id}-done.md`.
+- {refine} can run on any structured doc when a parent has changed — propagates updates through the graph.
 
 **Why each piece exists:**
 - **Chats** = where humans and AI think together (no implementation, no formal state).
 - **Idea / Design / Plan docs** = formalized outcomes of conversations, durable context.
-- **`-done.md`** = where AI records what it actually did.
-- **Buttons in the extension** = the user's explicit trigger points. AI never acts
-  unprompted.
+- **Done docs** = where AI records what it actually did.
+- **Buttons in the extension** = the user's explicit trigger points. AI never acts unprompted.
 - **MCP** = makes all this state machine-readable.
 
 Buttons must do real work, not flip state. A `DoStep` button that doesn't actually
 implement is a lie (this is the false-step-4 hallucination class of bug).
 
-→ Deeper: [loom/refs/loom.md](refs/loom.md)
+---
+
+## 2. Glossary (canonical)
+
+This is the single source for Loom terminology. Other docs link here instead of redefining.
+
+### Doc-graph terms
+
+- **Weave** — a project folder under `loom/` (e.g. `loom/core-engine/`). Also the core domain entity (`Weave` interface in `packages/core`). Contains threads and weave-level docs (chats, ctx, loose fibers).
+- **Thread** — a workstream subfolder inside a weave (e.g. `loom/core-engine/staleness-management/`). Holds an idea, a design, plans, done docs, and thread-level chats. The core entity is `Thread`.
+- **Loose fiber** — a doc at weave root that hasn't been grouped into a thread yet (typically a draft idea or design).
+- **Workspace / Loom root** — the project directory containing `.loom/` (config) and `loom/` (docs). One workspace = one Loom installation.
+
+### Doc-type terms
+
+- **Idea** (`*-idea.md`) — what we want to build, why it matters, success criteria.
+- **Design** (`*-design.md`) — how we'll build it: architecture, decisions, trade-offs. Contains the design conversation log.
+- **Plan** (`*-plan-NNN.md`) — implementation plan with a steps table. Lives in `{thread}/plans/`.
+- **Done** (`*-done.md`) — post-implementation notes for one step or one plan. Lives in `{thread}/done/`.
+- **Chat** (`*-chat.md`) — User↔AI conversation log; free-form thinking surface. Lives at any level: weave-root `chats/`, thread `chats/`, or attached to a specific design/plan.
+- **Ctx** (`*-ctx.md`) — AI-optimised context summary at global / weave / thread level. Auto-loaded into AI context based on scope. Never appears in `requires_load`.
+- **Reference** (`*-reference.md`) — static or semi-static architectural facts, lives in `loom/refs/` or thread-local refs. Loaded via `requires_load` (citation-loaded), not auto-included.
+
+The full doc-type table with file locations and frontmatter shape is in
+[refs/architecture-reference.md](refs/architecture-reference.md) section 3.
+
+### Frontmatter terms
+
+- **Frontmatter** — YAML block at the top of every doc, canonical key order enforced by `serializeFrontmatter` (in `packages/core/src/frontmatterUtils.ts`).
+- **`requires_load`** — list of doc IDs that must be read before working on this doc. The session-start protocol and AI rules honour this.
+- **`load`** (reference docs only) — `always` (auto-included) or `by-request` (only loaded when listed in `requires_load`).
+- **`load_when`** (reference docs only) — operation modes (idea, design, plan, implementing) when this reference is relevant. Filters auto-load.
+- **Stale** — a doc is stale when a parent it depends on has been refined since this doc's `version`. Plan staleness uses `design_version`; ctx staleness uses generation timestamp. Stale docs are flagged but never silently rewritten.
+
+### Workflow / loop terms
+
+- **{generate}** — User clicks *Generate Idea/Design/Plan/Ctx* button; AI reads context and produces a draft of the new doc. Output starts at `status: draft`.
+- **{refine}** — User clicks *Refine* on an existing doc that's gone stale; AI reads updated parents and rewrites or patches the doc. Version bumps.
+- **{implement step(s)} / DoStep** — User clicks *DoStep* on a plan in `status: implementing`; AI reads next pending step + thread context, writes code, records what was done in `{plan-id}-done.md`, marks the step ✅.
+- **Promote** — chat → idea, idea → design, design → plan. Same operation as {generate} but with explicit parent linkage.
 
 ---
 
-## Glossary
-
-- **Weave** — a project folder under `loom/`; also the core domain entity.
-- **Thread** — a workstream subfolder inside a weave; holds idea + design + plans + done + chats.
-- **Loose fiber** — a doc at weave root, not yet grouped into a thread.
-- **Plan** — implementation plan with a steps table (`*-plan-NNN.md`).
-- **Done** — post-implementation notes for one step or one plan (`*-done.md`).
-- **Chat** — User↔AI conversation log (`*-chat.md`); free-form thinking surface.
-- **Ctx** — AI-optimised context summary (global / weave / thread); auto-loaded.
-
----
-
-## 2. Architecture — how Loom is *built*
+## 3. Architecture — how Loom is *built*
 
 **Stage 2 layers:** `cli / vscode → mcp → app → core + fs`. Layers never import
 upward. The VS Code extension **must not** import `app` directly — MCP is the gate.
@@ -83,24 +109,18 @@ upward. The VS Code extension **must not** import `app` directly — MCP is the 
 **Reducers are pure** — no IO, no async, no VS Code. Side effects run *after* the
 reducer, in `runEvent`.
 
-**Document types:** `idea`, `design`, `plan`, `done`, `chat`, `ctx`, `reference`.
-Layout: `loom/{weave}/{thread}/{thread}-idea.md`, `…-design.md`, `plans/`, `done/`,
-`chats/`, `ctx/`. Frontmatter has a canonical key order enforced by
-`serializeFrontmatter`.
-
-→ Deeper: [loom/refs/architecture-reference.md](refs/architecture-reference.md) for
-the full diagram, all MCP resources/tools/prompts, and stale-detection rules.
-[loom/refs/loom-reference.md](refs/loom-reference.md) for the technical contract
-(deps shape, ID lifecycle, file naming).
+→ Deeper: [refs/architecture-reference.md](refs/architecture-reference.md) for
+the full diagram, all MCP resources/tools/prompts, doc-type table, and stale-detection rules.
 
 ---
 
-## 3. Rules — how to *act* in Loom
+## 4. Rules — how to *act* in Loom
 
-**Stage 2 — MCP active.** All Loom state mutations go through MCP tools (create
-doc, mark step done, rename, archive, promote). Never edit weave markdown files
-directly to change state — doing so bypasses reducers, the link index, and
-plan-step validation.
+**Stage 2 — MCP active.** All writes to `loom/**/*.md` go through MCP tools (create
+doc, update doc body, mark step done, rename, archive, promote). Never edit weave
+markdown files directly to change content or state — doing so bypasses reducers,
+the link index, and plan-step validation. A PreToolUse hook physically enforces
+this in Claude Code sessions; see CLAUDE.md for the full hard rule.
 
 **Primary entry points:**
 - `loom://thread-context/{weaveId}/{threadId}` — bundled idea + design + plan + ctx

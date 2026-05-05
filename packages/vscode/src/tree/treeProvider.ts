@@ -25,6 +25,9 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
     private _onDidChangeTreeData = new vscode.EventEmitter<TreeNode | undefined | void>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
+    private _onMCPStateChange = new vscode.EventEmitter<void>();
+    readonly onMCPStateChange = this._onMCPStateChange.event;
+
     private state: LoomState | null = null;
     private workspaceRoot: string | undefined;
 
@@ -56,15 +59,16 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
 
         const loomDir = path.join(this.workspaceRoot, '.loom');
         if (!fs.existsSync(loomDir)) {
-            return [this.messageNode('No .loom directory found in workspace')];
+            return [];
         }
 
         try {
             const json = await getMCP(this.workspaceRoot).readResource('loom://state');
             this.state = JSON.parse(json) as LoomState;
+            this._onMCPStateChange.fire();
 
             if (this.state.weaves.length === 0) {
-                return [this.messageNode('No weaves found')];
+                return [];
             }
 
             const viewState = this.viewStateManager.getState();

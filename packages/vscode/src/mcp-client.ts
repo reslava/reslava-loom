@@ -19,6 +19,11 @@ function isAIBoundTool(name: string): boolean {
 }
 
 let _client: LoomMCPClient | undefined;
+let _mcpConnected = false;
+
+export function getMCPConnected(): boolean {
+    return _mcpConnected;
+}
 
 export interface LoomMCPClient {
     readResource(uri: string): Promise<string>;
@@ -37,6 +42,7 @@ export function getMCP(workspaceRoot: string): LoomMCPClient {
 export function disposeMCP(): void {
     _client?.dispose();
     _client = undefined;
+    _mcpConnected = false;
 }
 
 function createMCPClient(workspaceRoot: string): LoomMCPClient {
@@ -73,7 +79,9 @@ function createMCPClient(workspaceRoot: string): LoomMCPClient {
     let connected = false;
     const connectPromise = client.connect(transport).then(() => {
         connected = true;
+        _mcpConnected = true;
     }).catch((err: Error) => {
+        _mcpConnected = false;
         console.error('🧵 MCP connect failed:', err.message);
         vscode.window.showErrorMessage(`Loom MCP failed to start: ${err.message}`);
     });

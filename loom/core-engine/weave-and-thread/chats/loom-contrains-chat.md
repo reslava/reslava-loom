@@ -2,7 +2,7 @@
 type: chat
 id: loom-contrains-chat
 title: "Loom Contrains Chat"
-status: active
+status: done
 created: 2026-04-23
 version: 1
 tags: []

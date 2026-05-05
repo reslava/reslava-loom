@@ -1001,3 +1001,122 @@ Next: waiting for your smoke-test on the vsix, then on to Phase 2.
 ## Rafa:
 
 Do Phase 2 Steps 10-15
+
+## AI:
+
+### Phase 2 ✅ — steps 10-15 done, commit db583ad pushed
+
+**Audit results before fixes:**
+
+| Step | Status before | Action |
+|---|---|---|
+| 10 generateGlobalCtx | stub showing "coming soon" | implemented |
+| 11 refineDesign | bypassed MCP (`runEvent` REFINE_DESIGN, no AI sampling) | fixed |
+| 12 refineIdea/refinePlan | already through MCP ✅ | verified |
+| 13 summarise | bypassed MCP (direct app + local AI client) | fixed |
+| 14 chatReply MCP tool | wrote file directly, did not use `loom_append_to_chat` | fixed |
+| 15 promoteTo* | all three through `loom_promote` ✅ | verified |
+
+**New MCP tools:**
+- `loom_refine_design` — wraps a new `app/refineDesign.ts` (analogous to `refineIdea`/`refinePlan`) with `samplingAiClient`.
+- `loom_summarise` — wraps the existing `app/summarise` with `samplingAiClient`.
+- `loom_generate_global_ctx` — reads workspace state, samples a summary, writes `loom/loom-ctx.md` with bumped version frontmatter.
+
+**Refactors:**
+- `loom_generate_chat_reply` now writes by delegating to `loom_append_to_chat`'s handler instead of writing the chat file itself. All chat mutations funnel through one path.
+
+**VS Code commands now MCP-only:**
+- `refineCommand` → `loom_refine_design`.
+- `summariseCommand` → `loom_summarise`.
+- `loom.generateGlobalCtx` → `loom_generate_global_ctx`.
+
+**Build + tests + vsix:** clean, except the same single pre-existing `workspace-workflow.test.ts: weave must surface chat doc from ai-chats/` failure (unchanged from main, unrelated). Fresh `loom-vscode-0.1.0.vsix` (366.34 KB) packaged.
+
+### Smoke-test plan
+
+Reinstall vsix + reload, then in this workspace try in any order:
+1. Right-click an active design → **Refine** → expect new content + version bump.
+2. Right-click a weave → **Summarise** → expect `{weaveId}-ctx.md` written/refreshed.
+3. Toolbar → **Generate Global Context** → expect `loom/loom-ctx.md` rewritten with bumped version. NOTE: this WILL overwrite the hand-written one in this repo — try in `j:/loom_test` first if you want to keep the curated copy.
+4. Right-click a chat → **AI Reply** → expect new `## AI:` section appended.
+
+### Next on the plan
+
+Phase 3 (steps 16-19) — empty-workspace UX, walkthrough polish, first-run notification, status bar. Mostly UI polish.
+
+Next: waiting for `go` on Phase 3, or smoke-test results from above.
+
+## Rafa:
+
+Do Phase 3 steps 16-19
+
+## AI:
+
+### Phase 3 ✅ — steps 16-19 done, vsix packaged
+
+**What was built:**
+
+| Step | Change |
+|---|---|
+| 16 — Welcome view | `viewsWelcome` added to `package.json` (two entries: no `.loom` dir → init prompt; no weaves → new weave prompt). `treeProvider` now returns `[]` for both empty-state cases so VS Code renders the welcome view instead of a text node |
+| 17 — Walkthrough auto-complete | Loom file watcher (`**/loom/**/*.md`) now also calls `debouncedSyncSetup` on create/delete, so `loom.hasWeaves` context key updates when the first weave file appears and the walkthrough step auto-completes |
+| 18 — First-run notification | Audit only — function is correct. Fires once per workspace (workspaceState key), covers CLI missing → loom dir missing → MCP config missing → CLAUDE.md missing in priority order. All actions route to `runLoomInstall()` or open settings |
+| 19 — Status bar real state | `mcpStatusBar.command = 'loom.reconnectMcp'` (click to reconnect). `_mcpConnected` module-level flag in `mcp-client.ts` tracks actual connect/disconnect. `getMCPConnected()` exported. Status bar uses real state; tooltip says "connected" or "disconnected — click to reconnect". `treeProvider.onMCPStateChange` event fires after first successful MCP state read → re-syncs status bar |
+
+**Key design points:**
+- Welcome view `when` clauses use existing context keys (`loom.workspaceInitialized`, `loom.hasWeaves`) — no new keys needed.
+- MCP status bar no longer shows "connected" based on config file presence alone; it waits for `client.connect()` to resolve.
+- The `debouncedSyncSetup` was already declared — just moved earlier in the file so the loom file watcher can reference it.
+
+**Build:** `tsc --noEmit` clean. vsix packaged by you.
+
+### Next on the plan
+
+Phase 4 (steps 20-26) — marketplace publish blockers: `vsce package` warnings, README, icon assets, console.log strip, publisher account, license files, MCP templates/list handler.
+
+Next: waiting for `go` on Phase 4.
+
+## Rafa:
+
+The MCP tools (loom_start_plan, loom_complete_step, loom_close_plan) have  a path resolution bug — they look for loom/{weaveId} directly instead of  resolving the weave directory correctly. 
+
+## AI:
+
+Root cause: The split('-plan-')[0] extraction gives the thread ID prefix,  
+  not the weave ID. For example, vscode-mcp-refactor-plan-001 →              
+  vscode-mcp-refactor (the thread), but the weave is vscode-extension. Only  
+  coincidentally correct when thread ID = weave ID (e.g., core-engine, mvp). 
+                                                                             
+  Fix: Use findDocumentById to locate the plan file on disk, then extract the
+   first path component after loom/. I'll add a resolveWeaveIdForPlan helper
+  to fs/pathUtils.ts and replace the broken derivation in all three call
+  sites.
+
+  Vision check: this fix enables loom_start_plan / loom_complete_step /
+  loom_close_plan to actually work on cross-weave threads — it unblocks the
+  {implement step(s)} phase, the core feature that removesthe manual "find
+  which weave this plan lives in" step.
+
+All three call sites are using the new function. The fix 
+  is live.                                                 
+   
+  Summary of what changed:                                 
+                  
+  - packages/fs/src/utils/pathUtils.ts — added             
+  resolveWeaveIdForPlan(loomRoot, planId): finds the plan
+  file on disk via findDocumentById, then extracts the
+  first path component after loom/ to get the real weave
+  ID.
+  - packages/mcp/src/tools/startPlan.ts,
+  packages/app/src/completeStep.ts,
+  packages/app/src/closePlan.ts — replaced the broken
+  planId.split('-plan-')[0] (which returned the thread ID
+  prefix, not the weave ID) with await
+  resolveWeaveIdForPlan(...).
+
+  Plans like vscode-mcp-refactor-plan-001 (weave:
+  vscode-extension, thread: vscode-mcp-refactor) will now
+  resolve correctly instead of failing with "Weave not
+  found: vscode-mcp-refactor".
+
+  Next: waiting for direction.

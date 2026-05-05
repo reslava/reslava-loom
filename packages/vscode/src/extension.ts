@@ -30,7 +30,7 @@ import { refinePlanCommand } from './commands/refinePlan';
 import { doStepCommand } from './commands/doStep';
 import { closePlanCommand } from './commands/closePlan';
 import { setIconBaseUri } from './icons';
-import { disposeMCP, getMCP } from './mcp-client';
+import { disposeMCP, getMCP, getMCPConnected } from './mcp-client';
 
 import { updateDiagnostics } from './diagnostics';
 
@@ -159,25 +159,30 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         const cliDetected = isLoomCliAvailable();
         const workspaceInitialized = root ? fs.existsSync(path.join(root, '.loom')) : false;
-        const mcpConnected = root ? await detectMcpConfig(root) : false;
+        const mcpConfigured = root ? await detectMcpConfig(root) : false;
+        const mcpLive = getMCPConnected();
         const aiConfigured = (vscode.workspace.getConfiguration('reslava-loom.ai').get<string>('apiKey') ?? '').length > 0;
         const hasWeaves = root ? detectHasWeaves(root) : false;
 
         const set = (key: string, val: boolean) => vscode.commands.executeCommand('setContext', key, val);
         set('loom.cliDetected', cliDetected);
         set('loom.workspaceInitialized', workspaceInitialized);
-        set('loom.mcpConnected', mcpConnected);
+        set('loom.mcpConnected', mcpConfigured);
         set('loom.aiConfigured', aiConfigured);
         set('loom.hasWeaves', hasWeaves);
 
-        mcpStatusBar.text = mcpConnected ? '$(plug) Loom MCP' : '$(debug-disconnect) Loom MCP';
+        mcpStatusBar.text = mcpLive ? '$(plug) Loom MCP' : '$(debug-disconnect) Loom MCP';
+        mcpStatusBar.tooltip = mcpLive ? 'Loom MCP connected — click to reconnect' : 'Loom MCP disconnected — click to reconnect';
         mcpStatusBar.show();
     }
 
     // MCP status bar
     const mcpStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 90);
-    mcpStatusBar.tooltip = 'Loom MCP server connection status';
+    mcpStatusBar.command = 'loom.reconnectMcp';
     context.subscriptions.push(mcpStatusBar);
+
+    // Re-sync status bar once MCP actually connects (first successful state read)
+    context.subscriptions.push(treeProvider.onMCPStateChange(() => syncSetupContext()));
 
     syncSetupContext();
 
@@ -233,13 +238,6 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         vscode.workspace.onDidChangeWorkspaceFolders(() => syncAndRefresh())
     );
 
-    const watcher = vscode.workspace.createFileSystemWatcher('**/loom/**/*.md');
-    const debouncedRefresh = debounce(() => treeProvider.refresh(), 300);
-    context.subscriptions.push(watcher.onDidCreate(debouncedRefresh));
-    context.subscriptions.push(watcher.onDidChange(debouncedRefresh));
-    context.subscriptions.push(watcher.onDidDelete(debouncedRefresh));
-    context.subscriptions.push(watcher);
-
     // Watch .loom/ for install/upgrade events — re-sync context keys
     const loomDirWatcher = vscode.workspace.createFileSystemWatcher('**/.loom/**');
     const debouncedSyncSetup = debounce(() => syncSetupContext(), 500);
@@ -247,6 +245,16 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
     context.subscriptions.push(loomDirWatcher.onDidChange(debouncedSyncSetup));
     context.subscriptions.push(loomDirWatcher.onDidDelete(debouncedSyncSetup));
     context.subscriptions.push(loomDirWatcher);
+
+    const watcher = vscode.workspace.createFileSystemWatcher('**/loom/**/*.md');
+    const debouncedRefresh = debounce(() => treeProvider.refresh(), 300);
+    context.subscriptions.push(watcher.onDidCreate(debouncedRefresh));
+    context.subscriptions.push(watcher.onDidChange(debouncedRefresh));
+    context.subscriptions.push(watcher.onDidDelete(debouncedRefresh));
+    // Also re-sync context keys (hasWeaves) when loom files appear or disappear
+    context.subscriptions.push(watcher.onDidCreate(debouncedSyncSetup));
+    context.subscriptions.push(watcher.onDidDelete(debouncedSyncSetup));
+    context.subscriptions.push(watcher);
 
     setImmediate(() => syncAndRefresh());
 

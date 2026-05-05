@@ -1,11 +1,19 @@
 {
-  "mcpServers": {
-    "loom": {
-      "command": "loom",
-      "args": ["mcp"],
-      "env": {
-        "LOOM_ROOT": "j:/src/loom"
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "pwsh -NoProfile -File .claude/hooks/loom-mcp-gate.ps1",
+            "timeout": 10,
+            "statusMessage": "Checking Loom MCP gate"
+          }
+        ]
       }
-    }
+    ]
   }
 }

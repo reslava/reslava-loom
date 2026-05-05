@@ -22,10 +22,10 @@ documents:
     staled_field: "staled"
 
   - type: plan
-    file_pattern: ["**/*-plan-*.md", "**/done/*-plan-*.md"]
+    file_pattern: ["**/plans/*-plan-*.md"] # , "**/done/*-plan-*.md"]
     statuses: [draft, active, implementing, done, blocked, cancelled]
     initial_status: draft
-    child_of: design                      # parent_id → primary or supporting design
+    child_of: design                      
     version_field: "version"
     staled_field: "staled"
 
@@ -118,7 +118,7 @@ events:
     effects:
       - create_child_document:
           child_type: plan
-          template_path: ".wf/templates/plan-template.md"
+          template_path: ".wf/templates/plan-template.md"  # TO BE DELETED, OLD TEMPLATES
 
   - name: ACTIVATE_PLAN
     applies_to: plan

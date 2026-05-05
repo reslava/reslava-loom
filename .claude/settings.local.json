@@ -1,14 +1,4 @@
-{
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  },
-  "permissions": {
-    "allow": [
-      "Bash(dotnet clean:*)",
-      "Bash(npx tsc *)"
-    ]
-  },
+{  
   "enabledMcpjsonServers": [
     "loom"
   ],

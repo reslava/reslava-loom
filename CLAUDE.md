@@ -17,6 +17,19 @@ If the read fails for any reason, output `⚠️ loom-ctx not loaded — proceed
 
 ---
 
+## Two CLAUDE.md surfaces — keep them in sync
+
+This repository owns **two** CLAUDE.md surfaces and they MUST stay in sync:
+
+1. **This file (`CLAUDE.md` at the repo root)** — the *recursive* contract: rules for using Loom to build Loom itself. Project-specific (mentions `packages/`, `loom/refs/vision.md`, current threads, etc.).
+2. **The `LOOM_CLAUDE_MD` template in [`packages/app/src/installWorkspace.ts`](packages/app/src/installWorkspace.ts)** — the *project-agnostic* contract installed as `.loom/CLAUDE.md` in any project that runs `loom install`. No project-specifics.
+
+**When you change session rules, MCP visibility rules, chat-reply rules, stop rules, or session-start protocol, update both.** The recursive file may carry extra project-specific guidance, but every rule shared by both surfaces (anything a generic Loom user also needs) must mirror. If a change is purely Loom-repo-specific (e.g., the active-work pointer, package paths), it stays in this file only — and you must say so explicitly when proposing the change.
+
+Drift between these two files = inconsistent behavior between Rafa's recursive sessions and every downstream Loom user. Treat them as one logical contract with two physical files.
+
+---
+
 ## What this project is
 
 **REslava Loom** is a document-driven, event-sourced workflow system for AI-assisted development.
@@ -210,7 +223,7 @@ Verify with `claude mcp list`.
 
 ### Rules
 
-- **All Loom state mutations must go through MCP tools** — create doc, mark step done, rename, archive, promote. Never edit weave markdown files directly to change state — doing so bypasses reducers, link index, and plan-step validation.
+- **All writes to `loom/**/*.md` go through MCP tools** — frontmatter, body, state mutations, and prose edits alike (see the "AI session rules" hard rule below for the full breakdown and the gate hook that enforces it).
 - Use `loom://thread-context` before starting any thread work. It bundles everything the agent needs (idea, design, active plan, requires_load refs) in a single read.
 - `do-next-step` prompt is the primary workflow driver: call it with the active planId to get context + step instruction in one shot.
 - `loom_generate_*` tools require sampling support from the MCP client. If sampling is unavailable, use `loom_create_*` tools manually.
@@ -226,7 +239,15 @@ Verify with `claude mcp list`.
 - Keep responses aligned with the ongoing design conversation in the document.
 - **Chat docs are the conversation surface (always reply inside).** Whenever a `-chat.md` doc is the active context of the session — Rafa asked you to read it, opened it in the IDE while discussing it, references a line/section inside it, or the previous turn was already written into it — every reply goes inside that doc, appended at the bottom under `## AI:`. This is not optional and does not require Rafa to repeat "reply inside" each turn. Once a chat doc is active, keep replying inside it for all follow-ups until Rafa explicitly says `close` or switches to a different chat doc. The terminal response should be a brief one-liner pointing at the appended reply, not a duplicate of the content.
 - **Why this matters:** Chats are Loom's User↔AI collaboration medium and the durable context database. Replies that live only in the terminal disappear; replies inside the chat doc persist as part of the project's shared memory. Treat the chat doc as the canonical place the conversation lives.
-- **MCP tools for Loom state changes:** All Loom state mutations (create doc, mark step done, rename, archive, promote) must go through MCP tools once MCP is active. Never edit weave markdown files directly to change state — doing so bypasses reducers, link index, and plan-step validation.
+- **MCP tools for ALL writes to `loom/**/*.md` (hard rule):** Every write to a Loom doc — frontmatter or body, new doc or existing, state mutation or prose edit — goes through a `loom_*` MCP tool. No exceptions for "small" edits, typo fixes, or appending a single line. Direct `Edit`/`Write`/`MultiEdit` to `loom/**/*.md` is **physically blocked** by the `loom-mcp-gate` PreToolUse hook (`.claude/hooks/loom-mcp-gate.ps1`); if you see the gate's deny message, switch to the right MCP tool — don't try to route around it.
+  - Chats → `loom_append_to_chat`
+  - New idea/design/plan/done → `loom_create_*` (or `loom_generate_*` if sampling is available)
+  - Step progress → `loom_complete_step` / `loom_append_done`
+  - Existing doc body or frontmatter → `loom_update_doc`
+  - Renames/archives → `loom_rename` / `loom_archive`
+  - Excluded from the gate: `loom/refs/*.md` (reference docs maintained by hand), `loom/.archive/**/*.md` (archived/deferred docs are frozen — no reducer to run), `CLAUDE.md` at repo root, anything under `packages/**`. Edits to those use normal `Edit`/`Write`.
+  - If MCP is genuinely down (rare), output `⚠️ MCP unavailable — editing file directly`, ask Rafa to disable the hook via `/hooks` for this session, and proceed only with explicit go.
+- **Treat MCP tool failures as findings, not friction.** If a `loom_*` tool returns the wrong shape, a malformed doc (missing Steps table, double type-suffix, broken frontmatter), or times out — stop, report what happened in the active chat, and let Rafa decide how to proceed. Routing around a buggy MCP tool by editing the file directly hides the bug; you've now also bypassed the very thing you were supposed to be testing.
 
 ### MCP visibility (required)
 
@@ -246,6 +267,27 @@ If MCP is unavailable and you must fall back to direct file editing, output:
 ```
 
 This makes MCP usage visible. If you don't see these prefixes, either MCP is not running or the AI is bypassing it (which the rules forbid).
+
+### Chat-reply context injection (required)
+
+When replying inside a chat doc that lives in a thread (`loom/{weave}/{thread}/chats/...`):
+
+- **First reply for this thread in the current conversation** — read the thread context (idea + design + active plan + any `requires_load` docs) before responding. Emit one visibility line per doc:
+  ```
+  📡 MCP: loom://thread-context/{weave}/{thread}
+  📄 {thread}-idea.md — loaded for context
+  📄 {thread}-design.md — loaded for context
+  📄 {plan-id}.md — loaded for context  (only if an active plan exists)
+  ```
+- **Same thread, no `refine` / `generate` since last reply** — context is already in the conversation transcript. Do NOT re-read. Emit only the tool-call visibility line:
+  ```
+  🔧 MCP: loom_append_to_chat(id="{chat-id}")
+  ```
+- **Same thread, but a `refine` or `generate` ran since last reply** — re-read the context (it may have changed) and re-emit the doc-loaded visibility lines.
+
+For a chat at weave root (loose fiber, no thread), load the parent doc(s) the chat refers to and emit `📄 {doc}.md — loaded for context` for each. No thread-context resource call.
+
+The "is this thread already in transcript?" decision lives **in the AI**, not in the MCP server — the server is stateless across calls and cannot see the LLM transcript.
 
 ---
 

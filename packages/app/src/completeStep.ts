@@ -1,4 +1,4 @@
-import { loadWeave} from '../../fs/dist';
+import { loadWeave, resolveWeaveIdForPlan } from '../../fs/dist';
 import { runEvent } from './runEvent';
 import { PlanDoc } from '../../core/dist/entities/plan';
 import { WorkflowEvent } from '../../core/dist/events/workflowEvent';
@@ -18,11 +18,7 @@ export async function completeStep(
     input: CompleteStepInput,
     deps: CompleteStepDeps
 ): Promise<{ plan: PlanDoc; autoCompleted: boolean }> {
-    const weaveId = input.planId.split('-plan-')[0];
-    if (!weaveId) {
-        throw new Error(`Invalid plan ID format. Expected "{weaveId}-plan-###", got "${input.planId}"`);
-    }
-
+    const weaveId = await resolveWeaveIdForPlan(deps.loomRoot, input.planId);
     const stepIndex = input.step - 1;
 
     const weave = await deps.loadWeave(deps.loomRoot, weaveId);
