@@ -1,11 +1,12 @@
 ---
 type: reference
-id: workspace-directory-structure-reference
-title: "Workspace Directory Structure — REslava Loom"
+id: rf_01KQYDFDDD31MDCMHA1TDAG0EG
+title: Workspace Directory Structure — REslava Loom
 status: active
-created: 2026-04-26
+created: "2026-04-26T00:00:00.000Z"
 version: 2
 tags: [reference, structure, filesystem]
+slug: workspace-directory-structure-reference
 load: always
 load_when: [idea, design, plan, implementing]
 ---

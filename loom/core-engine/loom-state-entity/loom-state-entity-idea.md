@@ -1,13 +1,12 @@
 ---
 type: idea
-id: loom-state-entity-idea
-title: "LoomState — First‑Class State Entity"
+id: id_01KQYDFDDCDX24651YYE1JCQRY
+title: LoomState — First‑Class State Entity
 status: done
-created: 2026-04-18
+created: "2026-04-18T00:00:00.000Z"
 version: 1
 tags: [state, architecture, caching, deferred]
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

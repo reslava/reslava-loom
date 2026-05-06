@@ -1,13 +1,12 @@
 ---
 type: chat
-id: loom-pending-chat
-title: "Loom pending"
+id: ch_01KQYDFDDARBF52JBRQF1PH3QN
+title: Loom pending
 status: active
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

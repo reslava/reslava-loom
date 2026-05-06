@@ -1,16 +1,16 @@
 ---
 type: plan
-id: vscode-extension-plan-006
-title: "Implement VSCode Toolbar (View Controls & Actions)"
+id: pl_01KQYDFDDEC0K7FANZWDV9AMVH
+title: Implement VSCode Toolbar (View Controls & Actions)
 status: done
-created: 2026-04-11
-updated: 2026-04-18
+created: "2026-04-11T00:00:00.000Z"
+updated: "2026-04-18T00:00:00.000Z"
 version: 2
 design_version: 1
 tags: [vscode, toolbar, ui, viewstate, app-layer]
-parent_id: vscode-extension-design
-target_version: "0.6.0"
-requires_load: [vscode-extension-toolbar-design, vscode-extension-plan-004, vscode-extension-plan-005]
+parent_id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
+requires_load: [de_01KQYDFDDE0PPQX6WSKFF5XBQB, pl_01KQYDFDDE44MBZ865D6F222X8, pl_01KQYDFDDE87402EH7APJ6PS73]
+target_version: 0.6.0
 ---
 
 # Plan — Implement VSCode Toolbar (View Controls & Actions)

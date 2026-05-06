@@ -1,12 +1,13 @@
 ---
 type: reference
-id: vscode-commands-reference
-title: "REslava Loom VS Code Commands Reference"
+id: rf_01KQYDFDDDZDXZDHVWCM2VF3EN
+title: REslava Loom VS Code Commands Reference
 status: active
-created: 2026-04-14
+created: "2026-04-14T00:00:00.000Z"
 version: 1
 tags: [vscode, commands, reference, ui, loom]
 requires_load: []
+slug: vscode-commands-reference
 ---
 
 # REslava Loom VS Code Commands Reference

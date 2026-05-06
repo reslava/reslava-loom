@@ -1,14 +1,14 @@
 ---
 type: plan
-id: archived-document-link-handling-plan-001
-title: "Handle Links to Archived Documents Gracefully"
+id: pl_01KQYDFDDBV96HGN3QN37ZCTJG
+title: Handle Links to Archived Documents Gracefully
 status: active
-created: 2026-04-18
+created: "2026-04-18T00:00:00.000Z"
 version: 1
 tags: [validation, link-index, archive, ux]
-parent_id: core-engine-design
-target_version: "0.5.0"
-requires_load: [core-engine-design, link-index-design]
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
+requires_load: [de_01KQYDFDDB802XEJM0S329T9WW, de_01KQYDFDDCQ0DBXVNCSCK57P7M]
+target_version: 0.5.0
 ---
 
 # Plan — Handle Links to Archived Documents Gracefully

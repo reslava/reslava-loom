@@ -1,14 +1,13 @@
 ---
 type: idea
-id: archive-management-idea
+id: id_01KQYDFDDA5F6SJJ3K7PA7HHBJ
 title: Archive management — taxonomy, central root, and tree visibility
 status: draft
 created: "2026-05-05T00:00:00.000Z"
-updated: 2026-05-05
+updated: "2026-05-05T00:00:00.000Z"
 version: 2
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # Archive management — taxonomy, central root, and tree visibility

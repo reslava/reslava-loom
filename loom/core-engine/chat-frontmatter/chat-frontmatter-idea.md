@@ -1,13 +1,12 @@
 ---
 type: idea
-id: chat-frontmatter
-title: "Chat doc frontmatter schema"
+id: id_01KQYDFDDAPGGZTSF7JATTKQ20
+title: Chat doc frontmatter schema
 status: done
-created: 2026-04-28
+created: "2026-04-28T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

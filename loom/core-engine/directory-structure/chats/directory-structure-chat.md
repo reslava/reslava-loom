@@ -1,13 +1,12 @@
 ---
 type: chat
-id: directory-structure-chat
-title: "Directory Structure Chat"
+id: ch_01KQYDFDDBG3W8ERSSHXN61KNT
+title: Directory Structure Chat
 status: active
-created: 2026-04-26
+created: "2026-04-26T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

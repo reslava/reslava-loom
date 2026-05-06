@@ -12,6 +12,7 @@ export { PlanDoc, PlanStatus, PlanStep } from './entities/plan';
 export { CtxDoc, CtxStatus } from './entities/ctx';
 export { ChatDoc, ChatStatus } from './entities/chat';
 export { DoneDoc, DoneStatus } from './entities/done';
+export { ReferenceDoc, ReferenceStatus } from './entities/reference';
 export { Weave, WeaveStatus, WeavePhase } from './entities/weave';
 export { Thread, ThreadStatus, Fiber } from './entities/thread';
 export { LoomState, LoomMode } from './entities/state';
@@ -37,12 +38,12 @@ export { planReducer } from './reducers/planReducer';
 export { applyEvent } from './applyEvent';
 export { getWeaveStatus, getWeavePhase, isPlanStale, getStalePlans, getThreadStatus } from './derived';
 export { createBaseFrontmatter, serializeFrontmatter } from './frontmatterUtils';
-export { toKebabCaseId, ensureUniqueId, generateTempId, generatePermanentId, generatePlanId, generateChatId } from './idUtils';
+export { generateDocId, parseDocId, isUlidId, toKebabCaseId, ensureUniqueId, generateTempId, generatePermanentId, generatePlanId, generateChatId } from './idUtils';
 export { ConfigRegistry } from './registry';
 export { AIClient, Message } from './ai';
 export { parseStepsTable, generateStepsTable, updateStepsTableInContent } from './planTableUtils';
 export { isStepBlocked, findNextStep } from './planUtils';
-export { createEmptyIndex, LinkIndex, DocumentEntry, StepBlocker } from './linkIndex';
+export { createEmptyIndex, resolveId, LinkIndex, DocumentEntry, StepBlocker } from './linkIndex';
 export {
     validateParentExists,
     getDanglingChildIds,

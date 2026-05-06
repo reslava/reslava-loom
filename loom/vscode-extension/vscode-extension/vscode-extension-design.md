@@ -1,13 +1,12 @@
 ---
 type: design
-id: vscode-extension-design
-title: "VS Code Extension — Loom Visual Layer Design"
+id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
+title: VS Code Extension — Loom Visual Layer Design
 status: active
-created: 2026-04-18
+created: "2026-04-18T00:00:00.000Z"
 version: 1
 tags: [vscode, extension, ui, design]
 parent_id: null
-child_ids: [vscode-extension-plan-004, vscode-extension-plan-005, vscode-extension-plan-006, vscode-extension-plan-007, vscode-extension-plan-008, linkRepository-fix-plan-001, vscode-tests-plan-001]
 requires_load: []
 ---
 

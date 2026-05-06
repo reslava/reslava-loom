@@ -37,12 +37,6 @@ async function updateAllReferences(
             modified = true;
         }
 
-        // Update child_ids array
-        if (doc.child_ids && doc.child_ids.includes(oldId)) {
-            doc.child_ids = doc.child_ids.map(id => id === oldId ? newId : id);
-            modified = true;
-        }
-
         // Update Blocked by column in plan steps
         if (doc.type === 'plan') {
             const planDoc = doc as PlanDoc;

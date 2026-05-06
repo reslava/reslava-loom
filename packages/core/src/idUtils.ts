@@ -1,3 +1,60 @@
+import { ulid } from 'ulid';
+import type { DocumentType } from './entities/base';
+
+// ---------------------------------------------------------------------------
+// ULID-based identity
+// ---------------------------------------------------------------------------
+
+const TYPE_PREFIX: Record<DocumentType, string> = {
+    chat:      'ch_',
+    idea:      'id_',
+    design:    'de_',
+    plan:      'pl_',
+    done:      'dn_',
+    ctx:       'cx_',
+    reference: 'rf_',
+};
+
+const ULID_PATTERN = /^([a-z]{2}_)([0-9A-Z]{26})$/;
+
+/**
+ * Generates a ULID-based doc identity for the given type.
+ * Returns `{prefix}{ulid}`, e.g. `pl_01JT8Y3R4P7M6K2N9D5QF8A1BC`.
+ * Ctx docs are excluded — they keep a semantic id (`*-ctx`). Calling this
+ * for `ctx` is allowed but callers should prefer the semantic id convention.
+ */
+export function generateDocId(type: DocumentType): string {
+    return `${TYPE_PREFIX[type]}${ulid()}`;
+}
+
+export interface ParsedDocId {
+    prefix: string;
+    type: DocumentType | null;
+    ulid: string;
+}
+
+/**
+ * Parses a ULID doc id into its prefix, inferred type, and raw ULID.
+ * Returns null if `id` does not match the `{2-char-prefix}_{26-char-ulid}` shape.
+ */
+export function parseDocId(id: string): ParsedDocId | null {
+    const m = id.match(ULID_PATTERN);
+    if (!m) return null;
+    const prefix = m[1];
+    const rawUlid = m[2];
+    const type = (Object.entries(TYPE_PREFIX).find(([, p]) => p === prefix)?.[0] as DocumentType) ?? null;
+    return { prefix, type, ulid: rawUlid };
+}
+
+/** Returns true if `id` matches the `{2-char-prefix}_{26-char-ulid}` shape. */
+export function isUlidId(id: string): boolean {
+    return ULID_PATTERN.test(id);
+}
+
+// ---------------------------------------------------------------------------
+// Slug-based / legacy identity
+// ---------------------------------------------------------------------------
+
 /**
  * Converts any string to a kebab-case ID.
  * Example: "Add Dark Mode!" -> "add-dark-mode"
@@ -47,11 +104,15 @@ export function generatePermanentId(title: string, type: string, existingIds: Se
 }
 
 /**
- * Generates the next available plan ID for a thread.
- * Format: {weaveId}-plan-{###}
+ * Generates the next available plan ID, scoped by the caller's chosen prefix.
+ * Format: {scope}-plan-{###} — scope is the threadId for threaded plans
+ * (and the weaveId for loose plans at weave root). Counter is local to whatever
+ * existingPlanIds the caller passes; pass thread-local IDs to get thread-local
+ * numbering. Use resolveWeaveIdForPlan to recover the containing weave from a
+ * planId — never split('-plan-')[0], that assumed weaveId-prefix and is wrong.
  */
-export function generatePlanId(weaveId: string, existingPlanIds: string[]): string {
-    const prefix = `${weaveId}-plan-`;
+export function generatePlanId(scope: string, existingPlanIds: string[]): string {
+    const prefix = `${scope}-plan-`;
     const numbers = existingPlanIds
         .map(p => p.match(/-plan-(\d+)$/)?.[1])
         .filter(Boolean)

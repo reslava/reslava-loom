@@ -1,12 +1,13 @@
 ---
 type: reference
-id: app-query-use-cases-reference
-title: "Application Layer Query Use‑Cases Reference"
+id: rf_01KQYDFDDDSHGVMDC23WXW76ZD
+title: Application Layer Query Use‑Cases Reference
 status: active
-created: 2026-04-18
+created: "2026-04-18T00:00:00.000Z"
 version: 1
 tags: [app, query, cli, vscode, reference]
 requires_load: []
+slug: app-query-use-cases-reference
 ---
 
 # Application Layer Query Use‑Cases Reference

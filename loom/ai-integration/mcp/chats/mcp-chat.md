@@ -1,13 +1,12 @@
 ---
 type: chat
-id: mcp-chat
-title: "Mcp Chat"
+id: ch_01KQYDFDD9TD3JC3JW5G0GQJFX
+title: Mcp Chat
 status: active
-created: 2026-04-26
+created: "2026-04-26T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

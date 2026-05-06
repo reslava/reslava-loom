@@ -1,15 +1,15 @@
 ---
 type: plan
-id: validation-utils-plan-001
-title: "Extract Validation Utilities"
+id: pl_01KQYDFDDAP7FYHPTB3ER7BY0P
+title: Extract Validation Utilities
 status: done
-created: 2026-04-16
+created: "2026-04-16T00:00:00.000Z"
 version: 1
 design_version: 1
 tags: [refactor, validation, utilities]
-parent_id: body-generators-design
-target_version: "0.4.0"
-requires_load: [body-generators-design]
+parent_id: de_01KQYDFDDAGJ0Q2B1E1R2ZQ67W
+requires_load: [de_01KQYDFDDAGJ0Q2B1E1R2ZQ67W]
+target_version: 0.4.0
 ---
 
 # Plan — Extract Validation Utilities

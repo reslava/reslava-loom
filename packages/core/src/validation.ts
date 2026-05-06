@@ -20,15 +20,12 @@ export function validateParentExists(doc: Document, index: LinkIndex): boolean {
 }
 
 /**
- * Returns a list of child_ids that do not exist in the link index.
+ * Returns dangling child references via the backlink index.
+ * child_ids is removed from frontmatter; children are derived from parent_id references.
+ * This function is now a no-op — kept for API compatibility.
  */
-export function getDanglingChildIds(doc: Document, index: LinkIndex): string[] {
-    if (!doc.child_ids) return [];
-    return doc.child_ids.filter(id => {
-        const child = index.documents.get(id);
-        if (!child) return true;
-        return !child.exists && !child.archived;
-    });
+export function getDanglingChildIds(_doc: Document, _index: LinkIndex): string[] {
+    return [];
 }
 
 /**

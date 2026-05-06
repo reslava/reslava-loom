@@ -1,4 +1,4 @@
-export type DocumentType = 'idea' | 'design' | 'plan' | 'ctx' | 'chat' | 'done';
+export type DocumentType = 'idea' | 'design' | 'plan' | 'ctx' | 'chat' | 'done' | 'reference';
 
 export interface BaseDoc<TStatus extends string = string> {
     /** Discriminator for the document type */
@@ -27,9 +27,6 @@ export interface BaseDoc<TStatus extends string = string> {
 
     /** ID of parent document (null for root) */
     parent_id: string | null;
-
-    /** IDs of child documents */
-    child_ids: string[];
 
     /** Documents that must be loaded for AI context */
     requires_load: string[];

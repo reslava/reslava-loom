@@ -1,11 +1,12 @@
 ---
 type: reference
-id: loom-claude-own-vision
-title: "Loom — Claude's Own Vision"
+id: rf_01KQYDFDDD9VNSYGWSPQZDTSC8
+title: Loom — Claude's Own Vision
 status: active
-created: 2026-04-26
+created: "2026-04-26T00:00:00.000Z"
 version: 1
 tags: [vision, ai, mcp, loom]
+slug: loom-claude-own-vision
 load: by-request
 load_when: [idea, design]
 ---

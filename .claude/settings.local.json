@@ -2,5 +2,10 @@
   "enabledMcpjsonServers": [
     "loom"
   ],
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
 }

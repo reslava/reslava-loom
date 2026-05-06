@@ -1,16 +1,15 @@
 ---
 type: design
-id: loom-install
-title: "Loom Install — Workspace Onboarding"
+id: de_01KQYDFDDDW3C3JYPHQV085GAC
+title: Loom Install — Workspace Onboarding
 status: active
-created: 2026-04-27
+created: "2026-04-27T00:00:00.000Z"
 version: 2
 tags: []
 parent_id: vscode-extension
-child_ids: []
 requires_load: []
 role: primary
-target_release: "0.5.0"
+target_release: 0.5.0
 actual_release: null
 ---
 

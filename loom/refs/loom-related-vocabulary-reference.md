@@ -1,12 +1,13 @@
 ---
 type: reference
-id: loom-related-vocabulary-reference
-title: "REslava Loom VS Code Commands Reference"
+id: rf_01KQYDFDDDK4E7DRKXHJZ2BB4A
+title: REslava Loom VS Code Commands Reference
 status: active
-created: 2026-04-14
+created: "2026-04-14T00:00:00.000Z"
 version: 1
 tags: [loom, brand, vocabulary, reference, ui]
 requires_load: []
+slug: loom-related-vocabulary-reference
 ---
 
 ### 🧵 Core Loom/Weaving Words

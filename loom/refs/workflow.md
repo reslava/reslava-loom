@@ -1,14 +1,14 @@
 ---
 type: reference
-id: workflow
-title: "Loom — Workflow"
+id: rf_01KQYDFDDD7RAN1PW90DJD0B3Q
+title: Loom — Workflow
 status: active
-created: 2026-04-30
+created: "2026-04-30T00:00:00.000Z"
 version: 1
 tags: [workflow, loop, phases, onboarding]
 parent_id: null
-child_ids: []
 requires_load: [vision]
+slug: workflow
 ---
 
 # Loom — Workflow

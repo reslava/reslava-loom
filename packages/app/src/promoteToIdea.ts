@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { loadDoc, saveDoc } from '../../fs/dist';
-import { AIClient, ChatDoc, IdeaDoc, createBaseFrontmatter } from '../../core/dist';
+import { AIClient, ChatDoc, IdeaDoc, createBaseFrontmatter, generateDocId } from '../../core/dist';
 import { buildSummarizationMessages, parseTitleAndBody } from './utils/aiSummarization';
 
 export interface PromoteToIdeaInput {
@@ -61,12 +61,12 @@ export async function promoteToIdea(
         : path.join(deps.loomRoot, 'loom', weaveId);
     await deps.fs.ensureDir(targetDir);
 
-    let ideaId: string;
+    let ideaFilename: string;
     let filePath: string;
     if (threadId) {
         // Thread-level: canonical filename is {threadId}-idea.md (one per thread)
-        ideaId = `${threadId}-idea`;
-        filePath = path.join(targetDir, `${ideaId}.md`);
+        ideaFilename = `${threadId}-idea`;
+        filePath = path.join(targetDir, `${ideaFilename}.md`);
         if (await deps.fs.pathExists(filePath)) {
             throw new Error(`Thread '${threadId}' already has an idea. Refine the existing one instead.`);
         }
@@ -74,11 +74,12 @@ export async function promoteToIdea(
         // Weave-level loose fiber: use kebab-of-title to allow multiple
         const existingFiles = await deps.fs.readdir(targetDir).catch(() => [] as string[]);
         const ideaFiles = existingFiles.filter(f => f.endsWith('-idea.md'));
-        ideaId = generateIdeaId(title, weaveId, ideaFiles);
-        filePath = path.join(targetDir, `${ideaId}.md`);
+        ideaFilename = generateIdeaId(title, weaveId, ideaFiles);
+        filePath = path.join(targetDir, `${ideaFilename}.md`);
     }
 
     const idScope = threadId ?? weaveId;
+    const ideaId = generateDocId('idea');
     const frontmatter = createBaseFrontmatter('idea', ideaId, title, idScope);
     const ideaDoc: IdeaDoc = {
         ...frontmatter,

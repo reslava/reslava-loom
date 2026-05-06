@@ -1,13 +1,12 @@
 ---
 type: design
-id: workflow-run-command-design
-title: "run_command Effect — Design Specification"
+id: de_01KQYDFDDFZCSWBFEP97HR7NN6
+title: run_command Effect — Design Specification
 status: draft
-created: 2026-04-11
+created: "2026-04-11T00:00:00.000Z"
 version: 1.0.0
 tags: [workflow, effects, security, templating]
-parent_id: workflow-design-v2
-child_ids: []
+parent_id: de_01KQYDFDDF4QG72MKRE0KB2HZ4
 requires_load: []
 ---
 

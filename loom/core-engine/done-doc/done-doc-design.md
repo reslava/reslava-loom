@@ -1,15 +1,14 @@
 ---
 type: design
-id: done-doc-design
-title: "Done Documents — Post-Plan Implementation Record"
+id: de_01KQYDFDDBYKHS1J703PFE3P9T
+title: Done Documents — Post-Plan Implementation Record
 status: draft
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: [done, plan, implementation-notes, doc-type, close-plan]
-parent_id: done-doc-idea
-child_ids: []
-requires_load: [done-doc-idea]
-target_release: "0.2.0"
+parent_id: id_01KQYDFDDB0WEBX52CDG69VXYP
+requires_load: [id_01KQYDFDDB0WEBX52CDG69VXYP]
+target_release: 0.2.0
 actual_release: null
 ---
 

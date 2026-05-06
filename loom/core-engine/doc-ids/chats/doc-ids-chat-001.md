@@ -1,13 +1,12 @@
 ---
 type: chat
-id: doc-ids-chat-001
+id: ch_01KQYDFDDB5ZMPV8Z8QTXPMB75
 title: doc-ids Chat
 status: done
-created: 2026-05-02
+created: "2026-05-02T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: doc-ids
-child_ids: []
 requires_load: []
 ---
 

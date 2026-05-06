@@ -1,13 +1,12 @@
 ---
 type: idea
-id: ctx-naming-idea
-title: "Unify ctx filenames to plain ctx.md"
+id: id_01KQYDFDDB0AHWHNW6GTHKMR7P
+title: Unify ctx filenames to plain ctx.md
 status: active
-created: 2026-05-05
+created: "2026-05-05T00:00:00.000Z"
 version: 1
 tags: [ctx, naming, layout]
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

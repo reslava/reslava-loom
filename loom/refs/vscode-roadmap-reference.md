@@ -1,12 +1,13 @@
 ---
 type: reference
-id: vscode-roadmap-reference
-title: "VS Code Extension & Final Polishing Roadmap"
+id: rf_01KQYDFDDD6R0G19XQPQYGJETK
+title: VS Code Extension & Final Polishing Roadmap
 status: active
-created: 2026-04-18
+created: "2026-04-18T00:00:00.000Z"
 version: 1
 tags: [roadmap, vscode, cli, refactor]
 requires_load: []
+slug: vscode-roadmap-reference
 ---
 
 # VS Code Extension & Final Polishing Roadmap

@@ -1,15 +1,14 @@
 ---
 type: design
-id: docs-infra-directories-design
-title: "Workspace Directory Structure — REslava Loom"
+id: de_01KQYDFDDCB06E6V25HT94VAP3
+title: Workspace Directory Structure — REslava Loom
 status: active
-created: 2026-04-12
+created: "2026-04-12T00:00:00.000Z"
 version: 2
 tags: [structure, directories, filesystem, organization, loom]
 parent_id: null
-child_ids: []
 requires_load: []
-target_release: "0.1.0"
+target_release: 0.1.0
 actual_release: null
 ---
 

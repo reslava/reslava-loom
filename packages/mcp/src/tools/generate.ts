@@ -59,7 +59,7 @@ export function createGenerateTools(server: Server): ToolModule[] {
                     'You are a Loom document author. Write concise, focused Loom idea documents.'
                 );
 
-                const { tempId, filePath } = await weaveIdea(
+                const { id, filePath } = await weaveIdea(
                     { title, weave: weaveId, threadId },
                     { getActiveLoomRoot: () => getActiveLoomRoot(root), saveDoc, fs: fsExtra }
                 );
@@ -67,7 +67,7 @@ export function createGenerateTools(server: Server): ToolModule[] {
                 const doc = await loadDoc(filePath) as Document;
                 await saveDoc({ ...doc, content: body, version: doc.version + 1 } as Document, filePath);
 
-                return { id: tempId, filePath };
+                return { id, filePath };
             }
         ),
 
@@ -158,7 +158,7 @@ export function createGenerateTools(server: Server): ToolModule[] {
 
                 const { id, filePath } = await weavePlan(
                     { weaveId, title, threadId },
-                    { loadWeave, saveDoc, fs: fsExtra, loomRoot: root }
+                    { loadWeave, saveDoc, loadDoc, fs: fsExtra, loomRoot: root }
                 );
 
                 return { id, filePath, steps };

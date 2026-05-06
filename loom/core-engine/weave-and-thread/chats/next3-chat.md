@@ -1,13 +1,12 @@
 ---
 type: chat
-id: next3-chat
-title: "Next3 Chat"
+id: ch_01KQYDFDDCP7CXER27PZP5767Y
+title: Next3 Chat
 status: done
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

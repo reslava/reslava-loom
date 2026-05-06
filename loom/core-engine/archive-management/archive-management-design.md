@@ -1,14 +1,13 @@
 ---
 type: design
-id: archive-management-design
+id: de_01KQYDFDDAGQTWJZT0PAE09GTQ
 title: Archive management — taxonomy, central root, and tree visibility
 status: draft
 created: "2026-05-05T00:00:00.000Z"
-updated: 2026-05-05
+updated: "2026-05-05T00:00:00.000Z"
 version: 2
 tags: []
-parent_id: archive-management-idea
-child_ids: []
+parent_id: id_01KQYDFDDA5F6SJJ3K7PA7HHBJ
 requires_load: []
 ---
 # Archive management — Design

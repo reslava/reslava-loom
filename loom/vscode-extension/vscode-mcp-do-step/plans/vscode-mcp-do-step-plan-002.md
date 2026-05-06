@@ -1,17 +1,16 @@
 ---
 type: plan
-id: vscode-mcp-do-step-plan-002
-title: "DoStep(s) — Multi-Step Picker UX — Plan 002"
+id: pl_01KQYDFDDE984XT56WQKQD9TPE
+title: DoStep(s) — Multi-Step Picker UX — Plan 002
 status: done
-created: 2026-05-01
+created: "2026-05-01T00:00:00.000Z"
 version: 1
-tags: [vscode, mcp, do-step, ux, quickpick]
-parent_id: vscode-mcp-do-step-design
-child_ids: []
-requires_load: [vscode-mcp-do-step-design, vscode-mcp-do-step-plan-001]
-target_release: "0.5.0"
-actual_release: null
 design_version: 1
+tags: [vscode, mcp, do-step, ux, quickpick]
+parent_id: de_01KQYDFDDE8Z0AV1R2Q8NNNKGK
+requires_load: [de_01KQYDFDDE8Z0AV1R2Q8NNNKGK, pl_01KQYDFDDER47Y0H7W7K4ZX80M]
+target_release: 0.5.0
+actual_release: null
 ---
 
 # DoStep(s) — Multi-Step Picker UX — Plan 002

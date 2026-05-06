@@ -1,14 +1,13 @@
 ---
 type: design
-id: load-when-design
-title: "Reference Context Filtering by Operation Mode (load_when)"
+id: de_01KQYDFDD8YN5CJTDPMB5W2DBJ
+title: Reference Context Filtering by Operation Mode (load_when)
 status: active
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: [reference, ai, context, frontmatter, load_when]
 parent_id: null
-child_ids: []
-requires_load: [reference-load-context-design]
+requires_load: [de_01KQYDFDD9Z844XJV7XDHB92FP]
 ---
 
 # Reference Context Filtering by Operation Mode (`load_when`)

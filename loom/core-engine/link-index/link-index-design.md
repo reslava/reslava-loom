@@ -1,15 +1,14 @@
 ---
 type: design
-id: link-index-design
-title: "Structured Link Index for Document Relationships"
+id: de_01KQYDFDDCQ0DBXVNCSCK57P7M
+title: Structured Link Index for Document Relationships
 status: active
-created: 2026-04-14
+created: "2026-04-14T00:00:00.000Z"
 version: 1
 tags: [linking, index, validation, performance]
-parent_id: core-engine-design
-child_ids: [link-index-plan-001]
-requires_load: [core-engine-design]
-target_release: "0.2.0"
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
+requires_load: [de_01KQYDFDDB802XEJM0S329T9WW]
+target_release: 0.2.0
 actual_release: null
 ---
 

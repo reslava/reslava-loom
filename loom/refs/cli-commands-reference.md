@@ -1,12 +1,13 @@
 ---
 type: reference
-id: cli-commands-reference
-title: "REslava Loom CLI Commands Reference"
+id: rf_01KQYDFDDD6SYMCJ1Q2Z6748EK
+title: REslava Loom CLI Commands Reference
 status: active
-created: 2026-04-14
+created: "2026-04-14T00:00:00.000Z"
 version: 1
 tags: [cli, commands, reference, loom]
 requires_load: []
+slug: cli-commands-reference
 ---
 
 # REslava Loom CLI Commands Reference

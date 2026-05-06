@@ -2,7 +2,7 @@
 
 ## Required session-start context
 
-**Always load [loom/loom-ctx.md](loom/loom-ctx.md) at the beginning of every session.**
+**Always load [loom/ctx.md](loom/ctx.md) at the beginning of every session.**
 It is the global ctx doc — concept, architecture, and operating rules in one place.
 Read it before responding to the first user turn. This emulates the auto-loaded
 global context that ctx-typed docs are designed to provide in Loom.
@@ -295,7 +295,7 @@ The "is this thread already in transcript?" decision lives **in the AI**, not in
 
 **Order of operations at session start:**
 
-1. **Load global ctx** — read [loom/loom-ctx.md](loom/loom-ctx.md). Emit `📘 loom-ctx loaded — global context ready` (or the failure variant if the read fails).
+1. **Load global ctx** — read [loom/ctx.md](loom/ctx.md). Emit `📘 loom-ctx loaded — global context ready` (or the failure variant if the read fails).
 2. **Load vision and workflow** — read [loom/refs/vision.md](loom/refs/vision.md) (north star — what Loom is for, what manual steps it replaces; ground for the vision-check rule under Collaboration style) and [loom/refs/workflow.md](loom/refs/workflow.md) (canonical loop, phase definitions, and transitions). Emit `🌟 vision + workflow loaded` on success.
 3. **Read active work from MCP** — `loom://state?status=active,implementing`. Emit `🧵 Active: <list of thread IDs>`. This replaces any hand-written "active work" pointer; MCP is the only source of truth.
 4. **Call `do-next-step` prompt with the active planId.** This bundles:

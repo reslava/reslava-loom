@@ -1,14 +1,13 @@
 ---
 type: plan
-id: vscode-tests-plan-001
+id: pl_01KQYDFDDE73KDC5H72SWVB10J
 title: "VS Code Extension Tests — Real Workspace at j:/temp/loom"
 status: done
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: [tests, vscode, extension, e2e, workspace, j-temp]
-parent_id: vscode-extension-design
-child_ids: []
-requires_load: [vscode-extension-design, weaves/core-engine/references/fs-extra-esm-reference.md]
+parent_id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
+requires_load: [de_01KQYDFDDEQ81VMM0SPD1P1DBM, weaves/core-engine/references/fs-extra-esm-reference.md]
 ---
 
 # VS Code Extension Tests — Real Workspace at j:/temp/loom

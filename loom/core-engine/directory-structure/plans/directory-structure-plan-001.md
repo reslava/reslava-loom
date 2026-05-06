@@ -1,15 +1,14 @@
 ---
 type: plan
-id: directory-structure-plan-001
-title: "Directory Structure Migration — weaves/ → loom/"
+id: pl_01KQYDFDDB47NXHQ9RPNJ4T294
+title: Directory Structure Migration — weaves/ → loom/
 status: done
-created: 2026-04-26
+created: "2026-04-26T00:00:00.000Z"
 version: 1
+design_version: 1
 tags: [migration, structure, filesystem, core-engine]
 parent_id: null
-child_ids: []
-requires_load: [workspace-directory-structure-reference, loom-architecture]
-design_version: 1
+requires_load: [workspace-directory-structure-reference, rf_01KQYDFDDDMS4N0V9G73MNV5JR]
 ---
 
 # Directory Structure Migration — weaves/ → loom/

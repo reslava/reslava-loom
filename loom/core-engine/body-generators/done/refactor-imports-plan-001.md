@@ -1,15 +1,15 @@
 ---
 type: plan
-id: refactor-imports-plan-001
-title: "Update Client Imports to Use Domain Modules Directly"
+id: pl_01KQYDFDDA2KCZXMMADJ01QR9M
+title: Update Client Imports to Use Domain Modules Directly
 status: done
-created: 2026-04-16
+created: "2026-04-16T00:00:00.000Z"
 version: 1
 design_version: 1
 tags: [refactor, imports, cleanup]
-parent_id: body-generators-design
-target_version: "0.5.0"
+parent_id: de_01KQYDFDDAGJ0Q2B1E1R2ZQ67W
 requires_load: []
+target_version: 0.5.0
 ---
 
 # Plan — Update Client Imports to Use Domain Modules Directly

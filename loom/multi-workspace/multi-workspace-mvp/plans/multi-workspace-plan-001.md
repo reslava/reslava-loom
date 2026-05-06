@@ -1,16 +1,16 @@
 ---
 type: plan
-id: multi-workspace-plan-001
-title: "Implement Minimal Multi-Loom Workspace Support"
+id: pl_01KQYDFDDDW7YE4ST2QH8Z5NMS
+title: Implement Minimal Multi-Loom Workspace Support
 status: done
-created: 2026-04-14
-updated: 2026-04-14
+created: "2026-04-14T00:00:00.000Z"
+updated: "2026-04-14T00:00:00.000Z"
 version: 2
 design_version: 1
 tags: [loom, workspace, cli]
-parent_id: multi-workspace-mvp-design
-target_version: "0.2.0"
-requires_load: [multi-workspace-mvp-design]
+parent_id: de_01KQYDFDDDP2DYGM8GJMCWYWEP
+requires_load: [de_01KQYDFDDDP2DYGM8GJMCWYWEP]
+target_version: 0.2.0
 ---
 
 # Plan — Implement Minimal Multi-Loom Workspace Support

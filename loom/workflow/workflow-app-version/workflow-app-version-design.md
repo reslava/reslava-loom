@@ -1,13 +1,12 @@
 ---
 type: design
-id: workflow-app-version-design
-title: "Application Version Tracking in Workflow Documents"
+id: de_01KQYDFDDF3J8F6P5F3VJQ8BWQ
+title: Application Version Tracking in Workflow Documents
 status: active
-created: 2026-04-12
+created: "2026-04-12T00:00:00.000Z"
 version: 1.0.0
 tags: [versioning, release, planning, frontmatter]
-parent_id: workflow-design-v2
-child_ids: []
+parent_id: de_01KQYDFDDF4QG72MKRE0KB2HZ4
 requires_load: []
 ---
 

@@ -1,16 +1,16 @@
 ---
 type: plan
-id: core-engine-plan-003
-title: "CLI Interface — The `loom` Command"
+id: pl_01KQYDFDDBQZK67JM5PD8174K3
+title: CLI Interface — The `loom` Command
 status: done
-created: 2026-04-10
-updated: 2026-04-14
+created: "2026-04-10T00:00:00.000Z"
+updated: "2026-04-14T00:00:00.000Z"
 version: 2
 design_version: 3
 tags: [loom, cli, ux, commands]
-parent_id: core-engine-design
-target_version: "0.3.0"
-requires_load: [core-engine-design, multi-workspace-mvp-design]
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
+requires_load: [de_01KQYDFDDB802XEJM0S329T9WW, de_01KQYDFDDDP2DYGM8GJMCWYWEP]
+target_version: 0.3.0
 ---
 
 # Plan — CLI Interface (The `loom` Command)

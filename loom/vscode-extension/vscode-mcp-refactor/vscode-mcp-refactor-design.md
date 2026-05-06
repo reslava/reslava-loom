@@ -1,16 +1,15 @@
 ---
 type: design
-id: vscode-mcp-refactor-design
-title: "VS Code Extension MCP Refactor Design"
+id: de_01KQYDFDDFZT3CVEBS43EJHVWT
+title: VS Code Extension MCP Refactor Design
 status: draft
-created: 2026-04-27
+created: "2026-04-27T00:00:00.000Z"
 version: 1
 tags: [vscode, mcp, architecture, design]
-parent_id: vscode-mcp-refactor-idea
-child_ids: [vscode-mcp-refactor-plan-001]
-requires_load: [mcp-reference, loom-architecture]
+parent_id: id_01KQYDFDDFT9EE8KH1TWJ7G0B2
+requires_load: [mcp-reference, rf_01KQYDFDDDMS4N0V9G73MNV5JR]
 role: primary
-target_release: "0.5.0"
+target_release: 0.5.0
 actual_release: null
 ---
 

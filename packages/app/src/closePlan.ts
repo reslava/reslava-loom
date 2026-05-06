@@ -90,7 +90,6 @@ export async function closePlan(
         version: 1,
         tags: [],
         parent_id: input.planId,
-        child_ids: [],
         requires_load: [],
         content: aiBody.trim(),
     };

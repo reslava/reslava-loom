@@ -1,13 +1,12 @@
 ---
 type: chat
-id: continue-deepseek-chat-001
+id: ch_01KQYDFDD8F81MTZP97YNXAZHJ
 title: continue-deepseek Chat
 status: active
-created: 2026-05-03
+created: "2026-05-03T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: continue-deepseek
-child_ids: []
 requires_load: []
 ---
 # CHAT

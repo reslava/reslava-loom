@@ -1,15 +1,14 @@
 ---
 type: plan
-id: staleness-management-plan-001
-title: "Staleness Management — MVP Surfacing"
+id: pl_01KQYDFDDCHD6SEJ0QCBAYJ93Y
+title: Staleness Management — MVP Surfacing
 status: active
-created: 2026-05-05
+created: "2026-05-05T00:00:00.000Z"
 version: 1
-tags: [staleness, vscode, mcp, mvp]
-parent_id: staleness-management-design
-child_ids: []
-requires_load: [mvp-scope]
 design_version: 2
+tags: [staleness, vscode, mcp, mvp]
+parent_id: de_01KQYDFDDC911HGHRQGZV1ZSCA
+requires_load: [rf_01KQYDFDDDYZC0R4XNNX2RASC9]
 ---
 
 # Staleness Management — Implementation Plan (MVP scope)

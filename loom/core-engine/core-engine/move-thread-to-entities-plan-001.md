@@ -1,14 +1,14 @@
 ---
 type: plan
-id: move-thread-to-entities-plan-001
-title: "Move Thread and Derived Types to entities/thread.ts"
+id: pl_01KQYDFDDBA0NCCYJBBYA3QRW1
+title: Move Thread and Derived Types to entities/thread.ts
 status: done
-created: 2026-04-18
+created: "2026-04-18T00:00:00.000Z"
 version: 1
 tags: [core, entities, refactor]
-parent_id: core-engine-design
-target_version: "0.5.0"
-requires_load: [core-engine-design]
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
+requires_load: [de_01KQYDFDDB802XEJM0S329T9WW]
+target_version: 0.5.0
 ---
 
 # Plan — Move Thread and Derived Types to `entities/thread.ts`

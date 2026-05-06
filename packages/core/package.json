@@ -4,6 +4,7 @@
   },
   "dependencies": {
     "fs-extra": "^11.3.4",
+    "ulid": "^3.0.2",
     "yaml": "^2.8.3"
   },
   "devDependencies": {

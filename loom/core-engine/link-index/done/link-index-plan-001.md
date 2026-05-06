@@ -1,14 +1,13 @@
 ---
 type: plan
-id: link-index-plan-001
-title: "Implement Structured Link Index"
+id: pl_01KQYDFDDC0A21F7WEVBJ8W64P
+title: Implement Structured Link Index
 status: done
-created: 2026-04-14
+created: "2026-04-14T00:00:00.000Z"
 version: 1
 tags: [linking, index, validation, performance]
-parent_id: link-index-design
-child_ids: []
-requires_load: [link-index-design]
+parent_id: de_01KQYDFDDCQ0DBXVNCSCK57P7M
+requires_load: [de_01KQYDFDDCQ0DBXVNCSCK57P7M]
 ---
 
 # Plan — Implement Structured Link Index

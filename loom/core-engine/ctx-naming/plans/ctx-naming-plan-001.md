@@ -1,15 +1,14 @@
 ---
 type: plan
-id: ctx-naming-plan-001
-title: "Unify ctx Filenames to ctx.md"
+id: pl_01KQYDFDDBS518N4PX97V1Q9SS
+title: Unify ctx Filenames to ctx.md
 status: active
-created: 2026-05-05
+created: "2026-05-05T00:00:00.000Z"
 version: 1
-tags: [ctx, naming, layout, refactor, mvp]
-parent_id: ctx-naming-design
-child_ids: []
-requires_load: [mvp-scope]
 design_version: 1
+tags: [ctx, naming, layout, refactor, mvp]
+parent_id: de_01KQYDFDDBPFWTRWDMCAH1V45S
+requires_load: [rf_01KQYDFDDDYZC0R4XNNX2RASC9]
 ---
 
 # Unify ctx Filenames — Implementation Plan

@@ -1,13 +1,12 @@
 ---
 type: chat
-id: vscode-mcp-refactor-chat
-title: "Vscode Mcp Refactor Chat"
+id: ch_01KQYDFDDEXBJEJR75R2B2JVQY
+title: Vscode Mcp Refactor Chat
 status: done
-created: 2026-04-29
+created: "2026-04-29T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

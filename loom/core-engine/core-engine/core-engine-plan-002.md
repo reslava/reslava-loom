@@ -1,16 +1,16 @@
 ---
 type: plan
-id: core-engine-plan-002
-title: "Filesystem Integration — Markdown Load and Save"
+id: pl_01KQYDFDDBGNCQQ30KVW4WKZC3
+title: Filesystem Integration — Markdown Load and Save
 status: done
-created: 2026-04-10
-updated: 2026-04-14
+created: "2026-04-10T00:00:00.000Z"
+updated: "2026-04-14T00:00:00.000Z"
 version: 1
 design_version: 3
 tags: [loom, core, filesystem, markdown, io]
-parent_id: core-engine-design
-target_version: "0.2.0"
-requires_load: [core-engine-design]
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
+requires_load: [de_01KQYDFDDB802XEJM0S329T9WW]
+target_version: 0.2.0
 ---
 
 # Plan — Filesystem Integration (Markdown Load/Save)

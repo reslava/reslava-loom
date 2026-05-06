@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { saveDoc } from '../../fs/dist';
+import { saveDoc, resolveWeaveIdForPlan } from '../../fs/dist';
 import { generateChatId, createBaseFrontmatter, AIClient, Message } from '../../core/dist';
 import { ChatDoc } from '../../core/dist';
 import { PlanDoc } from '../../core/dist/entities/plan';
@@ -32,8 +32,7 @@ export async function doStep(
     input: DoStepInput,
     deps: DoStepDeps
 ): Promise<{ chatPath: string; chatId: string }> {
-    const weaveId = input.planId.split('-plan-')[0];
-    if (!weaveId) throw new Error(`Invalid plan ID: "${input.planId}"`);
+    const weaveId = await resolveWeaveIdForPlan(deps.loomRoot, input.planId);
 
     const weave = await deps.loadWeave(deps.loomRoot, weaveId);
     const plan = weave.threads.flatMap((t: any) => t.plans).find((p: PlanDoc) => p.id === input.planId) as PlanDoc | undefined;
@@ -71,7 +70,7 @@ export async function doStep(
     const aiResponse = await deps.aiClient.complete(messages);
 
     const weavePath = path.join(deps.loomRoot, 'loom', weaveId);
-    const chatsDir = path.join(weavePath, 'ai-chats');
+    const chatsDir = path.join(weavePath, 'chats');
     await deps.fs.ensureDir(chatsDir);
 
     const existingFiles = await deps.fs.readdir(chatsDir).catch(() => [] as string[]);

@@ -1,13 +1,12 @@
 ---
 type: chat
-id: loom-install-chat
-title: "Loom Install Chat"
+id: ch_01KQYDFDDDP5F1SS6BKY6V0S8R
+title: Loom Install Chat
 status: active
-created: 2026-04-27
+created: "2026-04-27T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

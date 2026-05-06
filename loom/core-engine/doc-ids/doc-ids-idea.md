@@ -1,14 +1,13 @@
 ---
 type: idea
-id: doc-ids-idea
+id: id_01KQYDFDDBJSRCQTW60ANFM9YR
 title: Doc IDs — ULID-based identity with slug presentation
 status: active
 created: "2026-05-03T00:00:00.000Z"
-updated: 2026-05-03
+updated: "2026-05-03T00:00:00.000Z"
 version: 2
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # Doc IDs — ULID-based identity with slug presentation

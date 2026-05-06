@@ -1,13 +1,12 @@
 ---
 type: done
-id: mvp-plan-to-publish-plan-done
+id: dn_01KQYDFDDD5HJPCFBZVWJ4JY0J
 title: Done — MVP — Plan to publish
 status: final
 created: "2026-05-02T00:00:00.000Z"
 version: 4
 tags: []
-parent_id: mvp-plan-to-publish-plan
-child_ids: []
+parent_id: pl_01KQYDFDDDS4F8C6THBQ49WE8Q
 requires_load: []
 ---
 # Done — MVP — Plan to publish

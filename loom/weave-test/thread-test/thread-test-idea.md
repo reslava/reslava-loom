@@ -1,13 +1,12 @@
 ---
 type: idea
-id: thread-test-idea
+id: id_01KQYDFDDFXNVP79ANP0M9MAC4
 title: User requested creation of a test file with static content
 status: draft
-created: 2026-05-03
+created: "2026-05-03T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: thread-test
-child_ids: []
 requires_load: []
 ---
 # User requested creation of a test file with static content

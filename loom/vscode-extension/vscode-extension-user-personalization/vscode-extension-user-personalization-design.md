@@ -1,16 +1,15 @@
 ---
 type: design
-id: vscode-extension-user-personalization-design
-title: "User Personalization in VS Code Extension"
+id: de_01KQYDFDDEDXJJHYNNZWXQZNMM
+title: User Personalization in VS Code Extension
 status: active
-created: 2026-04-11
-updated: 2026-04-14
+created: "2026-04-11T00:00:00.000Z"
+updated: "2026-04-14T00:00:00.000Z"
 version: 2
 tags: [personalization, ux, configuration, vscode, loom]
-parent_id: vscode-extension-design
-child_ids: []
+parent_id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
 requires_load: []
-target_release: "0.4.0"
+target_release: 0.4.0
 actual_release: null
 ---
 

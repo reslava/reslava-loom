@@ -1,15 +1,13 @@
 ---
 type: plan
-id: loom-install-plan-001
-title: "Loom Install — Implementation Plan 001"
+id: pl_01KQYDFDDDSVBACFH0DZYT1Q1Y
+title: Loom Install — Implementation Plan 001
 status: active
-created: 2026-04-27
+created: "2026-04-27T00:00:00.000Z"
 version: 1
 tags: []
-parent_id: loom-install
-child_ids: []
-requires_load:
-  - loom-install
+parent_id: de_01KQYDFDDDW3C3JYPHQV085GAC
+requires_load: [de_01KQYDFDDDW3C3JYPHQV085GAC]
 ---
 
 # Loom Install — Implementation Plan 001

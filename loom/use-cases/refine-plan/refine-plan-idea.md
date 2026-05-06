@@ -1,13 +1,12 @@
 ---
 type: idea
-id: refine-plan
-title: "refine-plan prompt and stale-plan detection"
+id: id_01KQYDFDDDGPNXJJ8XWA812W7K
+title: refine-plan prompt and stale-plan detection
 status: draft
-created: 2026-04-28
+created: "2026-04-28T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

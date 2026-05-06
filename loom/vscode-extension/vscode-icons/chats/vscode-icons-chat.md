@@ -1,13 +1,12 @@
 ---
 type: chat
-id: vscode-icons-chat
-title: "Vscode Icons Chat"
+id: ch_01KQYDFDDEZ3TJPTGDYQC4Y8P5
+title: Vscode Icons Chat
 status: active
-created: 2026-04-20
+created: "2026-04-20T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

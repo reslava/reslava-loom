@@ -1,13 +1,12 @@
 ---
 type: chat
-id: chat-frontmatter-chat
-title: "Chat Frontmatter Chat"
+id: ch_01KQYDFDDBPS56H5R2B1QS5S0H
+title: Chat Frontmatter Chat
 status: done
-created: 2026-04-29
+created: "2026-04-29T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

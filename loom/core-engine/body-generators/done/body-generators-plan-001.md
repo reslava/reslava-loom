@@ -1,15 +1,15 @@
 ---
 type: plan
-id: body-generators-plan-001
-title: "Implement Document Body Generators"
+id: pl_01KQYDFDDAEZ62SHWY1QNJM1R1
+title: Implement Document Body Generators
 status: done
-created: 2026-04-16
+created: "2026-04-16T00:00:00.000Z"
 version: 1
 design_version: 1
 tags: [refactor, generators, templates, body]
-parent_id: body-generators-design
-target_version: "0.4.0"
-requires_load: [body-generators-design]
+parent_id: de_01KQYDFDDAGJ0Q2B1E1R2ZQ67W
+requires_load: [de_01KQYDFDDAGJ0Q2B1E1R2ZQ67W]
+target_version: 0.4.0
 ---
 
 # Plan — Implement Document Body Generators

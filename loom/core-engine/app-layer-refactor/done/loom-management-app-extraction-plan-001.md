@@ -1,14 +1,14 @@
 ---
 type: plan
-id: loom-management-app-extraction-plan-001
-title: "Extract Loom Management Commands to Application Layer"
+id: pl_01KQYDFDDASC17X5B0NGVQ3KCF
+title: Extract Loom Management Commands to Application Layer
 status: done
-created: 2026-04-17
+created: "2026-04-17T00:00:00.000Z"
 version: 1
 tags: [app, cli, refactor, management]
-parent_id: app-layer-refactor-design
-target_version: "0.5.0"
-requires_load: [app-layer-refactor-design]
+parent_id: de_01KQYDFDDA1XV31SK6N64VS0ST
+requires_load: [de_01KQYDFDDA1XV31SK6N64VS0ST]
+target_version: 0.5.0
 ---
 
 # Plan — Extract Loom Management Commands to Application Layer

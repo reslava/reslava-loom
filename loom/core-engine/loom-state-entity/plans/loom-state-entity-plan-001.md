@@ -1,14 +1,14 @@
 ---
 type: plan
-id: loom-state-entity-plan-001
-title: "Implement LoomState Entity and getState Use‑Case"
+id: pl_01KQYDFDDCPDV5E3WFGAVN51QJ
+title: Implement LoomState Entity and getState Use‑Case
 status: done
-created: 2026-04-19
+created: "2026-04-19T00:00:00.000Z"
 version: 1
 tags: [state, core, app, cli, refactor]
-parent_id: loom-state-entity-idea
-target_version: "0.6.0"
-requires_load: [loom-state-entity-idea]
+parent_id: id_01KQYDFDDCDX24651YYE1JCQRY
+requires_load: [id_01KQYDFDDCDX24651YYE1JCQRY]
+target_version: 0.6.0
 ---
 
 # Plan — Implement LoomState Entity and getState Use‑Case

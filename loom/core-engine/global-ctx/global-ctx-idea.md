@@ -1,14 +1,13 @@
 ---
 type: idea
-id: global-ctx
-title: "Global Ctx — Project-Level Context Summary"
+id: id_01KQYDFDDC5KQMGQJKN66H5RX9
+title: Global Ctx — Project-Level Context Summary
 status: draft
-created: 2026-04-26
+created: "2026-04-26T00:00:00.000Z"
 version: 1
 tags: [ctx, ai, core-engine, mcp]
 parent_id: null
-child_ids: []
-requires_load: [loom-architecture]
+requires_load: [rf_01KQYDFDDDMS4N0V9G73MNV5JR]
 ---
 
 # Global Ctx — Project-Level Context Summary

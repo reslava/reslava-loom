@@ -1,15 +1,14 @@
 ---
 type: design
-id: body-generators-design
-title: "Document Body Generators & Utility Extraction"
+id: de_01KQYDFDDAGJ0Q2B1E1R2ZQ67W
+title: Document Body Generators & Utility Extraction
 status: active
-created: 2026-04-16
+created: "2026-04-16T00:00:00.000Z"
 version: 1
 tags: [refactor, architecture, utilities, templates]
-parent_id: core-engine-design
-child_ids: []
-requires_load: [core-engine-design, id-management-design]
-target_release: "0.4.0"
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
+requires_load: [de_01KQYDFDDB802XEJM0S329T9WW, de_01KQYDFDDC2GWRSG7TVP5Z5MAN]
+target_release: 0.4.0
 actual_release: null
 ---
 

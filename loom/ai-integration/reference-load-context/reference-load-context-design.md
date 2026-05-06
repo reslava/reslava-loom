@@ -1,13 +1,12 @@
 ---
 type: design
-id: reference-load-context-design
-title: "Reference Document Context Loading Control"
+id: de_01KQYDFDD9Z844XJV7XDHB92FP
+title: Reference Document Context Loading Control
 status: active
-created: 2026-04-21
+created: "2026-04-21T00:00:00.000Z"
 version: 1
 tags: [reference, ai, context, frontmatter]
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

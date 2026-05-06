@@ -1,14 +1,14 @@
 ---
 type: plan
-id: cli-delegate-directory-creation-plan-001
-title: "Delegate Directory Creation in CLI to Application Layer"
+id: pl_01KQYDFDDAY6JJDG6WTXWRR9TW
+title: Delegate Directory Creation in CLI to Application Layer
 status: done
-created: 2026-04-18
+created: "2026-04-18T00:00:00.000Z"
 version: 1
 tags: [cli, app, refactor]
-parent_id: app-layer-refactor-design
-target_version: "0.5.0"
-requires_load: [app-layer-refactor-design]
+parent_id: de_01KQYDFDDA1XV31SK6N64VS0ST
+requires_load: [de_01KQYDFDDA1XV31SK6N64VS0ST]
+target_version: 0.5.0
 ---
 
 # Plan — Delegate Directory Creation in CLI to Application Layer

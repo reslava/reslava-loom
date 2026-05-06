@@ -1,13 +1,12 @@
 ---
 type: plan
-id: linkRepository-fix-plan-001
-title: "Fix linkRepository.ts — threads → weaves directory"
+id: pl_01KQYDFDDEB7AFX5CJSWH3BBF5
+title: Fix linkRepository.ts — threads → weaves directory
 status: done
-created: 2026-04-22
+created: "2026-04-22T00:00:00.000Z"
 version: 1
 tags: [bugfix, fs, linkRepository]
-parent_id: vscode-extension-design
-child_ids: []
+parent_id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
 requires_load: []
 ---
 

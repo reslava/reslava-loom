@@ -1,13 +1,12 @@
 ---
 type: design
-id: base-doc-design
-title: "BaseDoc — Foundational Document Interface with Generic Status"
+id: de_01KQYDFDDATTCNZQCNB0JR0Z0F
+title: BaseDoc — Foundational Document Interface with Generic Status
 status: active
-created: 2026-04-17
+created: "2026-04-17T00:00:00.000Z"
 version: 1
 tags: [core, entities, domain-model, typescript]
-parent_id: core-engine-design
-child_ids: [base-doc-plan-001]
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
 requires_load: []
 ---
 

@@ -1,12 +1,13 @@
 ---
 type: reference
-id: loom-architecture
-title: "Loom — Architecture Reference"
+id: rf_01KQYDFDDDMS4N0V9G73MNV5JR
+title: Loom — Architecture Reference
 status: active
-created: 2026-04-14
+created: "2026-04-14T00:00:00.000Z"
 version: 2
 tags: [architecture, reference, loom, mcp]
 requires_load: []
+slug: architecture-reference
 load_when: [design, plan]
 ---
 

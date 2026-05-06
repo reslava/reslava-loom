@@ -1,13 +1,12 @@
 ---
 type: design
-id: workflow-design-v2
-title: "AI-native Development Workflow System — Design (v2)"
+id: de_01KQYDFDDF4QG72MKRE0KB2HZ4
+title: AI-native Development Workflow System — Design (v2)
 status: active
-created: 2026-04-11
+created: "2026-04-11T00:00:00.000Z"
 version: 2.0.0
 tags: [workflow, ai, architecture, markdown, context-management]
-parent_id: workflow-idea
-child_ids: []
+parent_id: id_01KQYDFDDFK0Y1KF9AGQHV7YTY
 requires_load: []
 ---
 

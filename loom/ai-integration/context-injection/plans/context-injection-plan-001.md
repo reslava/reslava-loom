@@ -1,15 +1,14 @@
 ---
 type: plan
-id: context-injection-plan-001
-title: "Context Injection — MVP Rule and Tool Metadata"
+id: pl_01KQYDFDD811TEXADDXS6CMC6Y
+title: Context Injection — MVP Rule and Tool Metadata
 status: active
-created: 2026-05-05
+created: "2026-05-05T00:00:00.000Z"
 version: 1
+design_version: 2
 tags: [ai, context, mcp, claude-md, mvp]
 parent_id: context-injection-design
-child_ids: []
-requires_load: [mvp-scope]
-design_version: 2
+requires_load: [rf_01KQYDFDDDYZC0R4XNNX2RASC9]
 ---
 
 # Context Injection — Implementation Plan (MVP scope only)

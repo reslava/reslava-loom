@@ -1,15 +1,14 @@
 ---
 type: design
-id: ai-integration-token-optimization-design
-title: "Token Optimization & Cost Management Strategy"
+id: de_01KQYDFDD86RBSXN3X643NQGPB
+title: Token Optimization & Cost Management Strategy
 status: active
-created: 2026-04-14
+created: "2026-04-14T00:00:00.000Z"
 version: 1
 tags: [ai, tokens, cost, optimization, context]
-parent_id: token-awareness-idea
-child_ids: []
-requires_load: [ai-integration-design]
-target_release: "0.3.0"
+parent_id: id_01KQYDFDD83WRDGYDY6GS16YH2
+requires_load: [de_01KQYDFDD88BTYTQ61S0Q9W02V]
+target_release: 0.3.0
 actual_release: null
 ---
 

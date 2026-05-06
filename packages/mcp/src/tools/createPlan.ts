@@ -1,5 +1,5 @@
 import * as fs from 'fs-extra';
-import { loadWeave, saveDoc } from '../../../fs/dist';
+import { loadWeave, saveDoc, loadDoc } from '../../../fs/dist';
 import { weavePlan } from '../../../app/dist/weavePlan';
 
 export const toolDef = {
@@ -29,6 +29,7 @@ export async function handle(root: string, args: Record<string, unknown>) {
     const result = await weavePlan(input, {
         loadWeave,
         saveDoc,
+        loadDoc,
         fs,
         loomRoot: root,
     });

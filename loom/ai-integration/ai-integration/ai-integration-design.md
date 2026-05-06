@@ -1,15 +1,14 @@
 ---
 type: design
-id: ai-integration-design
-title: "AI Integration & Handshake Protocol — REslava Loom"
+id: de_01KQYDFDD88BTYTQ61S0Q9W02V
+title: AI Integration & Handshake Protocol — REslava Loom
 status: active
-created: 2026-04-11
+created: "2026-04-11T00:00:00.000Z"
 version: 3
 tags: [ai, integration, protocol, loom]
 parent_id: null
-child_ids: [ai-chat-plan-001, ai-promote-plan-001]
 requires_load: []
-target_release: "0.3.0"
+target_release: 0.3.0
 actual_release: null
 ---
 

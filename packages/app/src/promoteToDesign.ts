@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { loadDoc, saveDoc } from '../../fs/dist';
-import { AIClient, ChatDoc, IdeaDoc, DesignDoc, createBaseFrontmatter } from '../../core/dist';
+import { AIClient, ChatDoc, IdeaDoc, DesignDoc, createBaseFrontmatter, generateDocId } from '../../core/dist';
 import { buildSummarizationMessages, parseTitleAndBody } from './utils/aiSummarization';
 
 export interface PromoteToDesignInput {
@@ -63,22 +63,23 @@ export async function promoteToDesign(
         : path.join(deps.loomRoot, 'loom', weaveId);
     await deps.fs.ensureDir(targetDir);
 
-    let designId: string;
+    let designFilename: string;
     let filePath: string;
     if (threadId) {
         // Thread-level: canonical filename is {threadId}-design.md (one per thread)
-        designId = `${threadId}-design`;
-        filePath = path.join(targetDir, `${designId}.md`);
+        designFilename = `${threadId}-design`;
+        filePath = path.join(targetDir, `${designFilename}.md`);
         if (await deps.fs.pathExists(filePath)) {
             throw new Error(`Thread '${threadId}' already has a design. Refine the existing one instead.`);
         }
     } else {
         // Weave-level loose fiber: kebab-of-title
         const existingFiles = await deps.fs.readdir(targetDir).catch(() => [] as string[]);
-        designId = generateDesignId(title, weaveId, existingFiles);
-        filePath = path.join(targetDir, `${designId}.md`);
+        designFilename = generateDesignId(title, weaveId, existingFiles);
+        filePath = path.join(targetDir, `${designFilename}.md`);
     }
 
+    const designId = generateDocId('design');
     const frontmatter = createBaseFrontmatter('design', designId, title, doc.id);
     const designDoc: DesignDoc = {
         ...frontmatter,

@@ -101,8 +101,8 @@ async function testWorkspaceWorkflow() {
         console.log('    ✅ closePlan thread layout correct');
     }
 
-    // ── test 4: doStep — chat doc created in weave ai-chats/ dir ─────────────
-    console.log('  • doStep: chat doc created in ai-chats/ with correct structure...');
+    // ── test 4: doStep — chat doc created in weave chats/ dir ───────────────
+    console.log('  • doStep: chat doc created in chats/ with correct structure...');
     {
         const loomRoot = await setupWorkspace();
         const { planId } = await seedWeaveWithThread(loomRoot, 'ww-weave4', 'feature-d');
@@ -119,14 +119,14 @@ async function testWorkspaceWorkflow() {
         );
 
         assert(fileExists(result.chatPath), 'chat doc must exist');
-        assert(result.chatPath.includes('ai-chats'), 'chat must be in ai-chats/ dir');
+        assert(result.chatPath.includes('chats'), 'chat must be in chats/ dir');
         const content = readFile(result.chatPath);
         assert(content.includes('# CHAT'), 'chat doc must have # CHAT header');
         assert(content.includes('## Rafa:'), 'chat doc must have ## Rafa: section');
         assert(content.includes('## AI:'), 'chat doc must have ## AI: section');
         assert(content.includes('Do this and that.'), 'AI response must appear in chat doc');
         assert(content.includes(`parent_id: ${planId}`), 'parent_id must link to plan');
-        console.log('    ✅ doStep creates chat doc in ai-chats/ correctly');
+        console.log('    ✅ doStep creates chat doc in chats/ correctly');
     }
 
     // ── test 5 (data layer): loadWeave after full workflow ───────────────────
@@ -149,7 +149,7 @@ async function testWorkspaceWorkflow() {
 
         const weave = await loadWeave(loomRoot, 'ww-weave5');
         assert(weave !== null, 'weave must load');
-        assert(weave!.chats.length >= 1, 'weave must surface chat doc from ai-chats/');
+        assert(weave!.chats.length >= 1, 'weave must surface chat doc from chats/');
         assert(weave!.threads.length === 1, 'must have 1 thread');
         assert(weave!.threads[0].dones.length === 1, 'thread must surface done doc');
         assert(weave!.threads[0].design !== undefined, 'thread must still surface design');

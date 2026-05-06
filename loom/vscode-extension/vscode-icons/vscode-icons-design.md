@@ -1,14 +1,13 @@
 ---
 type: design
-id: vscode-icons-design
-title: "VS Code Unified Icon System"
+id: de_01KQYDFDDEC8J06R4624YH86QZ
+title: VS Code Unified Icon System
 status: active
-created: 2026-04-20
+created: "2026-04-20T00:00:00.000Z"
 version: 1
 tags: [vscode, icons, design]
-parent_id: vscode-extension-design
-child_ids: [vscode-icons-plan-001]
-requires_load: [vscode-extension-design]
+parent_id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
+requires_load: [de_01KQYDFDDEQ81VMM0SPD1P1DBM]
 ---
 
 # VS Code Unified Icon System

@@ -1,13 +1,12 @@
 ---
 type: idea
-id: thread-status-filter-idea
-title: "Thread Status Filter"
+id: id_01KQYDFDDE7A0KBG4RQB3SZK4D
+title: Thread Status Filter
 status: draft
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: [vscode, filter, thread, status, ux]
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

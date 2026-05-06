@@ -1,15 +1,14 @@
 ---
 type: plan
-id: done-doc-plan-001
-title: "Done Documents — Implementation"
+id: pl_01KQYDFDDBZ1HXV318KQW7CA5S
+title: Done Documents — Implementation
 status: done
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
-tags: [done, doc-type, close-plan, summarise]
-parent_id: done-doc-design
-child_ids: []
-requires_load: [done-doc-design]
 design_version: 1
+tags: [done, doc-type, close-plan, summarise]
+parent_id: de_01KQYDFDDBYKHS1J703PFE3P9T
+requires_load: [de_01KQYDFDDBYKHS1J703PFE3P9T]
 ---
 
 # Done Documents — Implementation

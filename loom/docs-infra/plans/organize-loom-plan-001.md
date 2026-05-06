@@ -1,13 +1,12 @@
 ---
 type: plan
-id: organize-loom-plan-001
-title: "Organize Loom Docs — Frontmatter Repair & Thread Assignment"
+id: pl_01KQYDFDDC27E4EDMX7VXXP3A7
+title: Organize Loom Docs — Frontmatter Repair & Thread Assignment
 status: done
-created: 2026-04-24
+created: "2026-04-24T00:00:00.000Z"
 version: 2
 tags: [migration, docs-infra, threads, frontmatter]
 parent_id: null
-child_ids: []
 requires_load: [migration-reference]
 ---
 

@@ -1,14 +1,14 @@
 ---
 type: plan
-id: vscode-icons-plan-001
-title: "Create Custom SVG Icons for VS Code Extension"
+id: pl_01KQYDFDDE726GPWH38HDT0EFE
+title: Create Custom SVG Icons for VS Code Extension
 status: done
-created: 2026-04-20
+created: "2026-04-20T00:00:00.000Z"
 version: 1
 tags: [vscode, icons, design, deferred]
-parent_id: vscode-icons-design
-target_version: "0.6.0"
-requires_load: [vscode-icons-design]
+parent_id: de_01KQYDFDDEC8J06R4624YH86QZ
+requires_load: [de_01KQYDFDDEC8J06R4624YH86QZ]
+target_version: 0.6.0
 ---
 
 # Plan — Create Custom SVG Icons for VS Code Extension

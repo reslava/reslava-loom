@@ -1,15 +1,14 @@
 ---
 type: plan
-id: vscode-extension-plan-007
-title: "Step Execution UX — Do Steps, AI Chat, Complete Steps"
+id: pl_01KQYDFDDEX5BB9TD9GHTK4C8M
+title: Step Execution UX — Do Steps, AI Chat, Complete Steps
 status: done
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
-tags: [vscode, plan-steps, ai, complete-step, do-step, ux]
-parent_id: vscode-extension-design
-child_ids: []
-requires_load: [vscode-extension-design]
 design_version: 1
+tags: [vscode, plan-steps, ai, complete-step, do-step, ux]
+parent_id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
+requires_load: [de_01KQYDFDDEQ81VMM0SPD1P1DBM]
 ---
 
 # Step Execution UX — Do Steps, AI Chat, Complete Steps

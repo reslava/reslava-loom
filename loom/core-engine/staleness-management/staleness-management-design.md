@@ -1,14 +1,13 @@
 ---
 type: design
-id: staleness-management-design
+id: de_01KQYDFDDC911HGHRQGZV1ZSCA
 title: Staleness Management
 status: active
 created: "2026-05-04T00:00:00.000Z"
-updated: 2026-05-04
+updated: "2026-05-04T00:00:00.000Z"
 version: 2
 tags: []
-parent_id: staleness-management-idea
-child_ids: []
+parent_id: id_01KQYDFDDCKTVHTZZE0NTS504V
 requires_load: []
 ---
 # Staleness Management — Design

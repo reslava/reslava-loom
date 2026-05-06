@@ -1,17 +1,16 @@
 ---
 type: plan
-id: vscode-mcp-refactor-plan-002
-title: "DoStep Button via MCP Sampling — Plan 002"
+id: pl_01KQYDFDDFQ9DNQR4GBWDMN7WA
+title: DoStep Button via MCP Sampling — Plan 002
 status: done
-created: 2026-04-29
+created: "2026-04-29T00:00:00.000Z"
 version: 1
-tags: [vscode, mcp, sampling, do-step]
-parent_id: vscode-mcp-refactor-design
-child_ids: []
-requires_load: [vscode-mcp-refactor-design, vscode-mcp-refactor-plan-001]
-target_release: "0.5.0"
-actual_release: null
 design_version: 1
+tags: [vscode, mcp, sampling, do-step]
+parent_id: de_01KQYDFDDFZT3CVEBS43EJHVWT
+requires_load: [de_01KQYDFDDFZT3CVEBS43EJHVWT, pl_01KQYDFDDF0GDECC668E23SX01]
+target_release: 0.5.0
+actual_release: null
 ---
 
 # DoStep Button via MCP Sampling — Plan 002

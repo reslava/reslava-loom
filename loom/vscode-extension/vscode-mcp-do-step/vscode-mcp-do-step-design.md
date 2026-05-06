@@ -1,16 +1,15 @@
 ---
 type: design
-id: vscode-mcp-do-step-design
-title: "DoStep via Claude Code Terminal — Design"
+id: de_01KQYDFDDE8Z0AV1R2Q8NNNKGK
+title: DoStep via Claude Code Terminal — Design
 status: draft
-created: 2026-04-30
+created: "2026-04-30T00:00:00.000Z"
 version: 1
 tags: [vscode, mcp, do-step, claude-code, sampling]
 parent_id: null
-child_ids: [vscode-mcp-do-step-plan-001]
-requires_load: [vscode-mcp-refactor-design]
+requires_load: [de_01KQYDFDDFZT3CVEBS43EJHVWT]
 role: primary
-target_release: "0.5.0"
+target_release: 0.5.0
 actual_release: null
 ---
 

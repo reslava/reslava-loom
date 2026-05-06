@@ -1,13 +1,12 @@
 ---
 type: idea
-id: token-awareness-idea
-title: "Token Consumption Awareness"
+id: id_01KQYDFDD83WRDGYDY6GS16YH2
+title: Token Consumption Awareness
 status: deferred
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: [ai, tokens, observability, deferred]
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

@@ -1,15 +1,14 @@
 ---
 type: plan
-id: vscode-extension-plan-008
-title: "VS Code Polish — Idea Inline Buttons & Minor UX Fixes"
+id: pl_01KQYDFDDEHQ0G978XT8RRT1S6
+title: VS Code Polish — Idea Inline Buttons & Minor UX Fixes
 status: implementing
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
-tags: [vscode, polish, ux, inline-buttons]
-parent_id: vscode-extension-design
-child_ids: []
-requires_load: [vscode-extension-design, vscode-extension-plan-006]
 design_version: 1
+tags: [vscode, polish, ux, inline-buttons]
+parent_id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
+requires_load: [de_01KQYDFDDEQ81VMM0SPD1P1DBM, pl_01KQYDFDDEC0K7FANZWDV9AMVH]
 ---
 
 # VS Code Polish — Idea Inline Buttons & Minor UX Fixes

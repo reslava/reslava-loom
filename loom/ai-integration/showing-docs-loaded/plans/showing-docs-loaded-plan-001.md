@@ -1,15 +1,14 @@
 ---
 type: plan
-id: showing-docs-loaded-plan-001
-title: "Showing Docs Loaded — Visibility Rules Audit and Sync"
+id: pl_01KQYDFDD9FZPE58GYJHP69ZDT
+title: Showing Docs Loaded — Visibility Rules Audit and Sync
 status: active
-created: 2026-05-05
+created: "2026-05-05T00:00:00.000Z"
 version: 1
+design_version: 2
 tags: [ai, visibility, claude-md, mvp]
 parent_id: showing-docs-loaded-design
-child_ids: []
-requires_load: [mvp-scope]
-design_version: 2
+requires_load: [rf_01KQYDFDDDYZC0R4XNNX2RASC9]
 ---
 
 # Showing Docs Loaded — Implementation Plan

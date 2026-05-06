@@ -1,13 +1,12 @@
 ---
 type: chat
-id: loom-contrains-chat
-title: "Loom Contrains Chat"
+id: ch_01KQYDFDDC2T5Y9D0K4Z5PR3AZ
+title: Loom Contrains Chat
 status: done
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

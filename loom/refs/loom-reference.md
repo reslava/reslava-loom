@@ -1,14 +1,14 @@
 ---
 type: reference
-id: loom-reference
-title: "Loom — Implementation Contract"
+id: rf_01KQYDFDDDRH48GS6GK97QS23P
+title: Loom — Implementation Contract
 status: active
-created: 2026-04-22
+created: "2026-04-22T00:00:00.000Z"
 version: 2
 tags: [reference, implementation, contract, packages]
 parent_id: null
-child_ids: []
 requires_load: []
+slug: loom-reference
 load: by-request
 load_when: [design, plan, implementing]
 ---

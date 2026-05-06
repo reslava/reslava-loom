@@ -1,16 +1,15 @@
 ---
 type: design
-id: ai-integration-chat-titles-design
-title: "Optional Inline Titles for Chat Mode Conversations"
+id: de_01KQYDFDD8XSSBPW07X73KS5TA
+title: Optional Inline Titles for Chat Mode Conversations
 status: active
-created: 2026-04-11
-updated: 2026-04-14
+created: "2026-04-11T00:00:00.000Z"
+updated: "2026-04-14T00:00:00.000Z"
 version: 1
 tags: [ai, chat, design, documentation, ux]
-parent_id: ai-integration-design
-child_ids: []
-requires_load: [ai-integration-design]
-target_release: "0.3.0"
+parent_id: de_01KQYDFDD88BTYTQ61S0Q9W02V
+requires_load: [de_01KQYDFDD88BTYTQ61S0Q9W02V]
+target_release: 0.3.0
 actual_release: null
 ---
 

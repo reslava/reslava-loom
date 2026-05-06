@@ -1,13 +1,12 @@
 ---
 type: design
-id: weave-and-thread-design
-title: "Weave and Thread — The True Graph Model"
+id: de_01KQYDFDDCMH30S303HF03ET00
+title: Weave and Thread — The True Graph Model
 status: done
-created: 2026-04-21
+created: "2026-04-21T00:00:00.000Z"
 version: 3
 tags: [domain-model, graph, terminology, directory-structure]
-parent_id: core-engine-design
-child_ids: []
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
 requires_load: []
 ---
 

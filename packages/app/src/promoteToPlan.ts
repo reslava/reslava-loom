@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { loadDoc, saveDoc } from '../../fs/dist';
-import { AIClient, ChatDoc, IdeaDoc, DesignDoc, PlanDoc, createBaseFrontmatter, generatePlanId } from '../../core/dist';
+import { AIClient, ChatDoc, IdeaDoc, DesignDoc, PlanDoc, createBaseFrontmatter, generateDocId, generatePlanId } from '../../core/dist';
 import { buildSummarizationMessages, parseTitleAndBody } from './utils/aiSummarization';
 
 export interface PromoteToPlanInput {
@@ -65,7 +65,8 @@ export async function promoteToPlan(
     const existingPlanIds = existingFiles
         .filter(f => f.endsWith('.md'))
         .map(f => f.replace(/\.md$/, ''));
-    const planId = generatePlanId(idScope, existingPlanIds);
+    const planFilename = generatePlanId(idScope, existingPlanIds);
+    const planId = generateDocId('plan');
 
     const frontmatter = createBaseFrontmatter('plan', planId, title, doc.id);
     const planDoc: PlanDoc = {
@@ -76,7 +77,7 @@ export async function promoteToPlan(
         content: `# ${title}\n\n${body}`,
     } as unknown as PlanDoc;
 
-    const filePath = path.join(plansDir, `${planId}.md`);
+    const filePath = path.join(plansDir, `${planFilename}.md`);
     await deps.saveDoc(planDoc, filePath);
 
     return { filePath, title };

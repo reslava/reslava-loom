@@ -1,16 +1,15 @@
 ---
 type: plan
-id: ai-command-palette-plan-001
-title: "AI Command Palette — Implementation"
+id: pl_01KQYDFDD8K96BA5Y7T3KMTV15
+title: AI Command Palette — Implementation
 status: done
-created: 2026-04-22
+created: "2026-04-22T00:00:00.000Z"
 version: 1
-tags: [ai, commands, promote, refine, summarize, vscode]
-parent_id: ai-command-palette-design
-child_ids: []
-requires_load: [ai-command-palette-design, ai-integration-design]
 design_version: 1
-target_version: "0.3.0"
+tags: [ai, commands, promote, refine, summarize, vscode]
+parent_id: de_01KQYDFDD7Z9B0CK146K75XTRZ
+requires_load: [de_01KQYDFDD7Z9B0CK146K75XTRZ, de_01KQYDFDD88BTYTQ61S0Q9W02V]
+target_version: 0.3.0
 steps: []
 ---
 

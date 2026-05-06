@@ -1,16 +1,15 @@
 ---
 type: design
-id: vscode-extension-toolbar-design
-title: "Toolbar & ViewState Interaction Model"
+id: de_01KQYDFDDE0PPQX6WSKFF5XBQB
+title: Toolbar & ViewState Interaction Model
 status: active
-created: 2026-04-11
-updated: 2026-04-14
+created: "2026-04-11T00:00:00.000Z"
+updated: "2026-04-14T00:00:00.000Z"
 version: 2
 tags: [ui, toolbar, viewstate, vscode, loom]
-parent_id: vscode-extension-design
-child_ids: []
-requires_load: [vscode-extension-design]
-target_release: "0.4.0"
+parent_id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
+requires_load: [de_01KQYDFDDEQ81VMM0SPD1P1DBM]
+target_release: 0.4.0
 actual_release: null
 ---
 

@@ -1,15 +1,14 @@
 ---
 type: plan
-id: chat-frontmatter-plan-001
-title: "Chat doc frontmatter schema"
+id: pl_01KQYDFDDBT6CPRA4A4SAA74XR
+title: Chat doc frontmatter schema
 status: done
-created: 2026-04-29
+created: "2026-04-29T00:00:00.000Z"
 version: 1
 tags: []
-parent_id: chat-frontmatter
-child_ids: []
+parent_id: id_01KQYDFDDAPGGZTSF7JATTKQ20
 requires_load: []
-target_release: "0.5.0"
+target_release: 0.5.0
 actual_release: null
 ---
 

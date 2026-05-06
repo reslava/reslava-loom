@@ -1,13 +1,12 @@
 ---
 type: chat
-id: mcp-test-chat
-title: "Mcp Test Chat"
+id: ch_01KQYDFDD95S5RM3QBN4SR3GG7
+title: Mcp Test Chat
 status: active
-created: 2026-04-27
+created: "2026-04-27T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

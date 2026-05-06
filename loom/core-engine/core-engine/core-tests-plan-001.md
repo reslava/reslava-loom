@@ -1,15 +1,14 @@
 ---
 type: plan
-id: core-tests-plan-001
-title: "Core + App Use-Case Tests"
+id: pl_01KQYDFDDB86JZKCBP1NN75RR4
+title: Core + App Use-Case Tests
 status: done
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
-tags: [tests, core, app, fs, weaveRepository, closePlan, doStep, completeStep]
-parent_id: core-engine-design
-child_ids: []
-requires_load: [core-engine-design]
 design_version: 1
+tags: [tests, core, app, fs, weaveRepository, closePlan, doStep, completeStep]
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
+requires_load: [de_01KQYDFDDB802XEJM0S329T9WW]
 ---
 
 # Core + App Use-Case Tests

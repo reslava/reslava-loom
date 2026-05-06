@@ -1,16 +1,15 @@
 ---
 type: design
-id: core-engine-design
-title: "REslava Loom — Core Engine Design"
+id: de_01KQYDFDDB802XEJM0S329T9WW
+title: REslava Loom — Core Engine Design
 status: active
-created: 2026-04-11
-updated: 2026-04-14
+created: "2026-04-11T00:00:00.000Z"
+updated: "2026-04-14T00:00:00.000Z"
 version: 3
 tags: [loom, core, architecture, markdown, context-management]
-parent_id: core-engine-idea
-child_ids: [core-engine-plan-001, core-engine-plan-002, core-engine-plan-003, move-thread-to-entities-plan-001, core-tests-plan-001, archived-document-link-handling-plan-001]
+parent_id: id_01KQYDFDDBK79TTRP2W1QK5FFM
 requires_load: []
-target_release: "0.1.0"
+target_release: 0.1.0
 actual_release: null
 ---
 

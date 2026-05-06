@@ -1,14 +1,14 @@
 ---
 type: plan
-id: base-doc-plan-001
-title: "Extract BaseDoc Interface with Generic Status"
+id: pl_01KQYDFDDA7B6MA4TNQWTK3Y81
+title: Extract BaseDoc Interface with Generic Status
 status: done
-created: 2026-04-17
+created: "2026-04-17T00:00:00.000Z"
 version: 1
 tags: [core, entities, refactor, typescript]
-parent_id: base-doc-design
-target_version: "0.5.0"
-requires_load: [base-doc-design]
+parent_id: de_01KQYDFDDATTCNZQCNB0JR0Z0F
+requires_load: [de_01KQYDFDDATTCNZQCNB0JR0Z0F]
+target_version: 0.5.0
 ---
 
 # Plan — Extract BaseDoc Interface with Generic Status

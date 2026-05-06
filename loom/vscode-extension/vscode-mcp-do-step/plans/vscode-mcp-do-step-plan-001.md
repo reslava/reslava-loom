@@ -1,17 +1,16 @@
 ---
 type: plan
-id: vscode-mcp-do-step-plan-001
-title: "DoStep via Claude Code Terminal — Plan 001"
+id: pl_01KQYDFDDER47Y0H7W7K4ZX80M
+title: DoStep via Claude Code Terminal — Plan 001
 status: done
-created: 2026-04-30
+created: "2026-04-30T00:00:00.000Z"
 version: 1
-tags: [vscode, mcp, do-step, claude-code]
-parent_id: vscode-mcp-do-step-design
-child_ids: []
-requires_load: [vscode-mcp-do-step-design]
-target_release: "0.5.0"
-actual_release: null
 design_version: 1
+tags: [vscode, mcp, do-step, claude-code]
+parent_id: de_01KQYDFDDE8Z0AV1R2Q8NNNKGK
+requires_load: [de_01KQYDFDDE8Z0AV1R2Q8NNNKGK]
+target_release: 0.5.0
+actual_release: null
 ---
 
 # DoStep via Claude Code Terminal — Plan 001

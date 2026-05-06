@@ -1,13 +1,12 @@
 ---
 type: chat
-id: vscode-mcp-do-step-chat
+id: ch_01KQYDFDDE7X2JYBQ4D2N85A8Y
 title: Vscode Mcp Do Step Chat
 status: active
-created: 2026-04-29
+created: "2026-04-29T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

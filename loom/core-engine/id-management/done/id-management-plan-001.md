@@ -1,15 +1,15 @@
 ---
 type: plan
-id: id-management-plan-001
-title: "Implement Automatic Document ID Management"
+id: pl_01KQYDFDDCPMZT3CX4Z6YFYE1C
+title: Implement Automatic Document ID Management
 status: done
-created: 2026-04-15
+created: "2026-04-15T00:00:00.000Z"
 version: 1
 design_version: 1
 tags: [id, linking, ux]
-parent_id: id-management-design
-target_version: "0.3.0"
-requires_load: [id-management-design]
+parent_id: de_01KQYDFDDC2GWRSG7TVP5Z5MAN
+requires_load: [de_01KQYDFDDC2GWRSG7TVP5Z5MAN]
+target_version: 0.3.0
 ---
 
 # Plan — Implement Automatic Document ID Management

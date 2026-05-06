@@ -1,13 +1,12 @@
 ---
 type: design
-id: workflow-feature-model-design
-title: "Workflow Feature Model"
+id: de_01KQYDFDDFPJETSXVMRDSKD8C2
+title: Workflow Feature Model
 status: active
-created: 2026-04-11
+created: "2026-04-11T00:00:00.000Z"
 version: 2.0.0
 tags: [feature, model, relationships, architecture]
-parent_id: workflow-design-v2
-child_ids: []
+parent_id: de_01KQYDFDDF4QG72MKRE0KB2HZ4
 requires_load: [references/workspace-directory-structure-reference.md]
 ---
 

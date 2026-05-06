@@ -1,15 +1,14 @@
 ---
 type: plan
-id: mcp-plan-001
-title: "Loom MCP Server — Implementation Plan"
+id: pl_01KQYDFDD9W8VKVQM9H19H9490
+title: Loom MCP Server — Implementation Plan
 status: done
-created: 2026-04-25
+created: "2026-04-25T00:00:00.000Z"
 version: 1
-tags: [ai, mcp, integration, agent, loom]
-parent_id: mcp-design
-child_ids: []
-requires_load: [mcp-design]
 design_version: 1
+tags: [ai, mcp, integration, agent, loom]
+parent_id: de_01KQYDFDD9PRVJT4JBAQ0JHRG6
+requires_load: [de_01KQYDFDD9PRVJT4JBAQ0JHRG6]
 ---
 
 # Loom MCP Server — Implementation Plan

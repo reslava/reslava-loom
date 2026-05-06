@@ -1,14 +1,14 @@
 ---
 type: plan
-id: app-use-cases-completion-plan
-title: "Complete Application Layer Use‑Cases and Thin CLI Wrappers"
+id: pl_01KQYDFDDAH88GAJGWSPGC414R
+title: Complete Application Layer Use‑Cases and Thin CLI Wrappers
 status: done
-created: 2026-04-17
+created: "2026-04-17T00:00:00.000Z"
 version: 1
 tags: [app, cli, refactor, use-cases]
-parent_id: app-layer-refactor-design
-target_version: "0.5.0"
-requires_load: [app-layer-refactor-design]
+parent_id: de_01KQYDFDDA1XV31SK6N64VS0ST
+requires_load: [de_01KQYDFDDA1XV31SK6N64VS0ST]
+target_version: 0.5.0
 ---
 
 # Plan — Complete Application Layer Use‑Cases and Thin CLI Wrappers

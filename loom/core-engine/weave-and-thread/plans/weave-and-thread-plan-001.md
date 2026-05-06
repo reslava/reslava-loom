@@ -1,15 +1,14 @@
 ---
 type: plan
-id: weave-and-thread-plan-001
-title: "Weave & Thread — Phase 4 Implementation"
+id: pl_01KQYDFDDCS6PZ80MQE2H0C3RK
+title: Weave & Thread — Phase 4 Implementation
 status: done
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
-tags: [refactor, core, threads, weaves, migration, phase-4]
-parent_id: weave-and-thread-design
-child_ids: []
-requires_load: [weave-and-thread-design, core-engine-design, vscode-extension-design]
 design_version: 3
+tags: [refactor, core, threads, weaves, migration, phase-4]
+parent_id: de_01KQYDFDDCMH30S303HF03ET00
+requires_load: [de_01KQYDFDDCMH30S303HF03ET00, de_01KQYDFDDB802XEJM0S329T9WW, de_01KQYDFDDEQ81VMM0SPD1P1DBM]
 ---
 
 # Weave & Thread — Phase 4 Implementation

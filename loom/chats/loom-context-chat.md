@@ -1,13 +1,12 @@
 ---
 type: chat
-id: loom-context-chat
-title: "Loom Context"
+id: ch_01KQYDFDD9J8DDC3D3QRDJ9RFD
+title: Loom Context
 status: active
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

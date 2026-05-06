@@ -3,7 +3,7 @@ import * as path from 'path';
 import { getActiveLoomRoot } from '../../fs/dist';
 import { saveDoc } from '../../fs/dist';
 import { loadDoc } from '../../fs/dist';
-import { generatePermanentId } from '../../core/dist';
+import { generateDocId, generatePermanentId } from '../../core/dist';
 import { createBaseFrontmatter } from '../../core/dist';
 import { generateDesignBody } from '../../core/dist';
 import { DesignDoc, IdeaDoc } from '../../core/dist';
@@ -116,13 +116,14 @@ export async function weaveDesign(
             parentId = idea.id;
             designTitle = input.title || idea.title;
         }
-        const designId = `${input.threadId}-design`;
-        const frontmatter = createBaseFrontmatter('design', designId, designTitle, parentId);
+        const id = generateDocId('design');
+        const filename = `${input.threadId}-design`;
+        const frontmatter = createBaseFrontmatter('design', id, designTitle, parentId);
         const content = generateDesignBody(designTitle, 'User');
         const doc: DesignDoc = { ...frontmatter, content } as DesignDoc;
-        const filePath = path.join(threadPath, `${designId}.md`);
+        const filePath = path.join(threadPath, `${filename}.md`);
         await deps.saveDoc(doc, filePath);
-        return { id: designId, filePath, autoFinalized: false };
+        return { id, filePath, autoFinalized: false };
     }
 
     await deps.fs.ensureDir(weavePath);
@@ -159,17 +160,18 @@ export async function weaveDesign(
         }
     }
     
-    const permanentId = generatePermanentId(designTitle, 'design', existingIds);
-    const frontmatter = createBaseFrontmatter('design', permanentId, designTitle, parentId);
+    const id = generateDocId('design');
+    const filename = generatePermanentId(designTitle, 'design', existingIds);
+    const frontmatter = createBaseFrontmatter('design', id, designTitle, parentId);
     const content = generateDesignBody(designTitle, 'User');
-    
+
     const doc: DesignDoc = {
         ...frontmatter,
         content,
     } as DesignDoc;
-    
-    const filePath = path.join(weavePath, `${permanentId}.md`);
+
+    const filePath = path.join(weavePath, `${filename}.md`);
     await deps.saveDoc(doc, filePath);
-    
-    return { id: permanentId, filePath, autoFinalized };
+
+    return { id, filePath, autoFinalized };
 }

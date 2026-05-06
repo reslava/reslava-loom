@@ -1,13 +1,12 @@
 ---
 type: design
-id: workflow-user-personalization-design
-title: "User Personalization in Workflow Documents"
+id: de_01KQYDFDDFGYE75W0D9GEVT8W2
+title: User Personalization in Workflow Documents
 status: done
-created: 2026-04-12
+created: "2026-04-12T00:00:00.000Z"
 version: 1.0.0
 tags: [personalization, ux, configuration, templates]
-parent_id: workflow-design-v2
-child_ids: []
+parent_id: de_01KQYDFDDF4QG72MKRE0KB2HZ4
 requires_load: []
 ---
 

@@ -1,13 +1,12 @@
 ---
 type: chat
-id: vscode-extension-fixes-tweaks-chat
-title: "Vscode Extension Fixes Tweaks Chat"
+id: ch_01KQYDFDDE30CQ4YC4Y3K6SH3P
+title: Vscode Extension Fixes Tweaks Chat
 status: active
-created: 2026-04-25
+created: "2026-04-25T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

@@ -1,14 +1,13 @@
 ---
 type: plan
-id: app-layer-refactor-plan
-title: "Refactor Architecture to Introduce Application Layer"
+id: pl_01KQYDFDDA8NT930E7B2TXF9DH
+title: Refactor Architecture to Introduce Application Layer
 status: done
-created: 2026-04-16
+created: "2026-04-16T00:00:00.000Z"
 version: 1
 tags: [architecture, refactor]
-parent_id: app-layer-refactor-design
-child_ids: []
-requires_load: [app-layer-refactor-design]
+parent_id: de_01KQYDFDDA1XV31SK6N64VS0ST
+requires_load: [de_01KQYDFDDA1XV31SK6N64VS0ST]
 ---
 
 # Feature — Refactor Architecture to Introduce Application Layer

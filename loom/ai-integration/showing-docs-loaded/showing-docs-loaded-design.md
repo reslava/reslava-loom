@@ -1,14 +1,13 @@
 ---
 type: design
-id: showing-docs-loaded-visibility-design
+id: de_01KQYDFDD9VDV3GBT0DBVH15RE
 title: Showing Docs Loaded Visibility
 status: active
 created: "2026-05-04T00:00:00.000Z"
-updated: 2026-05-04
+updated: "2026-05-04T00:00:00.000Z"
 version: 2
 tags: []
-parent_id: showing-docs-loaded-visibility-idea
-child_ids: []
+parent_id: id_01KQYDFDD9AE2306D37KA2WNA3
 requires_load: []
 ---
 # Showing Docs Loaded Visibility — Design

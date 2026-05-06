@@ -1,13 +1,12 @@
 ---
 type: idea
-id: canonical-frontmatter-serializer-idea
-title: "Canonical Frontmatter Serializer"
+id: id_01KQYDFDDAX50NGR6FAZ4G6GSC
+title: Canonical Frontmatter Serializer
 status: done
-created: 2026-04-15
+created: "2026-04-15T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []                
 requires_load: []
 ---
 

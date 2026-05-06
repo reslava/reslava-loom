@@ -1,16 +1,16 @@
 ---
 type: plan
-id: core-engine-plan-001
-title: "Core Engine Implementation — Types and Reducers"
+id: pl_01KQYDFDDB3FG3HN46KF59N3JJ
+title: Core Engine Implementation — Types and Reducers
 status: done
-created: 2026-04-10
-updated: 2026-04-14
+created: "2026-04-10T00:00:00.000Z"
+updated: "2026-04-14T00:00:00.000Z"
 version: 2
 design_version: 3
 tags: [loom, core, engine, types, reducers]
-parent_id: core-engine-design
-target_version: "0.1.0"
-requires_load: [core-engine-design]
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
+requires_load: [de_01KQYDFDDB802XEJM0S329T9WW]
+target_version: 0.1.0
 ---
 
 # Plan — Core Engine Types and Reducers

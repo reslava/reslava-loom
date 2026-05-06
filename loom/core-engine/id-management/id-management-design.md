@@ -1,15 +1,14 @@
 ---
 type: design
-id: id-management-design
-title: "Automatic Document ID Management"
+id: de_01KQYDFDDC2GWRSG7TVP5Z5MAN
+title: Automatic Document ID Management
 status: active
-created: 2026-04-15
+created: "2026-04-15T00:00:00.000Z"
 version: 1
 tags: [id, linking, ux, automation]
-parent_id: core-engine-design
-child_ids: [id-management-plan-001]
-requires_load: [core-engine-design]
-target_release: "0.3.0"
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
+requires_load: [de_01KQYDFDDB802XEJM0S329T9WW]
+target_release: 0.3.0
 actual_release: null
 ---
 

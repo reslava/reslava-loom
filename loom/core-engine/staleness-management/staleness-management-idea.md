@@ -1,14 +1,13 @@
 ---
 type: idea
-id: staleness-management-idea
+id: id_01KQYDFDDCKTVHTZZE0NTS504V
 title: Staleness Management
 status: active
 created: "2026-05-04T00:00:00.000Z"
-updated: 2026-05-04
+updated: "2026-05-04T00:00:00.000Z"
 version: 2
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # Staleness Management

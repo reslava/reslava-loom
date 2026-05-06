@@ -1,15 +1,14 @@
 ---
 type: design
-id: dependency-tracking-design
-title: "Dependency Tracking in Plans and Across Plans"
+id: de_01KQYDFDDBCXYVBTRHGT38887N
+title: Dependency Tracking in Plans and Across Plans
 status: active
-created: 2026-04-14
+created: "2026-04-14T00:00:00.000Z"
 version: 1
 tags: [dependency, plan, workflow, blocking]
-parent_id: core-engine-design
-child_ids: []
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
 requires_load: []
-target_release: "0.3.0"
+target_release: 0.3.0
 actual_release: null
 ---
 

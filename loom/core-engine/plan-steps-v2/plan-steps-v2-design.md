@@ -1,13 +1,12 @@
 ---
 type: design
-id: plan-steps-v2-design
-title: "Plan Steps v2 — Structured Steps in Frontmatter"
+id: de_01KQYDFDDCSA5576N001DWAAH2
+title: Plan Steps v2 — Structured Steps in Frontmatter
 status: draft
-created: 2026-04-16
+created: "2026-04-16T00:00:00.000Z"
 version: 1.0.0
 tags: [plan, steps, architecture, post-mvp]
-parent_id: core-engine-design
-child_ids: []
+parent_id: de_01KQYDFDDB802XEJM0S329T9WW
 requires_load: []
 ---
 

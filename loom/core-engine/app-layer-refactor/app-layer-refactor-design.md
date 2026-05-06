@@ -1,13 +1,12 @@
 ---
 type: design
-id: app-layer-refactor-design
-title: "Introduce Application Layer for Clean Architecture"
+id: de_01KQYDFDDA1XV31SK6N64VS0ST
+title: Introduce Application Layer for Clean Architecture
 status: draft
-created: 2026-04-16
+created: "2026-04-16T00:00:00.000Z"
 version: 1.0.0
 tags: [architecture, refactor]
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

@@ -2,16 +2,12 @@ import chalk from 'chalk';
 import { runEvent } from '../../../app/dist/runEvent';
 import { loadWeave} from '../../../fs/dist';
 import { saveWeave } from '../../../fs/dist';
-import { getActiveLoomRoot } from '../../../fs/dist';
+import { getActiveLoomRoot, resolveWeaveIdForPlan } from '../../../fs/dist';
 
 export async function startPlanCommand(planId: string): Promise<void> {
     try {
-        const weaveId = planId.split('-plan-')[0];
-        if (!weaveId) {
-            throw new Error(`Invalid plan ID format. Expected "{weaveId}-plan-###", got "${planId}"`);
-        }
-
         const loomRoot = getActiveLoomRoot();
+        const weaveId = await resolveWeaveIdForPlan(loomRoot, planId);
         
         const loadWeaveOrThrow = async (root: string, tid: string) => {
             const thread = await loadWeave(root, tid);

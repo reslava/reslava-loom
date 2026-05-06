@@ -1,9 +1,10 @@
 ---
 type: reference
-id: loom-analysis-reference
-title: "Loom — Deep Analysis & Improvement Opportunities"
-created: 2026-04-22
+id: rf_01KQYDFDDDH3GW66SQJ1XHAC2J
+title: Loom — Deep Analysis & Improvement Opportunities
+created: "2026-04-22T00:00:00.000Z"
 tags: [reference, analysis, architecture]
+slug: loom-analysis-reference
 ---
 
 # Loom — Deep Analysis & Improvement Opportunities

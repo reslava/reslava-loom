@@ -1,14 +1,13 @@
 ---
 type: plan
-id: vscode-icons-plan-002
-title: "Wire thread & chat custom SVG icons"
+id: pl_01KQYDFDDEEXYF1QV01H62GX1C
+title: Wire thread & chat custom SVG icons
 status: done
-created: 2026-04-24
+created: "2026-04-24T00:00:00.000Z"
 version: 1
 tags: [vscode, icons, thread, chat]
-parent_id: vscode-icons-design
-child_ids: []
-requires_load: [vscode-icons-design]
+parent_id: de_01KQYDFDDEC8J06R4624YH86QZ
+requires_load: [de_01KQYDFDDEC8J06R4624YH86QZ]
 ---
 
 # Plan — Wire thread & chat custom SVG icons

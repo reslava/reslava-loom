@@ -1,16 +1,16 @@
 ---
 type: plan
-id: vscode-extension-plan-004
-title: "VS Code Extension — Loom Visual Layer"
+id: pl_01KQYDFDDE44MBZ865D6F222X8
+title: VS Code Extension — Loom Visual Layer
 status: done
-created: 2026-04-11
-updated: 2026-04-18
+created: "2026-04-11T00:00:00.000Z"
+updated: "2026-04-18T00:00:00.000Z"
 version: 3
 design_version: 1
 tags: [vscode, extension, ui, tree, app-layer]
-parent_id: vscode-extension-design
-target_version: "0.5.0"
-requires_load: [vscode-extension-design, vscode-extension-toolbar-design, vscode-extension-user-personalization-design]
+parent_id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
+requires_load: [de_01KQYDFDDEQ81VMM0SPD1P1DBM, de_01KQYDFDDE0PPQX6WSKFF5XBQB, de_01KQYDFDDEDXJJHYNNZWXQZNMM]
+target_version: 0.5.0
 ---
 
 # Plan — VS Code Extension (Loom Visual Layer)

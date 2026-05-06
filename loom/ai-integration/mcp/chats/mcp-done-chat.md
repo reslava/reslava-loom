@@ -1,13 +1,12 @@
 ---
 type: chat
-id: mcp-done-chat
-title: "Mcp Done Chat"
+id: ch_01KQYDFDD9JY494CSH7WJQQ9K0
+title: Mcp Done Chat
 status: active
-created: 2026-04-26
+created: "2026-04-26T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 # CHAT

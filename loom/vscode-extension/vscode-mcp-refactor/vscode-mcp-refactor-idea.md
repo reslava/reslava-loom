@@ -1,14 +1,13 @@
 ---
 type: idea
-id: vscode-mcp-refactor-idea
-title: "Refactor VS Code Extension to Use MCP"
+id: id_01KQYDFDDFT9EE8KH1TWJ7G0B2
+title: Refactor VS Code Extension to Use MCP
 status: draft
-created: 2026-04-27
+created: "2026-04-27T00:00:00.000Z"
 version: 1
 tags: [vscode, mcp, architecture, refactor]
 parent_id: null
-child_ids: [vscode-mcp-refactor-design]
-requires_load: [loom-architecture]
+requires_load: [rf_01KQYDFDDDMS4N0V9G73MNV5JR]
 ---
 
 # Refactor VS Code Extension to Use MCP

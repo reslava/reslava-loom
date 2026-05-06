@@ -1,16 +1,15 @@
 ---
 type: plan
-id: ai-chat-plan-001
-title: "AI Chat Reply — Core Loop"
+id: pl_01KQYDFDD840P09SBPJCM9MMTB
+title: AI Chat Reply — Core Loop
 status: done
-created: 2026-04-22
+created: "2026-04-22T00:00:00.000Z"
 version: 1
-tags: [ai, chat, vscode, core]
-parent_id: ai-integration-design
-child_ids: []
-requires_load: [ai-integration-design]
 design_version: 3
-target_version: "0.3.0"
+tags: [ai, chat, vscode, core]
+parent_id: de_01KQYDFDD88BTYTQ61S0Q9W02V
+requires_load: [de_01KQYDFDD88BTYTQ61S0Q9W02V]
+target_version: 0.3.0
 steps: []
 ---
 

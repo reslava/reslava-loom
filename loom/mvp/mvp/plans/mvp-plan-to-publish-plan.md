@@ -1,15 +1,14 @@
 ---
 type: plan
-id: mvp-plan-to-publish-plan
+id: pl_01KQYDFDDDS4F8C6THBQ49WE8Q
 title: MVP — Plan to publish
 status: implementing
 created: "2026-05-02T00:00:00.000Z"
-updated: 2026-05-03
+updated: "2026-05-03T00:00:00.000Z"
 version: 4
 design_version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 target_version: 0.1.0
 ---

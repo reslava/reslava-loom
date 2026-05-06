@@ -1,13 +1,12 @@
 ---
 type: idea
-id: ai-transport-idea
-title: "AI Provider Transport Abstraction (API Key vs Subscription vs Ollama)"
+id: id_01KQYDFDD86NXZZW7N732JXVDQ
+title: AI Provider Transport Abstraction (API Key vs Subscription vs Ollama)
 status: deferred
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: [ai, transport, api, subscription, ollama, deferred]
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 

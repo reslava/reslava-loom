@@ -1,15 +1,14 @@
 ---
 type: plan
-id: tutorial-plan-001
-title: "Loom Tutorial — Install to Done (README + GIF)"
+id: pl_01KQYDFDDCD2QM7G6R4AB7CGV1
+title: Loom Tutorial — Install to Done (README + GIF)
 status: draft
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
+design_version: 1
 tags: [docs, tutorial, readme, gif, onboarding]
 parent_id: null
-child_ids: []
 requires_load: []
-design_version: 1
 ---
 
 # Loom Tutorial — Install to Done (README + GIF)

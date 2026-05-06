@@ -1,13 +1,12 @@
 ---
 type: chat
-id: loom-context-cl-chat
-title: "Loom Context Claude"
+id: ch_01KQYDFDDABPWAQ2VVYFWA35GP
+title: Loom Context Claude
 status: active
-created: 2026-04-23
+created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: []
 parent_id: null
-child_ids: []
 requires_load: []
 ---
 
@@ -1074,3 +1073,380 @@ Got it — Option A confirmed. No rush to ship MVP; correct path over short path
 Committing all current changes and pushing first, as requested. After that lands, next move is formalizing `doc-ids-design.md` and its plan-001 — and then walking the four downstream threads (`mcp-doc-resolver-scope`, `archive-management`, deferred `loom-install-claude-hook`, plus the concept docs) into alignment with ULIDs before any of them get implemented on slug-IDs.
 
 Doing the commit + push now.
+
+## Rafa:
+
+create doc-ids-design.md and plan-001
+
+## AI:
+
+Hold on before I create anything — `doc-ids-design.md` already exists and is substantial (v2, status: active, ~200 lines). It covers frontmatter shape, type-prefix table, identity/filename/slug split, ctx auto-loading, `requires_load` semantics, refs scoping, link index changes, repo/reducer changes, MCP surface adjustments, migration script (7 ordered passes with scratch-dir atomicity), sequencing, risks, out-of-scope, and acceptance criteria.
+
+So we don't need to *create* the design — we need to decide whether to (a) accept it as-is and go straight to plan-001, or (b) refine it first.
+
+A quick read says it's in good shape and plan-ready. The only judgment calls I'd want to make explicit before planning:
+
+1. **Filename for non-ref docs.** The idea's open questions list this (line 85: "do we keep `{thread}-idea.md` etc., or move to ULID-based filenames?"). The design picks **keep existing convention** (section 2 table) — filenames are presentation, ULID is identity. I think that's right (human readability of the tree wins), but it's worth confirming you agree before plan-001 codifies it.
+
+2. **Migration atomicity.** Section 9 says "writes to a scratch directory first, runs verification, then swaps it into place via a single `git mv`-style rename pass." That's stronger than the idea's deferred question (line 86: "one big rewrite vs. staged with rollback") suggested. I'd want to confirm the scratch-dir-then-swap approach is actually what you want — it's the safer choice but requires the migration script to be careful about the swap.
+
+3. **Reference docs without an existing `slug` field.** Section 9 step 3 says "for refs: ensure `slug` field is set (derive from old id if missing)." Today some refs probably already have a sensible filename-as-slug. Worth confirming we derive from filename, not from the old `id` field, since `id` for refs today *is* the slug (so they're equivalent — but worth saying explicitly).
+
+If those three look right to you, I'll go straight to `doc-ids-plan-001.md`. If any of them needs refinement, I'll do a `loom_refine_design` pass first.
+
+Which way?
+
+## Rafa: 
+
+I meant review design, create the plan.
+1. keep `{thread}-idea.md` etc. filenames for all including `refs/{thread}-reference.md` (otherwise tree become trash for humans)
+2. scratch-dir-then-swap
+3. derive from filename
+
+These idea and design docs could have some stole info, for example,
+doc-ids-design.md line 167:
+`loom-ctx.md`, `{weave}-ctx.md`, `{weave}-{thread}-ctx.md`
+and we decide to always name `ctx`:
+`ctx.md`, `{weave}-ctx.md`, `{weave}-{thread}-ctx.md`
+
+## AI:
+
+Got the three answers. Reviewed the design against current reality before drafting the plan — found **two** stale spots, not one.
+
+### Stale spot 1 — ctx filenames (the one you flagged)
+
+Per `ctx-naming-design.md` (status: active), the canonical layout is:
+
+```
+loom/ctx.md                       ← global ctx, id: loom-ctx
+loom/{weave}/ctx.md               ← weave ctx, id: {weave}-ctx
+loom/{weave}/{thread}/ctx.md      ← thread ctx, id: {thread}-ctx
+```
+
+Path is the scope; filename is positional. Frontmatter `id` stays semantic so existing references keep resolving.
+
+`doc-ids-design.md` is stale in three places — they all use the old `loom-ctx.md` / `{weave}-ctx.md` / `{weave}-{thread}-ctx.md` naming:
+
+- **Section 2 table (line 64)** — "Filename (ctx)" row.
+- **Section 3 (lines 79–81)** — Ctx auto-loading rules. Needs to say "load `loom/ctx.md`", "load `loom/{weave}/ctx.md` if it exists", etc.
+- **Section 9 step 5 (line 167)** — Migration script ctx rename target.
+
+### Stale spot 2 — refs scoping is already weave-local in the repo
+
+Section 5 says **"Global only for this migration. Weave-level refs deferred."** But the repo already has weave-local refs in seven places:
+
+```
+loom/refs/                          ← global
+loom/ai-integration/mcp/refs/
+loom/core-engine/refs/
+loom/docs-infra/refs/
+loom/mvp/refs/
+loom/use-cases/refs/
+loom/vscode-extension/refs/
+```
+
+So the "deferred" decision is dead — weave-level refs exist. The design either needs to (a) drop the "global only" claim and specify slug-resolution scope (doc → thread refs → weave refs → global refs), or (b) move/inline the weave-local refs back into `loom/refs/` to honor the original design.
+
+I think (a) is right: the weave-local refs are working, they keep cross-weave noise out of the global namespace, and the resolver walking outward is a clean rule. But this is the kind of architectural call where I'd rather flag the choice than make it for you.
+
+### Anything else?
+
+Skimmed the rest. The remaining sections (frontmatter shape, identity, link index, repo/reducer changes, MCP surface, migration script atomicity, risks, acceptance) all look current. The three answers you just gave (keep filenames, scratch-dir-then-swap, derive slug from filename) align with what's there — they don't introduce new staleness.
+
+### Recommendation
+
+Refine the design first (one `loom_refine_design` pass touching sections 2, 3, 5, 9), then write `doc-ids-plan-001.md` against the corrected design. That's cleaner than writing a plan whose reference design we both know is wrong in two places.
+
+For section 5 specifically: pick (a) walk-outward resolver, or (b) consolidate to global. Which way?
+
+STOP — waiting on the section-5 call and the go to refine.
+
+## Rafa:
+
+(b) always correct path, no workarounds
+
+important: `hook` and `always use mcp` should be disabled when we are touching core functionailty, big migrations, so when you star implementing the plan, do not use mcp. Agree?
+
+## AI:
+
+Section 5 → (b) **consolidate to global** acknowledged. Every weave-local `refs/` folder folds back into `loom/refs/`. Slug uniqueness scope = the single global folder. The seven weave-local folders (ai-integration/mcp/refs, core-engine/refs, docs-infra/refs, mvp/refs, use-cases/refs, vscode-extension/refs) become migration sub-tasks: each ref doc moves to `loom/refs/{slug}.md`, and any `requires_load` entries already pointing at slugs inside them keep resolving. Plan-001 will pick that up.
+
+### On disabling the hook + "no MCP" during migration
+
+**Agreed, with the boundaries spelled out so we don't lose the discipline.**
+
+The reasoning is sound: the migration is rewriting the very mechanism the hook protects. Specifically:
+
+1. **The migration script itself runs outside Claude's tool harness.** `npx ts-node scripts/migrate-to-ulid.ts` does its own file IO — the PreToolUse hook only catches Claude's `Edit`/`Write` calls, so the script is unaffected by the hook either way.
+2. **But Claude *will* need to edit `loom/**/*.md` directly during implementation** — fixing test fixtures, repairing a half-migrated state if the script aborts mid-run, hand-tweaking the migration output, hand-editing design docs that themselves describe the new shape. The hook would block all of that.
+3. **And MCP tools internally use the link index, which is what's changing shape.** Using `loom_update_doc` mid-migration is calling into infrastructure that's being rebuilt under us. Even if it works it's circular.
+
+So during plan-001 execution: **hook off, MCP tools not used for `loom/**/*.md` writes, direct `Edit`/`Write` is the working mode.** The gate's job is enforcing reducer/index discipline at steady state — which doesn't apply when the reducers and the index are themselves the subject of the migration.
+
+**Boundaries I want to keep, even with the hook off:**
+
+- This is *only* for plan-001 of doc-ids. Not a general "we're tired of the hook" license. The hook goes back on the moment the migration verification passes.
+- The `⚠️ MCP unavailable — editing file directly` visibility prefix still fires on every direct edit. We don't lose visibility just because we lost enforcement.
+- Any edit to a `-chat.md` doc (chats are the conversation surface and not part of the migration) still goes through `loom_append_to_chat` *if* MCP can be left running for chats specifically. If MCP is fully down for the session, chats also fall back to direct edits with the warning.
+- Code edits (`packages/**`) are unaffected — the gate already excludes them.
+
+**Operationally:** when you say `go` on plan-001, before the first migration step you `/hooks` → disable `loom-mcp-gate`. After the verification step passes (last step of the plan), `/hooks` → re-enable. I'll prompt you at both transitions.
+
+Agreed on those boundaries? If yes, next move is `loom_refine_design` on `doc-ids-design.md` covering sections 2, 3, 5, 9 — with section 5 rewritten as "global-only refs, with the seven existing weave-local refs folders folding back into `loom/refs/` as part of the migration." Then plan-001.
+
+STOP — waiting for go to refine.
+
+## Rafa:
+
+agree
+go
+
+## AI:
+
+Stopping to report an MCP finding before going further.
+
+### What happened
+
+Called `loom_create_plan(weaveId="core-engine", threadId="doc-ids", title="Doc IDs — ULID migration plan-001")`. The tool created a real file at the right path (`loom/core-engine/doc-ids/plans/`), and the body is intact. But the plan identity is wrong in two ways:
+
+| Field | Expected | Got |
+|---|---|---|
+| Filename | `doc-ids-plan-001.md` | `core-engine-plan-002.md` |
+| Frontmatter `id` | `doc-ids-plan-001` | `core-engine-plan-002` |
+
+### What this points at
+
+Two bugs in `loom_create_plan` (or in the id-minter it calls):
+
+1. **Wrong scope for the id prefix.** The plan id was built from `weaveId` (`core-engine`) instead of `threadId` (`doc-ids`). The convention everywhere else in the repo is `{thread-id}-plan-NNN`, so this is a regression / mismatch with what plans look like in `loom-state-entity/plans/`, `staleness-management/plans/`, etc.
+2. **Wrong number.** Numbered 002, not 001. Looks like the counter is global to the weave (next free across all threads) rather than scoped to the thread (next free in `doc-ids/plans/`). Existing `loom-state-entity-plan-001.md` apparently bumped this thread's first plan to 002.
+
+Both bugs ride on the same root cause: the plan-id minter is using weave scope where it should be using thread scope.
+
+Per CLAUDE.md, I'm not going to edit the file directly to rename it — that would hide the bug and pretend `loom_create_plan` works correctly when it doesn't. The MCP tool itself needs the fix, and the broken plan file is the evidence.
+
+### Options
+
+- **(a) Fix the MCP tool first.** Open a small thread/diversion to fix `loom_create_plan` (and likely the underlying plan-id-minter helper in `packages/app/`). Then delete the misnamed plan file via `loom_archive` or similar, re-run `loom_create_plan`, and confirm it produces `doc-ids-plan-001`. This is the correct path — fix the cause, not the symptom.
+- **(b) Hand-rename and proceed.** I rename the file and frontmatter id directly (after `/hooks` disable, since the gate would block it), accept the bug as a known issue, and file it for later. Faster but exactly the kind of patch-over CLAUDE.md tells us to avoid.
+- **(c) Stay on the broken id.** Just use `core-engine-plan-002` and live with the inconsistency. Worst option — every `parent_id` reference and every UI listing will show the wrong shape forever, and the broken id will be migrated forward by plan-001 itself, baking the bug into the post-migration state.
+
+My read: **(a)**. The whole point of treating MCP failures as findings is that the bug surfaces here, where it's still cheap to fix. Routing around it puts a known-broken artifact at the heart of a migration that depends on identity correctness.
+
+Waiting on your call. STOP.
+
+## Rafa:
+
+- a
+note: this looks a gap when we migrate from thread to weave/thread
+
+## AI:
+
+Bug located. Your "thread→weave/thread migration gap" read is exactly right.
+
+### Root cause
+
+`packages/core/src/idUtils.ts:53` defines `generatePlanId(weaveId, existingPlanIds)` — it just stamps `{prefix}-plan-NNN` and finds the next free number from the list it's given. The function itself is dumb glue, not buggy.
+
+The bug is **at the callers**:
+
+- ✅ `packages/app/src/promoteToPlan.ts:63-68` — *correct.* Uses `idScope = threadId ?? weaveId` and reads `existingPlanIds` from the thread's own `plans/` folder. Thread-scoped, as it should be.
+- ❌ `packages/app/src/weavePlan.ts:36-43` — *broken.* Comments admit it: "Plan IDs use weaveId prefix so use-cases can recover weaveId via `planId.split('-plan-')[0]`." Uses `weaveId` for the prefix, and walks all threads in the weave to gather plan IDs (so the counter is weave-global, not thread-local).
+
+`loom_create_plan` calls `weavePlan`. `loom_promote` calls `promoteToPlan`. Same operation, two implementations, only one correct.
+
+### The downstream coupling
+
+The "recover weaveId via `planId.split('-plan-')[0]`" hack has two consumers that depend on plan IDs starting with weaveId:
+
+- `packages/app/src/doStep.ts:35` — `const weaveId = input.planId.split('-plan-')[0];`
+- `packages/cli/src/commands/startPlan.ts:9` — `const weaveId = planId.split('-plan-')[0];`
+
+Both expect `planId` to encode the containing weave. Fix `weavePlan.ts` to use `threadId` as prefix → both of these get a *threadId*, look for a weave folder named after the thread, fail to find it, throw. So the diversion can't stop at `weavePlan.ts` — those two callers have to switch to a real lookup ("find the weave that contains plan X" via a state walk), or the CLI/doStep paths break for any plan created post-fix.
+
+### Scope of the diversion
+
+**Minimum to land the doc-ids plan-001 correctly:**
+
+1. `weavePlan.ts` — mirror `promoteToPlan.ts`: when `threadId` is set, use it as prefix and scope `existingPlanIds` to `{thread}/plans/`.
+2. Add a `findPlanInRoot(loomRoot, planId)` utility in `packages/app/src/utils/` that walks weaves to locate a plan. Or accept a `weaveId` parameter explicitly at every caller. (Walking is more user-friendly; explicit param is more honest.)
+3. `doStep.ts` and `cli/commands/startPlan.ts` — use the utility (or the new param) instead of `split('-plan-')[0]`.
+4. `idUtils.ts` JSDoc — fix the lie ("Format: `{weaveId}-plan-{###}`" → "Format: `{scope}-plan-{###}` where scope is the threadId for threaded plans").
+
+**Same bug exists in `generateChatId`** (line 67–75 of `idUtils.ts`) — same pattern, takes `weaveId`. Worth flagging but I'd defer fixing it to a separate small thread; chat IDs are less load-bearing.
+
+**Tests** — there's likely a regression test that asserts the old shape. Need to update fixtures / expectations.
+
+### Choice point
+
+- **(i) Fix all 4 above + tests.** Right scope, ~1 hour of work, leaves the codebase in a coherent place.
+- **(ii) Fix only `weavePlan.ts` (step 1).** Plan-001 gets the right id. But doStep/startPlan break on any post-fix plan until we go back. CLAUDE.md "correct path" says don't do this.
+- **(iii) Step 1 + add explicit `weaveId` param to doStep/startPlan.** Cleaner than the walking utility (no IO surprise, signatures honest), but breaks the MCP tool input shape — older callers break too. Migration cost.
+
+My read: **(i) with the walking utility.** Walks `loom/` once to find a plan; same shape as `loadWeave` does internally, no signature breakage, eliminates the brittle string-split. `generateChatId` flagged as a follow-up note in the doc-ids thread.
+
+Confirm scope and I'll go.
+
+## Rafa:
+
+- (i) with the walking utility
+
+
+## AI:
+
+Fix landed. Summary:
+
+### Code changes
+- `packages/app/src/weavePlan.ts` — when `threadId` is set, prefix planId with `threadId` and read `existingPlanIds` from the thread's own `plans/` folder. Mirrors the already-correct `promoteToPlan.ts`.
+- `packages/app/src/doStep.ts` — replaced `planId.split('-plan-')[0]` with `resolveWeaveIdForPlan` (the existing `pathUtils.ts` helper that walks the filesystem to find the containing weave).
+- `packages/cli/src/commands/startPlan.ts` — same swap.
+- `packages/core/src/idUtils.ts` — JSDoc updated. `generatePlanId(weaveId, ...)` renamed param to `scope` and the comment now points readers at `resolveWeaveIdForPlan` for recovery, with an explicit "never `split('-plan-')[0]`" warning.
+
+### Tests run
+All passing tests still pass. Two pre-existing failures, both unrelated to this fix and confirmed against `git stash`:
+
+- `tests/weave-workflow.test.ts` — expects ideas at `loom/{weave}/{tempId}.md` (flat-at-weave-root). Pre-thread layout.
+- `tests/workspace-workflow.test.ts` — expects chat docs in `ai-chats/`. Pre-thread layout.
+
+Your hypothesis was correct. Both are legacy test files left over from before the thread layer landed. They should either be rewritten against the current layout or deleted. **Filing this as a small follow-up thread** — out of scope for doc-ids, but worth a thread of its own (e.g. `legacy-test-cleanup` or fold it into staleness-management).
+
+MCP integration test (which spawns a fresh process) ran 7/7 green.
+
+### What's still needed for the doc-ids planning to resume
+
+1. **Delete the misnamed `core-engine-plan-002.md`.** It was the buggy output. I'll do this via `Bash rm` since it's a junk artifact — there's no Loom state to preserve, and `loom_archive` would route through the still-stale running MCP server.
+2. **Reload the MCP server.** The Claude Code session has the old `loom_create_plan` in memory because the MCP process loaded `dist/` at startup, before my rebuild. To pick up the fix you need to either restart Claude Code or run `/mcp` and reconnect.
+3. **Re-call `loom_create_plan`.** With the fixed code, this should now produce `doc-ids-plan-001.md` with id `doc-ids-plan-001`. I'll re-run the same call I did before — same body, just the right id this time.
+
+Confirm steps 1 and 2 and I'll proceed.
+
+(Also — the same bug pattern lives in `generateChatId` in `idUtils.ts`. Filing that as a follow-up too. Lower load-bearing than plan IDs.)
+
+## Rafa:
+
+1, 2 done
+Do 3
+
+## AI:
+
+Step 3 produced the same buggy id (`core-engine-plan-002`). Confirmed by inspection that this is **not** the fix being wrong — the fix is correct in `app/dist/weavePlan.js` line 54 (`generatePlanId(input.threadId, ...)`). The arithmetic gives away which code path ran:
+
+- Empty `doc-ids/plans/` (after your delete) + new code → would produce `doc-ids-plan-001`.
+- Old code walking the *whole weave* finds `loom-state-entity-plan-001` and `state-filters-plan-001`, max(1)+1 = `002`, prefix from `weaveId` → exactly the `core-engine-plan-002` we got.
+
+So the MCP server is still running the pre-edit code in memory. `/mcp` reconnect on its own doesn't respawn the server process — it reattaches the session to the same already-running process.
+
+To actually pick up the fix, the Loom MCP server (`loom mcp`) process has to be killed and respawned. The cleanest path:
+
+1. **Quit Claude Code entirely** and start a fresh session in this project. That kills the spawned `loom mcp` child and the new session spawns a fresh one against the rebuilt `dist/`.
+2. Verify by running `claude mcp list` after restart and confirming `loom` is listed and connected.
+3. Delete the second junk file `loom/core-engine/doc-ids/plans/core-engine-plan-002.md` (I'll do this via Bash now so we don't have it lingering).
+4. I re-call `loom_create_plan` and we should see `doc-ids-plan-001`.
+
+Removing the second junk file now via Bash.
+
+## Rafa:
+
+claude restarted
+try create the plan again
+
+## AI:
+
+`doc-ids-plan-001` created and fully populated at `loom/core-engine/doc-ids/plans/doc-ids-plan-001.md`.
+
+**7 steps:**
+
+| # | Step | Files |
+|---|------|-------|
+| 1 | ULID minter + type prefix table | `packages/core/src/idUtils.ts` |
+| 2 | `serializeFrontmatter` update — key order, drop `child_ids`, ULID prefix validation, slug rules | `packages/core/src/frontmatterUtils.ts` |
+| 3 | Link index rewrite — ULID primary, slug secondary (refs), backlinks | `packages/fs/src/linkRepository.ts` |
+| 4 | Repo + loader — lookup by `id` in frontmatter, not filename | `packages/fs/src/weaveRepository.ts`, `threadRepository.ts` |
+| 5 | MCP surface — create mints ULIDs, rename/find by slug, `loom://doc/{id}` resource, validate-state diagnostics | `packages/mcp/src/tools/`, `resources/` |
+| 6 | Migration script `migrate-to-ulid.ts` — 8 ordered passes, dry-run flag, scratch-dir atomicity | `scripts/migrate-to-ulid.ts` |
+| 7 | Test fixtures + legacy test cleanup — rewrite pre-thread-layout tests | `tests/`, fixture trees |
+
+Sequencing rationale: steps 1–2 are pure core (no IO), step 3–4 build on the new identity, step 5 exposes it via MCP, step 6 migrates the live repo, step 7 validates the whole chain. Each step is independently shippable and testable.
+
+Ready to start with step 1 on `go`.
+
+## Rafa:
+
+Do 1-5
+
+## Rafa:
+
+I think shell execution issues was due to the mcp force hook
+I disable it because for this plan you can use direct file access for core updagrade and big migrations as we already talked
+
+try again to use bash commands
+
+continue
+
+## Rafa:
+
+i already executed
+cd J:/src/loom/packages/core && npm run build
+cd J:/src/loom/packages/fs && npm run build
+
+bash was having problems because tmp path hard drive issues, i fixed them
+use bash again
+
+continue
+## AI:
+
+Steps 1–5 done. All packages build clean; 7/7 MCP integration tests green.
+
+**What landed:**
+
+| Step | Change |
+|------|--------|
+| 1 | `generateDocId(type)`, `parseDocId`, `isUlidId` in `idUtils.ts`. `ReferenceDoc` entity + added to `Document` union. `'reference'` in `DocumentType`. |
+| 2 | `serializeFrontmatter` drops `child_ids` on every write, strips `slug` from non-refs, validates ULID prefix matches type (ctx exempt). `child_ids` removed from `BaseDoc`. |
+| 3 | `LinkIndex` gains `byId`, `bySlug`, `backlinks`, `resolveId`. `linkRepository.ts` populates them; backlinks built from `parent_id` + `requires_load` (two-pass). |
+| 4 | `threadRepository.ts` gets `reference` case in `docPathInThread`. `weavePlan` reads design's actual frontmatter `id` for `parent_id` (was constructing from convention string — bug fixed). |
+| 5 | All create use-cases (`weaveIdea`, `weaveDesign`, `weavePlan`, `promoteToIdea`, `promoteToDesign`, `promoteToPlan`) now call `generateDocId(type)` for the frontmatter `id`; filename derived separately from existing convention. MCP `createPlan` and CLI `weavePlan` updated to pass `loadDoc` dep. |
+
+Steps 6 (migration script) and 7 (test fixtures) remaining. Ready on `go`.
+
+## Rafa:
+
+Do 6, 7
+
+## AI:
+
+**Steps 6 and 7 — done. All 7 steps of `doc-ids-plan-001` complete.**
+
+**Step 6 — Migration script (`scripts/migrate-to-ulid.ts`)**
+
+Script was written and dry-run verified clean: 163 docs scanned, 161 ULIDs minted, 2 ctx renames, 5 ref consolidations. Key implementation decisions:
+- Inlined `generateDocId`, `isUlidId`, `serializeFrontmatter` to avoid ESM/CJS conflict (root `"type": "module"` breaks dist imports in scripts)
+- Used `process.cwd()` not `__dirname` (same reason)
+- Passes 3 and 4 warn-and-continue on pre-existing violations (old docs have `parent_id` pointing at non-existent docs; `requires_load` has non-ref entries) — correct since the repo predates these rules
+- Scratch-dir atomicity: writes to `.migration-scratch-{ts}/`, verifies, then swaps
+- Deleted `loom/use-cases/refs/app-query-use-cases-reference.md` — truncated duplicate of the complete version in `loom/refs/`
+
+**Step 7 — Test fixtures + legacy test cleanup**
+
+Two pre-existing test failures fixed:
+
+| File | Issue | Fix |
+|------|-------|-----|
+| `packages/app/src/doStep.ts` | Wrote chats to `ai-chats/` but `loadWeave` reads from `chats/` | Changed to `chats/` |
+| `packages/cli/src/commands/weaveIdea.ts` | Bypassed app use-case, used old logic + `generateTempId` | Rewrote to delegate to `weaveIdea` use-case; always outputs `ID: {ulid}` |
+| `tests/weave-workflow.test.ts` | Expected `new-{timestamp}` temp IDs and flat-weave-root paths | Rewrote for threaded flow + ULID assertions |
+| `tests/workspace-workflow.test.ts` | Asserted `ai-chats/` path | Updated to `chats/` |
+
+Both test files pass:
+```
+✨ All weave workflow tests passed!
+✨ All workspace-workflow tests passed!
+```
+
+**Plan status:** `doc-ids-plan-001` marked `done`. All steps ✅.
+
+## Rafa:
+
+### Migration
+- run the migration script
+- commit, push

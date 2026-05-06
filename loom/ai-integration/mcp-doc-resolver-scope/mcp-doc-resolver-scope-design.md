@@ -1,14 +1,13 @@
 ---
 type: design
-id: mcp-doc-resolver-scope-design
+id: de_01KQYDFDD9XW7XNAC8VES80FTN
 title: MCP doc resolver scope and ID disambiguation
 status: draft
 created: "2026-05-05T00:00:00.000Z"
-updated: 2026-05-05
+updated: "2026-05-05T00:00:00.000Z"
 version: 2
 tags: []
-parent_id: mcp-doc-resolver-scope-idea
-child_ids: []
+parent_id: id_01KQYDFDD9W0YYAC3FPN2PAVH0
 requires_load: []
 ---
 # MCP doc resolver scope and ID disambiguation — Design

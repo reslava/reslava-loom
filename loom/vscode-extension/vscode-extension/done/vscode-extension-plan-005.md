@@ -1,16 +1,16 @@
 ---
 type: plan
-id: vscode-extension-plan-005
-title: "Implement groupByThread — Thread‑Based Tree View"
-status: done, but it was implemented inline 
-created: 2026-04-11
-updated: 2026-04-18
+id: pl_01KQYDFDDE87402EH7APJ6PS73
+title: Implement groupByThread — Thread‑Based Tree View
+status: done, but it was implemented inline
+created: "2026-04-11T00:00:00.000Z"
+updated: "2026-04-18T00:00:00.000Z"
 version: 2
 design_version: 1
 tags: [vscode, tree, viewmodel, grouping, thread]
-parent_id: vscode-extension-design
-target_version: "0.5.0"
-requires_load: [vscode-extension-design]
+parent_id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
+requires_load: [de_01KQYDFDDEQ81VMM0SPD1P1DBM]
+target_version: 0.5.0
 ---
 
 # Plan — Implement groupByThread (Thread‑Based Tree View)
