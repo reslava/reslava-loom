@@ -1,13 +1,15 @@
-/**
- * Generates the Markdown body for a plan document.
- * @param title - The title of the plan.
- * @param goal - Optional goal description. If omitted, a placeholder comment is inserted.
- * @returns The complete Markdown body (excluding frontmatter).
- */
-export function generatePlanBody(title: string, goal?: string): string {
+export function generatePlanBody(title: string, goal?: string, steps?: string[]): string {
     const goalSection = goal ? `\n${goal}\n` : '\n<!-- One paragraph: what this plan implements and why. -->\n';
     const today = new Date().toISOString().split('T')[0];
-    
+
+    const hasSteps = steps && steps.length > 0;
+    const tableRows = hasSteps
+        ? steps!.map((s, i) => `| \u{1F533} | ${i + 1} | ${s} | \`src/...\` | — |`).join('\n')
+        : '| \u{1F533} | 1 | {Step description} | `src/...` | — |';
+    const detailSections = hasSteps
+        ? steps!.map((s, i) => `## Step ${i + 1} — ${s}\n\n<!-- Detailed spec. -->\n\n---`).join('\n\n')
+        : '## Step 1 — {Step description}\n\n<!-- Detailed spec for Step 1. -->\n\n---';
+
     return `# Plan — ${title}
 
 | | |
@@ -20,30 +22,25 @@ export function generatePlanBody(title: string, goal?: string): string {
 ---
 
 # Goal
-${goalSection}
----
+${goalSection}---
 
 # Steps
 
 | Done | # | Step | Files touched | Blocked by |
 |---|---|---|---|---|
-| 🔳 | 1 | {Step description} | \`src/...\` | — |
+${tableRows}
 
 ---
 
-## Step 1 — {Step description}
-
-<!-- Detailed spec for Step 1. -->
-
----
+${detailSections}
 
 ## Legend
 
 | Symbol | Meaning |
 |--------|---------|
 | ✅ | Done |
-| 🔄 | In Progress |
-| 🔳 | Pending |
+| \u{1F504} | In Progress |
+| \u{1F533} | Pending |
 | ❌ | Cancelled |
 `;
 }

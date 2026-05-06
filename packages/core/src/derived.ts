@@ -7,7 +7,7 @@ export function getWeaveStatus(weave: Weave): WeaveStatus {
     const plans = weave.threads.flatMap(t => t.plans);
 
     if (plans.some(p => p.status === 'implementing')) return 'IMPLEMENTING';
-    if (plans.length > 0 && weave.allDocs.every(d => d.status === 'done')) return 'DONE';
+    if (weave.allDocs.length > 0 && weave.allDocs.every(d => d.status === 'done')) return 'DONE';
     if (plans.some(p => p.status === 'active' || p.status === 'draft')) return 'ACTIVE';
     if (plans.some(p => p.status === 'blocked')) return 'BLOCKED';
     return 'ACTIVE';
@@ -38,7 +38,7 @@ export function getThreadStatus(thread: Thread): ThreadStatus {
     const plans = thread.plans;
 
     if (plans.some(p => p.status === 'implementing')) return 'IMPLEMENTING';
-    if (plans.length > 0 && thread.allDocs.every(d => d.status === 'done')) return 'DONE';
+    if (thread.allDocs.length > 0 && thread.allDocs.every(d => d.status === 'done')) return 'DONE';
     if (plans.some(p => p.status === 'active' || p.status === 'draft')) return 'ACTIVE';
     if (plans.some(p => p.status === 'blocked')) return 'BLOCKED';
     return 'ACTIVE';

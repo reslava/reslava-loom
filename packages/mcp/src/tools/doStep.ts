@@ -1,6 +1,7 @@
 import * as path from 'path';
 import { findDocumentById, loadDoc } from '../../../fs/dist';
 import { PlanDoc } from '../../../core/dist/entities/plan';
+import { Document } from '../../../core/dist';
 import { handleThreadContextResource } from '../resources/threadContext';
 
 const INSTRUCTIONS = `Implement this step using your file-editing tools (Read, Edit, Write, Bash, etc.).
@@ -17,6 +18,7 @@ export const toolDef = {
         properties: {
             planId: { type: 'string', description: 'Plan ID (e.g. "my-weave-plan-001")' },
             stepNumber: { type: 'number', description: 'Optional. Specific step number to brief. If omitted, the first not-done step is used.' },
+            context_ids: { type: 'array', items: { type: 'string' }, description: 'Optional. Additional doc IDs to inject into the brief context.' },
         },
         required: ['planId'],
     },
@@ -25,6 +27,7 @@ export const toolDef = {
 export async function handle(root: string, args: Record<string, unknown>) {
     const planId = args['planId'] as string;
     const stepNumber = typeof args['stepNumber'] === 'number' ? (args['stepNumber'] as number) : undefined;
+    const contextIds = Array.isArray(args['context_ids']) ? (args['context_ids'] as string[]) : [];
 
     const planFilePath = await findDocumentById(root, planId);
     if (!planFilePath) throw new Error(`Plan not found: ${planId}`);
@@ -63,6 +66,21 @@ export async function handle(root: string, args: Record<string, unknown>) {
         );
         threadContext = ctx.contents[0].text;
     } catch { /* proceed without ctx if unavailable */ }
+
+    if (contextIds.length > 0) {
+        const extraParts = await Promise.all(
+            contextIds.map(async (id) => {
+                try {
+                    const fp = await findDocumentById(root, id);
+                    if (!fp) return null;
+                    const doc = await loadDoc(fp) as Document;
+                    return `### ${doc.title} (${doc.type})\n\n${(doc as any).content ?? ''}`;
+                } catch { return null; }
+            })
+        );
+        const extra = extraParts.filter(Boolean).join('\n\n---\n\n');
+        if (extra) threadContext += `\n\n## Additional Context\n\n${extra}`;
+    }
 
     const planSummary = (planDoc.steps ?? [])
         .map(s => `${s.done ? '✅' : '⬜'} Step ${s.order}: ${s.description}`)

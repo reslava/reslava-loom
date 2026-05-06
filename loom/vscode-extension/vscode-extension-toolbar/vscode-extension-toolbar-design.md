@@ -2,7 +2,7 @@
 type: design
 id: de_01KQYDFDDE0PPQX6WSKFF5XBQB
 title: Toolbar & ViewState Interaction Model
-status: active
+status: done
 created: "2026-04-11T00:00:00.000Z"
 updated: "2026-04-14T00:00:00.000Z"
 version: 2

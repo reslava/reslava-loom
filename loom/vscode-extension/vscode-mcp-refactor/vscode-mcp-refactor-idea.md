@@ -2,7 +2,7 @@
 type: idea
 id: id_01KQYDFDDFT9EE8KH1TWJ7G0B2
 title: Refactor VS Code Extension to Use MCP
-status: draft
+status: done
 created: "2026-04-27T00:00:00.000Z"
 version: 1
 tags: [vscode, mcp, architecture, refactor]

@@ -1,5 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as yaml from 'yaml';
 
 const RESERVED_SUBDIR_NAMES = new Set(['plans', 'done', 'chats', 'ctx', 'refs', '.archive']);
 
@@ -35,20 +36,27 @@ export async function findMarkdownFiles(dir: string): Promise<string[]> {
     return result;
 }
 
+async function readFrontmatterId(filePath: string): Promise<string | null> {
+    try {
+        const content = await fs.readFile(filePath, 'utf-8');
+        const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+        if (!match) return null;
+        const fm = yaml.parse(match[1]);
+        return typeof fm?.id === 'string' ? fm.id : null;
+    } catch {
+        return null;
+    }
+}
+
 /**
- * Recursively searches for a document by its ID.
+ * Recursively searches for a document by its frontmatter `id` field.
  * Returns the absolute file path if found, otherwise null.
  */
 export async function findDocumentById(loomRoot: string, id: string): Promise<string | null> {
     const files = await findMarkdownFiles(loomRoot);
-    const targetFile = `${id}.md`;
-    
     for (const file of files) {
-        if (path.basename(file) === targetFile) {
-            return file;
-        }
+        if (await readFrontmatterId(file) === id) return file;
     }
-    
     return null;
 }
 
@@ -87,17 +95,15 @@ export async function resolveWeaveIdForPlan(loomRoot: string, planId: string): P
 }
 
 /**
- * Gathers all document IDs from the entire loom.
+ * Gathers all document IDs (from frontmatter) from the entire loom.
  * Useful for uniqueness checks when generating new IDs.
  */
 export async function gatherAllDocumentIds(loomRoot: string): Promise<Set<string>> {
     const ids = new Set<string>();
     const files = await findMarkdownFiles(loomRoot);
-    
     for (const file of files) {
-        const id = path.basename(file, '.md');
-        ids.add(id);
+        const id = await readFrontmatterId(file);
+        if (id) ids.add(id);
     }
-    
     return ids;
 }

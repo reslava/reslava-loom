@@ -2,7 +2,7 @@
 type: design
 id: de_01KQYDFDDEQ81VMM0SPD1P1DBM
 title: VS Code Extension — Loom Visual Layer Design
-status: active
+status: done
 created: "2026-04-18T00:00:00.000Z"
 version: 1
 tags: [vscode, extension, ui, design]

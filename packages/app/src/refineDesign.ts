@@ -4,6 +4,7 @@ import { buildSummarizationMessages, parseTitleAndBody } from './utils/aiSummari
 
 export interface RefineDesignInput {
     filePath: string;
+    extraContext?: string;
 }
 
 export interface RefineDesignDeps {
@@ -39,10 +40,13 @@ export async function refineDesign(
 ): Promise<{ filePath: string; version: number }> {
     const doc = await deps.loadDoc(input.filePath) as DesignDoc;
 
+    const content = input.extraContext
+        ? `# Additional Context\n\n${input.extraContext}\n\n---\n\n${doc.content}`
+        : doc.content;
     const messages = buildSummarizationMessages(
         SYSTEM_PROMPT,
         `design document titled "${doc.title}"`,
-        doc.content,
+        content,
     );
 
     const reply = await deps.aiClient.complete(messages);

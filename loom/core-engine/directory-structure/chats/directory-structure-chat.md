@@ -2,7 +2,7 @@
 type: chat
 id: ch_01KQYDFDDBG3W8ERSSHXN61KNT
 title: Directory Structure Chat
-status: active
+status: done
 created: "2026-04-26T00:00:00.000Z"
 version: 1
 tags: []

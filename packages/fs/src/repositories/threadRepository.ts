@@ -37,8 +37,9 @@ export async function loadThread(
     weaveId: string,
     threadId: string,
     index?: LinkIndex,
+    overrideThreadPath?: string,
 ): Promise<Thread> {
-    const threadPath = path.join(loomRoot, 'loom', weaveId, threadId);
+    const threadPath = overrideThreadPath ?? path.join(loomRoot, 'loom', weaveId, threadId);
 
     let idea: IdeaDoc | undefined;
     const ideaPath = path.join(threadPath, `${threadId}-idea.md`);

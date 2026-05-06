@@ -1,16 +1,30 @@
 import * as fsExtra from 'fs-extra';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { getActiveLoomRoot, saveDoc, loadDoc, findDocumentById, loadWeave } from '../../../fs/dist';
+import { Document } from '../../../core/dist';
 import { weaveIdea } from '../../../app/dist/weaveIdea';
 import { weaveDesign } from '../../../app/dist/weaveDesign';
 import { weavePlan } from '../../../app/dist/weavePlan';
-import { Document } from '../../../core/dist';
 import { handleThreadContextResource } from '../resources/threadContext';
 import { requestSampling, SamplingMessage } from '../sampling';
 import { handle as appendToChatHandle } from './appendToChat';
 
 function msg(role: 'user' | 'assistant', text: string): SamplingMessage {
     return { role, content: { type: 'text', text } };
+}
+
+async function loadExtraContext(root: string, ids: string[]): Promise<string> {
+    const parts = await Promise.all(
+        ids.map(async (id) => {
+            try {
+                const fp = await findDocumentById(root, id);
+                if (!fp) return null;
+                const doc = await loadDoc(fp) as Document;
+                return `### ${doc.title} (${doc.type})\n\n${(doc as any).content ?? ''}`;
+            } catch { return null; }
+        })
+    );
+    return parts.filter(Boolean).join('\n\n---\n\n');
 }
 
 type ToolModule = {
@@ -80,6 +94,7 @@ export function createGenerateTools(server: Server): ToolModule[] {
                     weaveId: { type: 'string', description: 'Target weave ID' },
                     threadId: { type: 'string', description: 'Target thread ID' },
                     title: { type: 'string', description: 'Title for the new design doc' },
+                    context_ids: { type: 'array', items: { type: 'string' }, description: 'Optional. Additional doc IDs to inject as context.' },
                 },
                 required: ['weaveId', 'threadId', 'title'],
             },
@@ -87,12 +102,17 @@ export function createGenerateTools(server: Server): ToolModule[] {
                 const weaveId = args['weaveId'] as string;
                 const threadId = args['threadId'] as string;
                 const title = args['title'] as string;
+                const contextIds = Array.isArray(args['context_ids']) ? (args['context_ids'] as string[]) : [];
 
                 const messages: SamplingMessage[] = [];
                 try {
                     const ctx = await handleThreadContextResource(root, `loom://thread-context/${weaveId}/${threadId}`);
                     messages.push(msg('user', `Thread context:\n\n${ctx.contents[0].text}`));
                 } catch { /* best-effort */ }
+                if (contextIds.length > 0) {
+                    const extra = await loadExtraContext(root, contextIds);
+                    if (extra) messages.push(msg('user', `Additional context:\n\n${extra}`));
+                }
                 messages.push(msg('user', `Draft a Loom design document titled "${title}". Write only the markdown body — no frontmatter. Include architecture, components, data flow, key decisions, and open questions.`));
 
                 const body = await requestSampling(
@@ -122,6 +142,7 @@ export function createGenerateTools(server: Server): ToolModule[] {
                     weaveId: { type: 'string', description: 'Target weave ID' },
                     threadId: { type: 'string', description: 'Target thread ID' },
                     title: { type: 'string', description: 'Title for the new plan doc' },
+                    context_ids: { type: 'array', items: { type: 'string' }, description: 'Optional. Additional doc IDs to inject as context.' },
                 },
                 required: ['weaveId', 'threadId', 'title'],
             },
@@ -129,12 +150,17 @@ export function createGenerateTools(server: Server): ToolModule[] {
                 const weaveId = args['weaveId'] as string;
                 const threadId = args['threadId'] as string;
                 const title = args['title'] as string;
+                const contextIds = Array.isArray(args['context_ids']) ? (args['context_ids'] as string[]) : [];
 
                 const messages: SamplingMessage[] = [];
                 try {
                     const ctx = await handleThreadContextResource(root, `loom://thread-context/${weaveId}/${threadId}`);
                     messages.push(msg('user', `Thread context:\n\n${ctx.contents[0].text}`));
                 } catch { /* best-effort */ }
+                if (contextIds.length > 0) {
+                    const extra = await loadExtraContext(root, contextIds);
+                    if (extra) messages.push(msg('user', `Additional context:\n\n${extra}`));
+                }
                 messages.push(msg('user', [
                     `Generate an implementation plan for "${title}".`,
                     'Return ONLY a JSON array of steps — no prose, no markdown fences:',

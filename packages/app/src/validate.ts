@@ -75,7 +75,7 @@ async function validateWeave(
             
             if (plan.parent_id) {
                 const parentDesign = docs.find(d => d.id === plan.parent_id) as DesignDoc;
-                if (parentDesign && plan.design_version !== parentDesign.version) {
+                if (parentDesign && plan.design_version != null && plan.design_version !== parentDesign.version) {
                     issues.push(`Plan ${plan.id} is stale (design v${parentDesign.version}, plan expects v${plan.design_version})`);
                 }
             }

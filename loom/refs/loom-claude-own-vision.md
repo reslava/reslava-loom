@@ -1,7 +1,7 @@
 ---
 type: reference
 id: rf_01KQYDFDDD9VNSYGWSPQZDTSC8
-title: Loom — Claude's Own Vision
+title: Claude's Own Vision of Loom
 status: active
 created: "2026-04-26T00:00:00.000Z"
 version: 1

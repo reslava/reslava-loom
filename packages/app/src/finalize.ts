@@ -47,7 +47,9 @@ export async function finalize(
     const newPath = path.join(threadPath, `${permanentId}.md`);
 
     await deps.saveDoc(updatedDoc, newPath);
-    await deps.fs.remove(docPath);
+    if (docPath !== newPath) {
+        await deps.fs.remove(docPath);
+    }
 
     return { oldId: input.tempId, newId: permanentId, newPath };
 }

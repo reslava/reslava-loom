@@ -12,6 +12,7 @@ export const toolDef = {
             threadId: { type: 'string', description: 'Thread id inside the weave' },
             title: { type: 'string', description: 'Optional plan title' },
             goal: { type: 'string', description: 'Optional goal description for the plan body' },
+            steps: { type: 'array', items: { type: 'string' }, description: 'Ordered list of step descriptions. Each entry becomes a table row and a detailed section in the plan body.' },
             parentId: { type: 'string', description: 'Optional explicit parent doc id (defaults to thread design if present)' },
         },
         required: ['weaveId', 'threadId'],
@@ -24,6 +25,7 @@ export async function handle(root: string, args: Record<string, unknown>) {
         threadId: args['threadId'] as string,
         title: args['title'] as string | undefined,
         goal: args['goal'] as string | undefined,
+        steps: args['steps'] as string[] | undefined,
         parentId: args['parentId'] as string | undefined,
     };
     const result = await weavePlan(input, {

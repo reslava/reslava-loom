@@ -1,11 +1,11 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { saveDoc } from '../../fs/dist';
-import { generateChatId, createBaseFrontmatter } from '../../core/dist';
+import { generateChatId, generateDocId, createBaseFrontmatter } from '../../core/dist';
 import { ChatDoc } from '../../core/dist';
 
 export interface ChatNewInput {
-    weaveId: string;
+    weaveId?: string;
     threadId?: string;
     title?: string;
 }
@@ -20,9 +20,11 @@ export async function chatNew(
     input: ChatNewInput,
     deps: ChatNewDeps
 ): Promise<{ id: string; filePath: string }> {
-    const chatsDir = input.threadId
-        ? path.join(deps.loomRoot, 'loom', input.weaveId, input.threadId, 'chats')
-        : path.join(deps.loomRoot, 'loom', input.weaveId, 'chats');
+    const chatsDir = !input.weaveId
+        ? path.join(deps.loomRoot, 'loom', 'chats')
+        : input.threadId
+            ? path.join(deps.loomRoot, 'loom', input.weaveId, input.threadId, 'chats')
+            : path.join(deps.loomRoot, 'loom', input.weaveId, 'chats');
     await deps.fs.ensureDir(chatsDir);
 
     const existingFiles = await deps.fs.readdir(chatsDir).catch(() => [] as string[]);
@@ -30,8 +32,9 @@ export async function chatNew(
         .filter(f => f.match(/-chat-\d+\.md$/))
         .map(f => f.replace(/\.md$/, ''));
 
-    const scopeId = input.threadId ?? input.weaveId;
-    const chatId = generateChatId(scopeId, existingChatIds);
+    const scopeId = input.threadId ?? input.weaveId ?? 'global';
+    const chatFilename = generateChatId(scopeId, existingChatIds);
+    const chatId = generateDocId('chat');
     const title = input.title || `${scopeId} Chat`;
 
     const frontmatter = createBaseFrontmatter('chat', chatId, title, scopeId);
@@ -42,7 +45,7 @@ export async function chatNew(
         content: '# CHAT\n\n## Rafa:\n',
     };
 
-    const filePath = path.join(chatsDir, `${chatId}.md`);
+    const filePath = path.join(chatsDir, `${chatFilename}.md`);
     await deps.saveDoc(doc, filePath);
 
     return { id: chatId, filePath };

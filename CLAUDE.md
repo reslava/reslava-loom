@@ -122,8 +122,10 @@ This makes the extension a thin UI client with no direct app imports.
 
 ## Build and test
 
+**Always use `./scripts/build-all.sh` to build.** It compiles all packages in dependency order and re-links the global `loom` CLI so the MCP server picks up the changes. Never build individual packages with `tsc` or `npm run package` in a sub-package — they don't update the global install.
+
 ```bash
-# Build all packages
+# Build all packages (always use this)
 ./scripts/build-all.sh
 
 # Run full test suite

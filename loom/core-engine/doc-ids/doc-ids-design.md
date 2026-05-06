@@ -2,7 +2,7 @@
 type: design
 id: de_01KQYDFDDBE8A6JD6P57DM5HV4
 title: Doc IDs — ULID-based identity with slug presentation
-status: active
+status: done
 created: "2026-05-03T00:00:00.000Z"
 updated: "2026-05-05T00:00:00.000Z"
 version: 3

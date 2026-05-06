@@ -2,7 +2,7 @@
 type: chat
 id: ch_01KQYDFDDE7X2JYBQ4D2N85A8Y
 title: Vscode Mcp Do Step Chat
-status: active
+status: done
 created: "2026-04-29T00:00:00.000Z"
 version: 1
 tags: []

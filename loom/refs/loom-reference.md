@@ -1,7 +1,7 @@
 ---
 type: reference
 id: rf_01KQYDFDDDRH48GS6GK97QS23P
-title: Loom — Implementation Contract
+title: Implementation Contract
 status: active
 created: "2026-04-22T00:00:00.000Z"
 version: 2

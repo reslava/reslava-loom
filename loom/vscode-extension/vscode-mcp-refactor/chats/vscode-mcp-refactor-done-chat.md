@@ -2,7 +2,7 @@
 type: chat
 id: ch_01KQYDFDDF9EPKQ7SZRWHM4N7T
 title: Vscode Mcp Refactor Done Chat
-status: active
+status: done
 created: "2026-04-29T00:00:00.000Z"
 version: 1
 tags: []

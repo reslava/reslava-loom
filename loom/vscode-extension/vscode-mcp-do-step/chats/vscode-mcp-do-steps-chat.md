@@ -2,7 +2,7 @@
 type: chat
 id: ch_01KQYDFDDEKTW8B3DSK0Z8PY2Y
 title: vscode mcp do step(s) Chat
-status: active
+status: done
 created: "2026-05-01T00:00:00.000Z"
 version: 1
 tags: []

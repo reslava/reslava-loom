@@ -12,7 +12,7 @@ export const toolDef = {
             threadId: { type: 'string', description: 'Optional thread id. If provided, places the chat inside the thread.' },
             title: { type: 'string', description: 'Optional chat title' },
         },
-        required: ['weaveId'],
+        required: [],
     },
 };
 

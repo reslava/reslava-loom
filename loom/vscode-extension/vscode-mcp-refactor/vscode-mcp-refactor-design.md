@@ -2,7 +2,7 @@
 type: design
 id: de_01KQYDFDDFZT3CVEBS43EJHVWT
 title: VS Code Extension MCP Refactor Design
-status: draft
+status: done
 created: "2026-04-27T00:00:00.000Z"
 version: 1
 tags: [vscode, mcp, architecture, design]

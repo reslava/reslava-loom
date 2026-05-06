@@ -13,15 +13,15 @@ async function testIdManagement() {
     await fs.remove(weavePath);
     await fs.ensureDir(weavePath);
 
-    console.log('  • Testing `loom weave idea` generates temporary ID...');
+    console.log('  • Testing `loom weave idea` generates ULID...');
     process.chdir(globalLoomPath);
     let result = runLoom('weave idea "Temporary Test" --weave id-test --loose');
     assert(result.exitCode === 0, `weave idea failed: ${result.stderr}`);
-    
-    const tempIdMatch = result.stdout.match(/new-\d+-idea/);
-    assert(tempIdMatch !== null, 'Temporary ID not found in output');
+
+    const tempIdMatch = result.stdout.match(/id_[0-9A-Z]{26}/);
+    assert(tempIdMatch !== null, 'ULID not found in output');
     const tempId = tempIdMatch![0];
-    console.log(`    ✅ Temporary ID generated: ${tempId}`);
+    console.log(`    ✅ ULID generated: ${tempId}`);
 
     console.log('  • Testing `loom finalize` generates permanent ID...');
     result = runLoom(`finalize ${tempId}`);
@@ -46,8 +46,8 @@ async function testIdManagement() {
     
     const designContent = fsNative.readFileSync(designPath, 'utf8');
     const updatedContent = designContent.replace(
-        'child_ids: []',
-        `child_ids: [${permanentId}]`
+        'parent_id: null',
+        `parent_id: ${permanentId}`
     );
     await fs.outputFile(designPath, updatedContent);
     
@@ -61,12 +61,12 @@ async function testIdManagement() {
     assert(result.stdout.includes('Updated 1 reference'), 'Reference count mismatch');
     
     const updatedDesign = fsNative.readFileSync(designPath, 'utf8');
-    assert(updatedDesign.includes(`child_ids: [${renamedId}]`), 'Reference not updated in design');
+    assert(updatedDesign.includes(`parent_id: ${renamedId}`), 'Reference not updated in design');
     console.log('    ✅ Rename updated references correctly');
 
     console.log('  • Testing draft rejection...');
     result = runLoom('weave idea "Draft Test" --weave id-test --loose');
-    const draftIdMatch = result.stdout.match(/new-\d+-idea/);
+    const draftIdMatch = result.stdout.match(/id_[0-9A-Z]{26}/);
     const draftId = draftIdMatch![0];
     
     result = runLoom(`rename ${draftId} "Should Fail"`);

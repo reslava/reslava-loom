@@ -2,7 +2,7 @@
 type: plan
 id: pl_01KQYDFDDEHQ0G978XT8RRT1S6
 title: VS Code Polish — Idea Inline Buttons & Minor UX Fixes
-status: implementing
+status: done
 created: "2026-04-23T00:00:00.000Z"
 version: 1
 design_version: 1

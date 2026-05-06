@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 import { getMCP } from '../mcp-client';
 import { LoomTreeProvider, TreeNode } from '../tree/treeProvider';
+import { ContextSidebarProvider } from '../providers/contextSidebarProvider';
 
-export async function refineCommand(treeProvider: LoomTreeProvider, node?: TreeNode): Promise<void> {
+export async function refineCommand(treeProvider: LoomTreeProvider, node?: TreeNode, contextSidebar?: ContextSidebarProvider): Promise<void> {
     const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
 
@@ -17,7 +18,8 @@ export async function refineCommand(treeProvider: LoomTreeProvider, node?: TreeN
         await vscode.window.withProgress(
             { location: vscode.ProgressLocation.Notification, title: 'Loom: Refining design…', cancellable: false },
             async () => {
-                result = await getMCP(root).callTool('loom_refine_design', { id });
+                const contextIds = contextSidebar?.getSelectedIds() ?? [];
+                result = await getMCP(root).callTool('loom_refine_design', { id, ...(contextIds.length > 0 ? { context_ids: contextIds } : {}) });
             }
         );
         treeProvider.refresh();

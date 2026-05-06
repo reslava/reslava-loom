@@ -10,8 +10,8 @@ import { listThreadDirs } from '../utils/pathUtils';
 import { loadThread, saveThread } from './threadRepository';
 import { LinkIndex } from '../../../core/dist/linkIndex';
 
-export async function loadWeave(loomRoot: string, weaveId: string, index?: LinkIndex): Promise<Weave | null> {
-    const weavePath = path.join(loomRoot, 'loom', weaveId);
+export async function loadWeave(loomRoot: string, weaveId: string, index?: LinkIndex, overrideWeavePath?: string): Promise<Weave | null> {
+    const weavePath = overrideWeavePath ?? path.join(loomRoot, 'loom', weaveId);
     if (!await fs.pathExists(weavePath)) {
         throw new Error(`Weave directory not found: ${weavePath}`);
     }
@@ -20,7 +20,8 @@ export async function loadWeave(loomRoot: string, weaveId: string, index?: LinkI
     const threadIds = await listThreadDirs(weavePath);
     const threads: Thread[] = [];
     for (const threadId of threadIds) {
-        threads.push(await loadThread(loomRoot, weaveId, threadId, index));
+        const threadPath = path.join(weavePath, threadId);
+        threads.push(await loadThread(loomRoot, weaveId, threadId, index, threadPath));
     }
 
     // Load loose fibers: .md files directly at weave root

@@ -2,7 +2,7 @@
 type: idea
 id: id_01KQYDFDDBJSRCQTW60ANFM9YR
 title: Doc IDs — ULID-based identity with slug presentation
-status: active
+status: done
 created: "2026-05-03T00:00:00.000Z"
 updated: "2026-05-03T00:00:00.000Z"
 version: 2

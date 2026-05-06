@@ -2,7 +2,7 @@
 type: chat
 id: ch_01KQYDFDDE30CQ4YC4Y3K6SH3P
 title: Vscode Extension Fixes Tweaks Chat
-status: active
+status: done
 created: "2026-04-25T00:00:00.000Z"
 version: 1
 tags: []

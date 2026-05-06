@@ -2,7 +2,7 @@
 type: chat
 id: ch_01KQYDFDDABPWAQ2VVYFWA35GP
 title: Loom Context Claude
-status: active
+status: done
 created: "2026-04-23T00:00:00.000Z"
 version: 1
 tags: []

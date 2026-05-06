@@ -2,7 +2,7 @@
 type: design
 id: de_01KQYDFDDE8Z0AV1R2Q8NNNKGK
 title: DoStep via Claude Code Terminal — Design
-status: draft
+status: done
 created: "2026-04-30T00:00:00.000Z"
 version: 1
 tags: [vscode, mcp, do-step, claude-code, sampling]

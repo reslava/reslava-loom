@@ -5,12 +5,13 @@ import { saveDoc, loadDoc } from '../../fs/dist';
 import { generateDocId, generatePlanId } from '../../core/dist/idUtils';
 import { createBaseFrontmatter } from '../../core/dist/frontmatterUtils';
 import { generatePlanBody } from '../../core/dist/bodyGenerators/planBody';
-import { PlanDoc, DesignDoc } from '../../core/dist';
+import { PlanDoc, DesignDoc, PlanStep } from '../../core/dist';
 
 export interface WeavePlanInput {
     weaveId: string;
     title?: string;
     goal?: string;
+    steps?: string[];
     parentId?: string;
     threadId?: string;
 }
@@ -54,6 +55,9 @@ export async function weavePlan(
             }
         }
 
+        const planSteps: PlanStep[] = (input.steps ?? []).map((s, i) => ({
+            order: i + 1, description: s, done: false, files_touched: [], blockedBy: [],
+        }));
         const baseFrontmatter = createBaseFrontmatter('plan', planId, planTitle, parentId);
         const doc: PlanDoc = {
             ...baseFrontmatter,
@@ -61,8 +65,8 @@ export async function weavePlan(
             status: 'draft',
             design_version: 1,
             target_version: '0.1.0',
-            steps: [],
-            content: generatePlanBody(planTitle, input.goal),
+            steps: planSteps,
+            content: generatePlanBody(planTitle, input.goal, input.steps),
         } as PlanDoc;
 
         const filePath = path.join(plansDir, `${planFilename}.md`);
@@ -81,6 +85,9 @@ export async function weavePlan(
     const planFilename = generatePlanId(input.weaveId, existingPlanIds);
     const planId = generateDocId('plan');
 
+    const planSteps: PlanStep[] = (input.steps ?? []).map((s, i) => ({
+        order: i + 1, description: s, done: false, files_touched: [], blockedBy: [],
+    }));
     const baseFrontmatter = createBaseFrontmatter('plan', planId, planTitle, input.parentId ?? null);
     const doc: PlanDoc = {
         ...baseFrontmatter,
@@ -88,8 +95,8 @@ export async function weavePlan(
         status: 'draft',
         design_version: 1,
         target_version: '0.1.0',
-        steps: [],
-        content: generatePlanBody(planTitle, input.goal),
+        steps: planSteps,
+        content: generatePlanBody(planTitle, input.goal, input.steps),
     } as PlanDoc;
 
     const plansDir = path.join(weavePath, 'plans');
