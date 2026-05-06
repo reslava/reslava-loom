@@ -11,14 +11,15 @@ export async function chatNewCommand(
     if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
 
     const selectedNode = node ?? treeView.selection[0] as TreeNode | undefined;
-    const weaveId = selectedNode?.weaveId ?? await vscode.window.showInputBox({ prompt: 'Weave ID for this chat', placeHolder: 'e.g., payment-system' });
-    if (!weaveId) return;
-
+    const weaveId = selectedNode?.weaveId;
     const threadId = selectedNode?.threadId;
     const title = await vscode.window.showInputBox({ prompt: 'Chat title (optional)', placeHolder: 'Leave blank to use default' }) || undefined;
 
     try {
-        const result = await getMCP(root).callTool('loom_create_chat', { weaveId, threadId, title }) as any;
+        const toolArgs: Record<string, unknown> = { title };
+        if (weaveId) { toolArgs['weaveId'] = weaveId; }
+        if (threadId) { toolArgs['threadId'] = threadId; }
+        const result = await getMCP(root).callTool('loom_create_chat', toolArgs) as any;
         if (result?.filePath) {
             const doc = await vscode.workspace.openTextDocument(result.filePath);
             await vscode.window.showTextDocument(doc);

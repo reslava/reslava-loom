@@ -26,7 +26,7 @@ export interface GetStateInput {
 
 export interface GetStateDeps {
     getActiveLoomRoot: (wsRoot?: string) => string;
-    loadWeave: (loomRoot: string, weaveId: string, index?: any) => Promise<Weave | null>;
+    loadWeave: (loomRoot: string, weaveId: string, index?: any, overrideWeavePath?: string) => Promise<Weave | null>;
     buildLinkIndex: (loomRoot: string) => Promise<any>;
     registry: ConfigRegistry;
     fs: typeof fs;
@@ -43,6 +43,8 @@ export async function getState(deps: GetStateDeps, input?: GetStateInput): Promi
     
     const weavesDir = path.join(loomRoot, 'loom');
     const allWeaves: Weave[] = [];
+    const archivedWeaves: Weave[] = [];
+    const archivedLooseDocs: Document[] = [];
     const globalDocs: Document[] = [];
     const globalChats: ChatDoc[] = [];
 
@@ -85,6 +87,31 @@ export async function getState(deps: GetStateDeps, input?: GetStateInput): Promi
         }
     }
     
+    // Scan loom/.archive/ for archived weaves/thread containers and loose docs
+    const archiveDir = path.join(weavesDir, '.archive');
+    if (deps.fs.existsSync(archiveDir)) {
+        const archiveEntries = await deps.fs.readdir(archiveDir).catch(() => [] as string[]);
+        for (const entry of archiveEntries) {
+            const archiveWeavePath = path.join(archiveDir, entry);
+            const stat = await deps.fs.stat(archiveWeavePath).catch(() => null);
+            if (!stat) continue;
+            if (stat.isDirectory()) {
+                try {
+                    const weave = await deps.loadWeave(loomRoot, entry, index, archiveWeavePath);
+                    if (weave) archivedWeaves.push(weave);
+                } catch (e) {
+                    // Skip invalid archive entries
+                }
+            } else if (stat.isFile() && entry.endsWith('.md')) {
+                try {
+                    archivedLooseDocs.push(await loadDoc(path.join(archiveDir, entry)));
+                } catch (e) {
+                    // Skip docs with invalid frontmatter
+                }
+            }
+        }
+    }
+
     let filteredWeaves = allWeaves;
     if (input?.weaveFilter) {
         const { status, phase, idPattern } = input.weaveFilter;
@@ -137,6 +164,8 @@ export async function getState(deps: GetStateDeps, input?: GetStateInput): Promi
         globalDocs,
         globalChats,
         weaves: filteredWeaves,
+        archivedWeaves,
+        archivedLooseDocs,
         index,
         generatedAt: new Date().toISOString(),
         summary: {

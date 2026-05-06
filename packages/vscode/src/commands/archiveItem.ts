@@ -9,25 +9,29 @@ export async function archiveItemCommand(treeProvider: LoomTreeProvider, node?: 
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceRoot) return;
 
+    const archiveRoot = path.join(workspaceRoot, 'loom', '.archive');
+
     try {
-        const filePath = (node.doc as any)?._path as string | undefined;
-        if (filePath) {
-            const archiveDir = path.join(path.dirname(filePath), '.archive');
-            await fs.ensureDir(archiveDir);
-            await fs.move(filePath, path.join(archiveDir, path.basename(filePath)), { overwrite: false });
-        } else if (node.contextValue === 'thread' && node.weaveId && node.threadId) {
-            const src = path.join(workspaceRoot, 'loom', node.weaveId, node.threadId);
-            const dst = path.join(workspaceRoot, 'loom', node.weaveId, '.archive', node.threadId);
-            await fs.ensureDir(path.dirname(dst));
-            await fs.move(src, dst, { overwrite: false });
-        } else if (node.contextValue === 'weave' && node.weaveId) {
+        if (node.contextValue === 'weave' && node.weaveId) {
             const src = path.join(workspaceRoot, 'loom', node.weaveId);
-            const dst = path.join(workspaceRoot, 'loom', '.archive', node.weaveId);
-            await fs.ensureDir(path.dirname(dst));
+            const dst = path.join(archiveRoot, node.weaveId);
+            await fs.ensureDir(archiveRoot);
+            await fs.move(src, dst, { overwrite: false });
+        } else if (node.contextValue?.startsWith('thread') && node.weaveId && node.threadId) {
+            const src = path.join(workspaceRoot, 'loom', node.weaveId, node.threadId);
+            const dst = path.join(archiveRoot, node.weaveId, node.threadId);
+            await fs.ensureDir(path.join(archiveRoot, node.weaveId));
             await fs.move(src, dst, { overwrite: false });
         } else {
-            vscode.window.showErrorMessage('Cannot determine what to archive.');
-            return;
+            const filePath = (node.doc as any)?._path as string | undefined;
+            if (!filePath) { vscode.window.showErrorMessage('Cannot determine what to archive.'); return; }
+            // Derive destination by replacing loom/ segment with loom/.archive/
+            const loomDir = path.join(workspaceRoot, 'loom') + path.sep;
+            if (!filePath.startsWith(loomDir)) { vscode.window.showErrorMessage('File is not inside loom/.'); return; }
+            const rel = filePath.slice(loomDir.length);
+            const dst = path.join(archiveRoot, rel);
+            await fs.ensureDir(path.dirname(dst));
+            await fs.move(filePath, dst, { overwrite: false });
         }
         treeProvider.refresh();
     } catch (e: any) {

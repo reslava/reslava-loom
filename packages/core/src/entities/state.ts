@@ -23,6 +23,12 @@ export interface LoomState {
 
     /** All weaves in the active loom. */
     weaves: Weave[];
+
+    /** Weaves (and partial containers for archived threads) under loom/.archive/. */
+    archivedWeaves: Weave[];
+
+    /** Loose .md files sitting directly in loom/.archive/ (individual archived docs). */
+    archivedLooseDocs: Document[];
     
     /** The link index built during state generation. */
     index: LinkIndex;

@@ -29,8 +29,12 @@ import { refineIdeaCommand } from './commands/refineIdea';
 import { refinePlanCommand } from './commands/refinePlan';
 import { doStepCommand } from './commands/doStep';
 import { closePlanCommand } from './commands/closePlan';
+import { markDoneCommand, markActiveCommand } from './commands/markStatus';
+import { restoreItemCommand } from './commands/restoreItem';
 import { setIconBaseUri } from './icons';
 import { disposeMCP, getMCP, getMCPConnected } from './mcp-client';
+import { TokenEstimatorService } from './services/tokenEstimatorService';
+import { ContextSidebarProvider } from './providers/contextSidebarProvider';
 
 import { updateDiagnostics } from './diagnostics';
 
@@ -47,12 +51,20 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
 
     const viewStateManager = new ViewStateManager(context.workspaceState);
     const treeProvider = new LoomTreeProvider(viewStateManager);
+    const tokenEstimator = new TokenEstimatorService(context);
+    const contextSidebar = new ContextSidebarProvider(treeProvider, tokenEstimator);
 
     const treeView = vscode.window.createTreeView('loom.threads', {
         treeDataProvider: treeProvider,
         showCollapseAll: true,
     });
     context.subscriptions.push(treeView);
+
+    const contextView = vscode.window.createTreeView('loom.context', {
+        treeDataProvider: contextSidebar,
+        showCollapseAll: false,
+    });
+    context.subscriptions.push(contextView);
 
     function updateViewTitle(): void {
         treeView.title = statusFilterLabel(viewStateManager.getState().statusFilter);
@@ -73,6 +85,28 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         treeView.onDidChangeSelection(e => {
             const node = e.selection[0] as TreeNode | undefined;
             vscode.commands.executeCommand('setContext', 'loom.selectedWeaveId', node?.weaveId ?? '');
+            contextSidebar.onSelectionChanged(node);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.window.onDidChangeActiveTextEditor(editor => {
+            if (!editor) return;
+            const filePath = editor.document.uri.fsPath;
+            const node = treeProvider.getNodeByFilePath(filePath);
+            if (node) {
+                treeView.reveal(node, { select: true, focus: false, expand: true });
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('loom.context.toggle', (node: any) => {
+            const id = typeof node === 'string' ? node : node?.entry?.id;
+            if (id) contextSidebar.toggle(id);
+        }),
+        vscode.commands.registerCommand('loom.context.openDoc', (id: string) => {
+            contextSidebar.openDoc(id);
         })
     );
 
@@ -86,7 +120,7 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         vscode.commands.registerCommand('loom.weavePlan', (node?: TreeNode) => weavePlanCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.finalize', (node?: TreeNode) => finalizeCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.rename', (node?: TreeNode) => renameCommand(treeProvider, node)),
-        vscode.commands.registerCommand('loom.refineDesign', (node?: TreeNode) => refineCommand(treeProvider, node)),
+        vscode.commands.registerCommand('loom.refineDesign', (node?: TreeNode) => refineCommand(treeProvider, node, contextSidebar)),
         vscode.commands.registerCommand('loom.startPlan', (node?: TreeNode) => startPlanCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.completeStep', (node?: TreeNode) => completeStepCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.validate', () => validateCommand(treeProvider)),
@@ -101,11 +135,62 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         vscode.commands.registerCommand('loom.promoteToDesign', (node?: TreeNode) => promoteToDesignCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.promoteToPlan', (node?: TreeNode) => promoteToPlanCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.refineIdea', (node?: TreeNode) => refineIdeaCommand(treeProvider, node)),
-        vscode.commands.registerCommand('loom.refinePlan', (node?: TreeNode) => refinePlanCommand(treeProvider, node)),
-        vscode.commands.registerCommand('loom.doStep', (node?: TreeNode) => doStepCommand(node)),
+        vscode.commands.registerCommand('loom.refinePlan', (node?: TreeNode) => refinePlanCommand(treeProvider, node, contextSidebar)),
+        vscode.commands.registerCommand('loom.doStep', (node?: TreeNode) => doStepCommand(node, contextSidebar)),
         vscode.commands.registerCommand('loom.closePlan', (node?: TreeNode) => closePlanCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.delete', (node?: TreeNode) => deleteItemCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.archive', (node?: TreeNode) => archiveItemCommand(treeProvider, node)),
+        vscode.commands.registerCommand('loom.markDone', (node?: TreeNode) => markDoneCommand(treeProvider, treeView, node)),
+        vscode.commands.registerCommand('loom.markActive', (node?: TreeNode) => markActiveCommand(treeProvider, treeView, node)),
+        vscode.commands.registerCommand('loom.restoreItem', (node?: TreeNode) => restoreItemCommand(treeProvider, node)),
+        vscode.commands.registerCommand('loom.generateDesign', async (node?: TreeNode) => {
+            const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
+            const id = node?.doc?.id;
+            if (!id) { vscode.window.showErrorMessage('Right-click an idea in the tree to generate a design.'); return; }
+            try {
+                let result: any;
+                await vscode.window.withProgress(
+                    { location: vscode.ProgressLocation.Notification, title: 'Loom: Generating design…', cancellable: false },
+                    async () => {
+                        const contextIds = contextSidebar.getSelectedIds();
+                        result = await getMCP(root).callTool('loom_generate_design', { id, ...(contextIds.length > 0 ? { context_ids: contextIds } : {}) });
+                    }
+                );
+                treeProvider.refresh();
+                if (result?.filePath) {
+                    const doc = await vscode.workspace.openTextDocument(result.filePath);
+                    await vscode.window.showTextDocument(doc, { preview: false });
+                }
+                vscode.window.showInformationMessage(`Design generated`);
+            } catch (e: any) {
+                vscode.window.showErrorMessage(`Generate design failed: ${e.message}`);
+            }
+        }),
+        vscode.commands.registerCommand('loom.generatePlan', async (node?: TreeNode) => {
+            const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
+            const id = node?.doc?.id;
+            if (!id) { vscode.window.showErrorMessage('Right-click a design in the tree to generate a plan.'); return; }
+            try {
+                let result: any;
+                await vscode.window.withProgress(
+                    { location: vscode.ProgressLocation.Notification, title: 'Loom: Generating plan…', cancellable: false },
+                    async () => {
+                        const contextIds = contextSidebar.getSelectedIds();
+                        result = await getMCP(root).callTool('loom_generate_plan', { id, ...(contextIds.length > 0 ? { context_ids: contextIds } : {}) });
+                    }
+                );
+                treeProvider.refresh();
+                if (result?.filePath) {
+                    const doc = await vscode.workspace.openTextDocument(result.filePath);
+                    await vscode.window.showTextDocument(doc, { preview: false });
+                }
+                vscode.window.showInformationMessage(`Plan generated`);
+            } catch (e: any) {
+                vscode.window.showErrorMessage(`Generate plan failed: ${e.message}`);
+            }
+        }),
         vscode.commands.registerCommand('loom.generateGlobalCtx', async () => {
             const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
             if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }

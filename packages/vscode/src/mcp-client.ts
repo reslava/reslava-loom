@@ -8,9 +8,9 @@ import { makeAIClient } from './ai/makeAIClient';
 // to remote LLMs) routinely exceed that on long inputs, producing
 // JSON-RPC 32001 timeouts that the user sees as "MCP timed out — click to
 // reconnect". Override per call class.
-const AI_TOOL_TIMEOUT_MS = 5 * 60 * 1000;     // promote / refine / generate / do_step
-const TOOL_TIMEOUT_MS = 60 * 1000;            // non-AI mutations
-const RESOURCE_READ_TIMEOUT_MS = 2 * 60 * 1000; // state reads — generous for cold-start link-index build
+const AI_TOOL_TIMEOUT_MS = 10 * 60 * 1000;    // promote / refine / generate / do_step
+const TOOL_TIMEOUT_MS = 2 * 60 * 1000;        // non-AI mutations
+const RESOURCE_READ_TIMEOUT_MS = 5 * 60 * 1000; // state reads — generous for cold-start link-index build
 
 const AI_TOOL_PREFIXES = ['loom_promote', 'loom_refine_', 'loom_generate_', 'loom_do_step'];
 

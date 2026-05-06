@@ -36,6 +36,10 @@
         {
           "id": "loom.threads",
           "name": "Threads"
+        },
+        {
+          "id": "loom.context",
+          "name": "Context"
         }
       ]
     },
@@ -125,12 +129,6 @@
         }
       },
       {
-        "command": "loom.finalize",
-        "title": "Finalize Document",
-        "category": "Loom",
-        "icon": "$(check)"
-      },
-      {
         "command": "loom.rename",
         "title": "Rename Document",
         "category": "Loom",
@@ -141,6 +139,18 @@
         "title": "Refine Design",
         "category": "Loom",
         "icon": "$(symbol-structure)"
+      },
+      {
+        "command": "loom.generateDesign",
+        "title": "Generate Design (AI)",
+        "category": "Loom",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "loom.generatePlan",
+        "title": "Generate Plan (AI)",
+        "category": "Loom",
+        "icon": "$(sparkle)"
       },
       {
         "command": "loom.startPlan",
@@ -221,6 +231,24 @@
         "icon": "$(sparkle)"
       },
       {
+        "command": "loom.restoreItem",
+        "title": "Restore from Archive",
+        "category": "Loom",
+        "icon": "$(discard)"
+      },
+      {
+        "command": "loom.markDone",
+        "title": "Mark Done",
+        "category": "Loom",
+        "icon": "$(pass-filled)"
+      },
+      {
+        "command": "loom.markActive",
+        "title": "Mark Active",
+        "category": "Loom",
+        "icon": "$(circle-large-outline)"
+      },
+      {
         "command": "loom.promoteToIdea",
         "title": "Promote to Idea",
         "category": "Loom",
@@ -270,6 +298,17 @@
         "title": "Close Plan",
         "category": "Loom",
         "icon": "$(archive)"
+      },
+      {
+        "command": "loom.context.toggle",
+        "title": "Toggle",
+        "category": "Loom",
+        "icon": "$(circle-large-outline)"
+      },
+      {
+        "command": "loom.context.openDoc",
+        "title": "Open Document",
+        "category": "Loom"
       }
     ],
     "configuration": {
@@ -347,67 +386,42 @@
     "menus": {
       "view/title": [
         {
-          "command": "loom.weaveCreate",
-          "when": "view == loom.threads",
-          "group": "navigation@0"
-        },
-        {
-          "command": "loom.threadCreate",
-          "when": "view == loom.threads && loom.selectedWeaveId",
-          "group": "navigation@1"
-        },
-        {
           "command": "loom.chatNew",
-          "when": "view == loom.threads && loom.selectedWeaveId",
-          "group": "navigation@2"
-        },
-        {
-          "command": "loom.weaveIdea",
           "when": "view == loom.threads",
-          "group": "navigation@3"
-        },
-        {
-          "command": "loom.weaveDesign",
-          "when": "view == loom.threads",
-          "group": "navigation@4"
-        },
-        {
-          "command": "loom.weavePlan",
-          "when": "view == loom.threads",
-          "group": "navigation@5"
+          "group": "navigation@1"
         },
         {
           "command": "loom.setGrouping",
           "when": "view == loom.threads",
-          "group": "navigation@6"
+          "group": "navigation@2"
         },
         {
           "command": "loom.setStatusFilter",
           "when": "view == loom.threads",
-          "group": "navigation@7"
+          "group": "navigation@3"
         },
         {
           "command": "loom.setTextFilter",
           "when": "view == loom.threads",
-          "group": "navigation@8"
-        },
-        {
-          "command": "loom.generateGlobalCtx",
-          "when": "view == loom.threads",
-          "group": "navigation@9"
+          "group": "navigation@4"
         },
         {
           "command": "loom.toggleArchived",
           "when": "view == loom.threads",
-          "group": "navigation@10"
+          "group": "navigation@5"
         },
         {
           "command": "loom.refresh",
           "when": "view == loom.threads",
-          "group": "navigation@11"
+          "group": "navigation@6"
         }
       ],
       "view/item/context": [
+        {
+          "command": "loom.context.toggle",
+          "when": "view == loom.context && viewItem =~ /^(loaded|unloaded)Doc$/",
+          "group": "inline"
+        },
         {
           "command": "loom.weaveIdea",
           "when": "view == loom.threads && viewItem =~ /^thread/ && !(viewItem =~ /has-idea/)",
@@ -424,19 +438,34 @@
           "group": "inline@3"
         },
         {
-          "command": "loom.summarise",
-          "when": "view == loom.threads && (viewItem == weave || viewItem =~ /^thread/) && loom.aiEnabled",
-          "group": "inline@4"
+          "command": "loom.weaveCreate",
+          "when": "view == loom.threads && viewItem =~ /^weave/",
+          "group": "create@1"
         },
         {
-          "command": "loom.finalize",
-          "when": "view == loom.threads && viewItem =~ /^(idea|design|loose-idea|loose-design)-temp$/",
-          "group": "inline@1"
+          "command": "loom.threadCreate",
+          "when": "view == loom.threads && viewItem =~ /^weave/",
+          "group": "create@2"
         },
         {
-          "command": "loom.refineDesign",
-          "when": "view == loom.threads && viewItem == design",
-          "group": "inline@2"
+          "command": "loom.chatNew",
+          "when": "view == loom.threads && viewItem =~ /^(weave|thread)/",
+          "group": "create@3"
+        },
+        {
+          "command": "loom.weaveIdea",
+          "when": "view == loom.threads && viewItem =~ /^thread/ && !(viewItem =~ /has-idea/)",
+          "group": "create@1"
+        },
+        {
+          "command": "loom.weaveDesign",
+          "when": "view == loom.threads && viewItem =~ /^thread/ && !(viewItem =~ /has-design/)",
+          "group": "create@2"
+        },
+        {
+          "command": "loom.weavePlan",
+          "when": "view == loom.threads && (viewItem =~ /^thread/ || viewItem == design)",
+          "group": "create@3"
         },
         {
           "command": "loom.startPlan",
@@ -454,59 +483,94 @@
           "group": "inline@2"
         },
         {
-          "command": "loom.validate",
-          "when": "view == loom.threads && viewItem =~ /^weave/",
-          "group": "inline@2"
-        },
-        {
           "command": "loom.chatReply",
           "when": "view == loom.threads && viewItem == chat && loom.aiEnabled",
           "group": "inline@1"
         },
         {
-          "command": "loom.promoteToIdea",
-          "when": "view == loom.threads && viewItem == chat && loom.aiEnabled",
+          "command": "loom.validate",
+          "when": "view == loom.threads && viewItem =~ /^weave/",
           "group": "inline@2"
-        },
-        {
-          "command": "loom.promoteToDesign",
-          "when": "view == loom.threads && viewItem =~ /^(chat|idea|loose-idea)/ && loom.aiEnabled",
-          "group": "inline@3"
-        },
-        {
-          "command": "loom.promoteToPlan",
-          "when": "view == loom.threads && viewItem =~ /^(chat|idea|loose-idea|design)/ && loom.aiEnabled",
-          "group": "inline@4"
         },
         {
           "command": "loom.refineIdea",
           "when": "view == loom.threads && viewItem =~ /^(idea|loose-idea)/ && loom.aiEnabled",
-          "group": "inline@1"
+          "group": "ai@1"
+        },
+        {
+          "command": "loom.generateDesign",
+          "when": "view == loom.threads && viewItem =~ /^idea/ && loom.aiEnabled",
+          "group": "ai@2"
+        },
+        {
+          "command": "loom.refineDesign",
+          "when": "view == loom.threads && viewItem == design",
+          "group": "ai@1"
+        },
+        {
+          "command": "loom.generatePlan",
+          "when": "view == loom.threads && viewItem == design && loom.aiEnabled",
+          "group": "ai@2"
         },
         {
           "command": "loom.refinePlan",
           "when": "view == loom.threads && viewItem =~ /^plan-/ && loom.aiEnabled",
-          "group": "inline@2"
+          "group": "ai@1"
         },
         {
           "command": "loom.closePlan",
           "when": "view == loom.threads && viewItem =~ /^plan-(implementing|done)$/ && loom.aiEnabled",
-          "group": "inline@3"
+          "group": "ai@2"
+        },
+        {
+          "command": "loom.promoteToIdea",
+          "when": "view == loom.threads && viewItem == chat && loom.aiEnabled",
+          "group": "ai@1"
+        },
+        {
+          "command": "loom.promoteToDesign",
+          "when": "view == loom.threads && viewItem =~ /^(chat|idea|loose-idea)/ && loom.aiEnabled",
+          "group": "ai@2"
+        },
+        {
+          "command": "loom.promoteToPlan",
+          "when": "view == loom.threads && viewItem =~ /^(chat|idea|loose-idea|design)/ && loom.aiEnabled",
+          "group": "ai@3"
+        },
+        {
+          "command": "loom.summarise",
+          "when": "view == loom.threads && (viewItem == weave || viewItem =~ /^thread/) && loom.aiEnabled",
+          "group": "ai@4"
+        },
+        {
+          "command": "loom.restoreItem",
+          "when": "view == loom.threads && viewItem =~ /^(weave-archived|thread)/",
+          "group": "edit@0"
+        },
+        {
+          "command": "loom.markDone",
+          "when": "view == loom.threads && viewItem =~ /^(idea|design|plan|chat)/",
+          "group": "edit@1"
+        },
+        {
+          "command": "loom.markActive",
+          "when": "view == loom.threads && viewItem =~ /^(idea|design|plan|chat)/",
+          "group": "edit@2"
         },
         {
           "command": "loom.rename",
           "when": "view == loom.threads && viewItem =~ /^(weave|thread|idea|design|plan|chat|done|ctx|loose)/",
-          "group": "inline@8"
+          "group": "edit@3"
         },
         {
           "command": "loom.archive",
           "when": "view == loom.threads && viewItem =~ /^(weave|thread|idea|design|chat|done|ctx|loose)/",
-          "group": "inline@9"
+          "group": "edit@4"
         },
         {
           "command": "loom.delete",
           "when": "view == loom.threads && viewItem =~ /^(weave|thread|idea|design|plan|chat|done|ctx|loose)/",
-          "group": "inline@10"
+          "group": "edit@5"
         }
       ]
     }

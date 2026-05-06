@@ -31,11 +31,17 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
     private state: LoomState | null = null;
     private workspaceRoot: string | undefined;
 
+    private filePathToNode = new Map<string, TreeNode>();
+    private nodeToParent = new Map<TreeNode, TreeNode>();
+
     constructor(private viewStateManager: ViewStateManager) {}
 
     setWorkspaceRoot(root: string | undefined): void {
         this.workspaceRoot = root;
     }
+
+    getState(): LoomState | null { return this.state; }
+    getLoomRoot(): string | undefined { return this.workspaceRoot; }
 
     refresh(): void {
         this._onDidChangeTreeData.fire();
@@ -45,11 +51,30 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         return element;
     }
 
+    getParent(element: TreeNode): TreeNode | undefined {
+        return this.nodeToParent.get(element);
+    }
+
+    getNodeByFilePath(filePath: string): TreeNode | undefined {
+        return this.filePathToNode.get(filePath);
+    }
+
     async getChildren(element?: TreeNode): Promise<TreeNode[]> {
         if (!element) {
             return this.getRootChildren();
         }
         return element.children ?? [];
+    }
+
+    private buildNodeMaps(nodes: TreeNode[], parent: TreeNode | undefined): void {
+        for (const node of nodes) {
+            if (parent) this.nodeToParent.set(node, parent);
+            const arg = node.command?.arguments?.[0];
+            if (arg instanceof vscode.Uri) {
+                this.filePathToNode.set(arg.fsPath, node);
+            }
+            if (node.children?.length) this.buildNodeMaps(node.children, node);
+        }
     }
 
     private async getRootChildren(): Promise<TreeNode[]> {
@@ -61,6 +86,9 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         if (!fs.existsSync(loomDir)) {
             return [];
         }
+
+        this.filePathToNode.clear();
+        this.nodeToParent.clear();
 
         try {
             const json = await getMCP(this.workspaceRoot).readResource('loom://state');
@@ -83,14 +111,31 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
             const normalWeaves = filtered.filter(w => w.id !== 'refs');
             const nodes = this.groupWeaves(normalWeaves, viewState.grouping);
 
-            if (globalCtxDocs.length > 0) {
-                nodes.unshift(this.createCtxSection(globalCtxDocs));
+            // Archive section — shown when showArchived is toggled on
+            const archivedWeaves = (this.state as any).archivedWeaves as Weave[] | undefined;
+            const archivedLooseDocs = (this.state as any).archivedLooseDocs as Document[] | undefined;
+            if (viewState.showArchived) {
+                const archiveChildren: TreeNode[] = [
+                    ...(archivedWeaves ?? []).map(w => this.createWeaveNode(w, true)),
+                    ...(archivedLooseDocs ?? []).map(d => this.createDocumentNode(d, `loose-${d.type}`, undefined)),
+                ];
+                const archiveSection = this.createSectionNode(
+                    archiveChildren.length > 0 ? 'Archive' : 'Archive (empty)',
+                    archiveChildren
+                );
+                archiveSection.iconPath = new vscode.ThemeIcon('archive');
+                nodes.push(archiveSection);
             }
 
+            // Special global sections come after all regular weave nodes
             if (globalChats && globalChats.length > 0) {
                 nodes.push(this.createChatsSection(
                     globalChats.map(c => this.createChatNode(c))
                 ));
+            }
+
+            if (globalCtxDocs.length > 0) {
+                nodes.push(this.createCtxSection(globalCtxDocs));
             }
 
             if (refsWeave) {
@@ -102,6 +147,7 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
             } else if (globalRefDocs.length > 0) {
                 nodes.push(this.createRefsSection(globalRefDocs));
             }
+            this.buildNodeMaps(nodes, undefined);
             return nodes;
         } catch (e: any) {
             console.error('🧵 Failed to load Loom state:', e);
@@ -122,7 +168,6 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         const statusFilter = viewState.statusFilter;
 
         return weaves
-            .filter(w => viewState.showArchived || !w.id.startsWith('_'))
             .filter(w => {
                 if (!text) return true;
                 if (w.id.toLowerCase().includes(text)) return true;
@@ -135,9 +180,10 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
                 if (!statusFilter.length) return w;
                 if (w.id === 'refs') return w; // refs weave bypasses status filter — rendered as global References
                 const filteredThreads = w.threads.filter(t => {
-                    const threadDocs = [t.idea, t.design, ...t.plans].filter(Boolean) as Document[];
-                    if (threadDocs.length === 0) return false;
-                    return threadDocs.some(d => statusFilter.includes(d.status));
+                    const workflowDocs = [t.idea, t.design, ...t.plans].filter(Boolean) as Document[];
+                    if (workflowDocs.length === 0) return false;
+                    const status = getThreadStatus(t).toLowerCase();
+                    return statusFilter.includes(status);
                 });
                 return { ...w, threads: filteredThreads };
             })
@@ -223,16 +269,16 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         return node;
     }
 
-    private createWeaveNode(weave: Weave): TreeNode {
+    private createWeaveNode(weave: Weave, isArchived = false): TreeNode {
         const status = getWeaveStatus(weave);
         const children = this.getWeaveChildren(weave);
         const state = children.length > 0
             ? vscode.TreeItemCollapsibleState.Collapsed
             : vscode.TreeItemCollapsibleState.None;
         const node = new vscode.TreeItem(weave.id, state);
-        node.description = status;
-        node.iconPath = getWeaveIcon(status);
-        node.contextValue = 'weave';
+        node.description = isArchived ? 'archived' : status;
+        node.iconPath = isArchived ? new vscode.ThemeIcon('archive') : getWeaveIcon(status);
+        node.contextValue = isArchived ? 'weave-archived' : 'weave';
         const primaryThread = weave.threads.find(t => t.design);
         node.tooltip = primaryThread?.design
             ? `${primaryThread.design.title} (v${primaryThread.design.version})`
@@ -251,10 +297,6 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         const ctxFibers = weave.looseFibers.filter(f => f.type === 'ctx');
         const otherFibers = weave.looseFibers.filter(f => f.type !== 'ctx');
 
-        if (ctxFibers.length > 0) {
-            children.push(this.createCtxSection(ctxFibers, weave.id));
-        }
-
         if (otherFibers.length > 0) {
             children.push(this.createSectionNode(
                 'Loose Fibers',
@@ -262,10 +304,15 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
             ));
         }
 
+        // Special sections at end: Chats, Context, References
         if (weave.chats.length > 0) {
             children.push(this.createChatsSection(
                 weave.chats.map(c => this.createChatNode(c, weave.id))
             ));
+        }
+
+        if (ctxFibers.length > 0) {
+            children.push(this.createCtxSection(ctxFibers, weave.id));
         }
 
         if (weave.refDocs && weave.refDocs.length > 0) {
