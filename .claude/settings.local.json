@@ -1,11 +1,15 @@
-{  
-  "enabledMcpjsonServers": [
-    "loom"
-  ],
-  "enableAllProjectMcpServers": true,
-  
+{
   "attribution": {
     "commit": "",
     "pr": ""
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "loom"
+  ],
+  "permissions": {
+    "allow": [
+      "mcp__loom__loom_complete_step"
+    ]
   }
 }

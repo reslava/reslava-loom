@@ -32,30 +32,6 @@ Implement the context sidebar in the VS Code extension: a panel below the tree t
 # Steps
 
 
-## Step 3 — Implement context sidebar UI
-
-Create a `ContextSidebarProvider` implementing `vscode.TreeDataProvider`. Register it in the Loom sidebar container below the main tree. Tree items: section headers ("Pinned", "Opt-in"), doc items with type icon, title, token badge as description, and toggle command as inline button (pinned items show lock icon, no toggle). Auto-refresh: listen to main tree selection changes and re-resolve context per the design table.
-
-**Files touched:** `packages/vscode/src/providers/contextSidebarProvider.ts` (new), `packages/vscode/src/extension.ts` (register provider), `package.json` (contributes.views).
-
----
-
-## Step 4 — Add optional context_ids param to MCP tools
-
-In `packages/mcp/src/tools/`, add `context_ids?: string[]` to the input schema of `loom_do_step`, `loom_generate_plan`, `loom_generate_design`, `loom_refine_plan`, `loom_refine_design`. In each handler: if `context_ids` is present and non-empty, load each doc by ID via `threadRepository` and prepend their content to the prompt context block before the AI call.
-
-**Files touched:** the five tool files in `packages/mcp/src/tools/`.
-
----
-
-## Step 5 — Wire sidebar state into MCP tool calls
-
-In `packages/vscode/src/commands/`, for each command that invokes one of the five MCP tools above: read `contextSidebarService.getSelectedIds()` and include the result as `context_ids` in the tool call arguments.
-
-**Files touched:** `packages/vscode/src/commands/doStep.ts`, `generatePlan.ts`, `generateDesign.ts`, `refineDesign.ts`, `refinePlan.ts` (or equivalent).
-
----
-
 ## Legend
 
 | Symbol | Meaning |

@@ -2,7 +2,7 @@
 type: done
 id: pl_01KR0M5S5FZ13J6RNX6T3TKHRG-done
 title: Done — Update Toggle Archived button icon for enabled/disabled states
-status: final
+status: done
 created: "2026-05-07T00:00:00.000Z"
 version: 4
 tags: []
