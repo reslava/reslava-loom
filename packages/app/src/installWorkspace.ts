@@ -320,8 +320,11 @@ export async function installWorkspace(
         mcpJsonWritten = true;
     }
 
-    // Step 5: write loom/loom-ctx.md (skip if exists and not --force)
+    // Step 5: ensure standard loom/ subdirectories exist
     deps.fs.ensureDirSync(loomDocsDir);
+    deps.fs.ensureDirSync(path.join(loomDocsDir, 'chats'));
+    deps.fs.ensureDirSync(path.join(loomDocsDir, 'refs'));
+    deps.fs.ensureDirSync(path.join(loomDocsDir, '.archive'));
     let loomCtxWritten = false;
     if (!deps.fs.existsSync(loomCtxPath) || input.force) {
         deps.fs.writeFileSync(loomCtxPath, LOOM_CTX_MD, 'utf8');

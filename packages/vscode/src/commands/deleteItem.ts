@@ -21,9 +21,9 @@ export async function deleteItemCommand(treeProvider: LoomTreeProvider, node?: T
     if (filePath) {
         await fs.remove(filePath);
     } else if (node.contextValue === 'thread' && node.weaveId && node.threadId) {
-        await fs.remove(path.join(workspaceRoot, 'weaves', node.weaveId, node.threadId));
+        await fs.remove(path.join(workspaceRoot, 'loom', node.weaveId, node.threadId));
     } else if (node.contextValue === 'weave' && node.weaveId) {
-        await fs.remove(path.join(workspaceRoot, 'weaves', node.weaveId));
+        await fs.remove(path.join(workspaceRoot, 'loom', node.weaveId));
     } else {
         vscode.window.showErrorMessage('Cannot determine what to delete.');
         return;

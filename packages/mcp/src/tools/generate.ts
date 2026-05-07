@@ -192,6 +192,65 @@ export function createGenerateTools(server: Server): ToolModule[] {
         ),
 
         makeTool(
+            'loom_generate_reference',
+            'Generate the body of a reference document using AI sampling. Reads the doc created by loom_create_reference, optionally loads thread context, generates content, and saves it. Requires sampling support.',
+            {
+                type: 'object' as const,
+                properties: {
+                    id: { type: 'string', description: 'Reference document ID (from loom_create_reference)' },
+                    weaveId: { type: 'string', description: 'Optional weave ID to load for additional context' },
+                    threadId: { type: 'string', description: 'Optional thread ID to load for additional context' },
+                    context_ids: { type: 'array', items: { type: 'string' }, description: 'Optional additional doc IDs to load as context' },
+                },
+                required: ['id'],
+            },
+            async (root, args) => {
+                const id = args['id'] as string;
+                const weaveId = args['weaveId'] as string | undefined;
+                const threadId = args['threadId'] as string | undefined;
+                const contextIds = Array.isArray(args['context_ids']) ? (args['context_ids'] as string[]) : [];
+
+                const fp = await findDocumentById(root, id);
+                if (!fp) throw new Error(`Reference doc not found: ${id}`);
+                const doc = await loadDoc(fp) as Document;
+
+                const messages: SamplingMessage[] = [];
+
+                if (weaveId && threadId) {
+                    try {
+                        const ctx = await handleThreadContextResource(root, `loom://thread-context/${weaveId}/${threadId}`);
+                        messages.push(msg('user', `Thread context:\n\n${ctx.contents[0].text}`));
+                    } catch { /* best-effort */ }
+                }
+
+                if (contextIds.length > 0) {
+                    const extra = await loadExtraContext(root, contextIds);
+                    if (extra) messages.push(msg('user', `Additional context:\n\n${extra}`));
+                }
+
+                const refTitle = doc.title;
+                const refDescription = (doc as any).description ?? '';
+                messages.push(msg('user', [
+                    `Write a complete reference document titled "${refTitle}".`,
+                    refDescription ? `Description: ${refDescription}` : '',
+                    'Write only the markdown body — no frontmatter.',
+                    'Use clear headings, concise prose, and diagrams (ASCII or Mermaid) where helpful.',
+                    'This is a reference document — write authoritatively and factually.',
+                ].filter(Boolean).join('\n')));
+
+                const body = await requestSampling(
+                    server,
+                    messages,
+                    'You are a technical writer creating structured reference documents for software projects.'
+                );
+
+                await saveDoc({ ...doc, content: body, version: doc.version + 1 } as Document, fp);
+
+                return { id, filePath: fp };
+            }
+        ),
+
+        makeTool(
             'loom_generate_chat_reply',
             'Generate an AI reply for a Loom chat document using sampling. Appends the reply under "## AI:". Requires sampling support from the MCP client.',
             {

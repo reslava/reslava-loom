@@ -128,11 +128,9 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
             }
 
             // Special global sections come after all regular weave nodes
-            if (globalChats && globalChats.length > 0) {
-                nodes.push(this.createChatsSection(
-                    globalChats.map(c => this.createChatNode(c))
-                ));
-            }
+            nodes.push(this.createChatsSection(
+                (globalChats ?? []).map(c => this.createChatNode(c))
+            ));
 
             if (globalCtxDocs.length > 0) {
                 nodes.push(this.createCtxSection(globalCtxDocs));
@@ -305,11 +303,10 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         }
 
         // Special sections at end: Chats, Context, References
-        if (weave.chats.length > 0) {
-            children.push(this.createChatsSection(
-                weave.chats.map(c => this.createChatNode(c, weave.id))
-            ));
-        }
+        children.push(this.createChatsSection(
+            weave.chats.map(c => this.createChatNode(c, weave.id)),
+            weave.id
+        ));
 
         if (ctxFibers.length > 0) {
             children.push(this.createCtxSection(ctxFibers, weave.id));
@@ -366,10 +363,14 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
             ));
         }
 
-        if (thread.chats.length > 0) {
-            children.push(this.createChatsSection(
-                thread.chats.map(c => this.createChatNode(c, weaveId, thread.id))
-            ));
+        children.push(this.createChatsSection(
+            thread.chats.map(c => this.createChatNode(c, weaveId, thread.id)),
+            weaveId, thread.id
+        ));
+
+        const ctxDocs = thread.allDocs.filter(d => d.type === 'ctx');
+        if (ctxDocs.length > 0) {
+            children.push(this.createCtxSection(ctxDocs, weaveId, thread.id));
         }
 
         if (thread.refDocs && thread.refDocs.length > 0) {
@@ -395,11 +396,14 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         return { ...node, weaveId, threadId, children };
     }
 
-    private createChatsSection(chatNodes: TreeNode[]): TreeNode {
-        const node = new vscode.TreeItem('Chats', vscode.TreeItemCollapsibleState.Collapsed);
+    private createChatsSection(chatNodes: TreeNode[], weaveId?: string, threadId?: string): TreeNode {
+        const state = chatNodes.length > 0
+            ? vscode.TreeItemCollapsibleState.Collapsed
+            : vscode.TreeItemCollapsibleState.None;
+        const node = new vscode.TreeItem('Chats', state);
         node.contextValue = 'chats-section';
         node.iconPath = new vscode.ThemeIcon('comment-discussion');
-        return { ...node, children: chatNodes };
+        return { ...node, weaveId, threadId, children: chatNodes };
     }
 
     private createPlansSection(planNodes: TreeNode[]): TreeNode {

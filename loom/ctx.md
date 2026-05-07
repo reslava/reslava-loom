@@ -4,8 +4,8 @@ id: loom-ctx
 title: Loom — Global Context
 status: active
 created: "2026-04-29T00:00:00.000Z"
-updated: "2026-05-05T00:00:00.000Z"
-version: 2
+updated: 2026-05-07
+version: 3
 tags: [ctx, vision, architecture, session-start]
 parent_id: null
 requires_load: [vision, workflow]
@@ -19,8 +19,8 @@ three views you need to operate Loom: what it is (concept), how it's built
 the deeper reference if needed.
 
 **Canonical refs (loaded via `requires_load`):**
-- [loom/refs/vision.md](refs/vision.md) — the north star: what Loom is for, why it exists, what manual steps it replaces. Use it for the vision-check rule before any design proposal.
-- [loom/refs/workflow.md](refs/workflow.md) — the canonical loop, phase definitions, transitions, and the workflow diagram.
+- [loom/refs/vision-reference.md](refs/vision-reference.md) — the north star: what Loom is for, why it exists, what manual steps it replaces. Use it for the vision-check rule before any design proposal.
+- [loom/refs/workflow-reference.md](refs/workflow-reference.md) — the canonical loop, phase definitions, transitions, and the workflow diagram.
 - [loom/refs/architecture-reference.md](refs/architecture-reference.md) — package layers, MCP surface, doc types table, frontmatter schema, stale-detection rules.
 
 ---
@@ -31,7 +31,7 @@ Loom is a **collaboration medium between User and AI**, where **markdown documen
 are the shared context database**. The whole tool exists to make that collaboration
 durable, traceable, and resumable.
 
-**The canonical loop** (see [refs/workflow.md](refs/workflow.md) for phase definitions and transitions):
+**The canonical loop** (see [refs/workflow-reference.md](refs/workflow-reference.md) for phase definitions and transitions):
 
 ```
 chat → {generate|refine} idea/design/plan/ctx → {implement step(s)} → done

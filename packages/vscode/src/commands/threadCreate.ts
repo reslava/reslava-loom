@@ -34,5 +34,6 @@ export async function threadCreateCommand(
     }
 
     await fs.ensureDir(threadPath);
+    await fs.ensureDir(path.join(threadPath, 'chats'));
     treeProvider.refresh();
 }

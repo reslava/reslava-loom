@@ -32,7 +32,7 @@ export async function updateDiagnostics(
     const idToUri = await buildDocIdMap();
 
     for (const weaveResult of weavesWithIssues) {
-        const weavePath = path.join(workspaceRoot, 'weaves', weaveResult.id);
+        const weavePath = path.join(workspaceRoot, 'loom', weaveResult.id);
         const diagnosticsByUri = new Map<string, vscode.Diagnostic[]>();
 
         for (const issueText of weaveResult.issues) {

@@ -24,5 +24,6 @@ export async function weaveCreateCommand(treeProvider: LoomTreeProvider): Promis
     }
 
     await fs.ensureDir(weavePath);
+    await fs.ensureDir(path.join(weavePath, 'chats'));
     treeProvider.refresh();
 }

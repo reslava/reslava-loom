@@ -31,6 +31,8 @@ import { doStepCommand } from './commands/doStep';
 import { closePlanCommand } from './commands/closePlan';
 import { markDoneCommand, markActiveCommand } from './commands/markStatus';
 import { restoreItemCommand } from './commands/restoreItem';
+import { createReferenceCommand } from './commands/createReference';
+import { addRequiresLoadCommand } from './commands/addRequiresLoad';
 import { setIconBaseUri } from './icons';
 import { disposeMCP, getMCP, getMCPConnected } from './mcp-client';
 import { TokenEstimatorService } from './services/tokenEstimatorService';
@@ -145,6 +147,35 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         vscode.commands.registerCommand('loom.markDone', (node?: TreeNode) => markDoneCommand(treeProvider, treeView, node)),
         vscode.commands.registerCommand('loom.markActive', (node?: TreeNode) => markActiveCommand(treeProvider, treeView, node)),
         vscode.commands.registerCommand('loom.restoreItem', (node?: TreeNode) => restoreItemCommand(treeProvider, node)),
+        vscode.commands.registerCommand('loom.createReference', () => createReferenceCommand(treeProvider)),
+        vscode.commands.registerCommand('loom.addRequiresLoad', (node?: TreeNode) => addRequiresLoadCommand(node)),
+        vscode.commands.registerCommand('loom.refreshCtx', async (node?: TreeNode) => {
+            const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
+            const weaveId = node?.weaveId;
+            const threadId = node?.threadId;
+            try {
+                let result: any;
+                await vscode.window.withProgress(
+                    { location: vscode.ProgressLocation.Notification, title: 'Loom: Refreshing context…', cancellable: false },
+                    async () => {
+                        if (weaveId) {
+                            result = await getMCP(root).callTool('loom_refresh_ctx', { weaveId, ...(threadId ? { threadId } : {}) });
+                        } else {
+                            result = await getMCP(root).callTool('loom_generate_global_ctx', {});
+                        }
+                    }
+                );
+                treeProvider.refresh();
+                if (result?.filePath) {
+                    const doc = await vscode.workspace.openTextDocument(result.filePath);
+                    await vscode.window.showTextDocument(doc, { preview: false });
+                }
+                vscode.window.showInformationMessage('Context refreshed.');
+            } catch (e: any) {
+                vscode.window.showErrorMessage(`Refresh context failed: ${e.message}`);
+            }
+        }),
         vscode.commands.registerCommand('loom.generateDesign', async (node?: TreeNode) => {
             const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
             if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }

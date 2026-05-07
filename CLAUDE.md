@@ -21,7 +21,7 @@ If the read fails for any reason, output `⚠️ loom-ctx not loaded — proceed
 
 This repository owns **two** CLAUDE.md surfaces and they MUST stay in sync:
 
-1. **This file (`CLAUDE.md` at the repo root)** — the *recursive* contract: rules for using Loom to build Loom itself. Project-specific (mentions `packages/`, `loom/refs/vision.md`, current threads, etc.).
+1. **This file (`CLAUDE.md` at the repo root)** — the *recursive* contract: rules for using Loom to build Loom itself. Project-specific (mentions `packages/`, `loom/refs/vision-reference.md`, current threads, etc.).
 2. **The `LOOM_CLAUDE_MD` template in [`packages/app/src/installWorkspace.ts`](packages/app/src/installWorkspace.ts)** — the *project-agnostic* contract installed as `.loom/CLAUDE.md` in any project that runs `loom install`. No project-specifics.
 
 **When you change session rules, MCP visibility rules, chat-reply rules, stop rules, or session-start protocol, update both.** The recursive file may carry extra project-specific guidance, but every rule shared by both surfaces (anything a generic Loom user also needs) must mirror. If a change is purely Loom-repo-specific (e.g., the active-work pointer, package paths), it stays in this file only — and you must say so explicitly when proposing the change.
@@ -298,7 +298,7 @@ The "is this thread already in transcript?" decision lives **in the AI**, not in
 **Order of operations at session start:**
 
 1. **Load global ctx** — read [loom/ctx.md](loom/ctx.md). Emit `📘 loom-ctx loaded — global context ready` (or the failure variant if the read fails).
-2. **Load vision and workflow** — read [loom/refs/vision.md](loom/refs/vision.md) (north star — what Loom is for, what manual steps it replaces; ground for the vision-check rule under Collaboration style) and [loom/refs/workflow.md](loom/refs/workflow.md) (canonical loop, phase definitions, and transitions). Emit `🌟 vision + workflow loaded` on success.
+2. **Load vision and workflow** — read [loom/refs/vision-reference.md](loom/refs/vision-reference.md) (north star — what Loom is for, what manual steps it replaces; ground for the vision-check rule under Collaboration style) and [loom/refs/workflow-reference.md](loom/refs/workflow-reference.md) (canonical loop, phase definitions, and transitions). Emit `🌟 vision + workflow loaded` on success.
 3. **Read active work from MCP** — `loom://state?status=active,implementing`. Emit `🧵 Active: <list of thread IDs>`. This replaces any hand-written "active work" pointer; MCP is the only source of truth.
 4. **Call `do-next-step` prompt with the active planId.** This bundles:
    - Thread context (idea, design, current plan, requires_load docs)
@@ -332,7 +332,7 @@ STOP — waiting for go
 
 ## Collaboration style
 
-- **Vision check (before any design proposal).** Before suggesting code, file changes, or architecture, state in one sentence which user-visible behavior in [loom/refs/vision.md](loom/refs/vision.md) this serves and which manual step it removes. If you cannot — if the proposal does not map to a vision element or replace a manual step — the proposal is probably wrong. Stop and ask before continuing. The cost of writing this sentence is one line; the cost of building the wrong thing is hours.
+- **Vision check (before any design proposal).** Before suggesting code, file changes, or architecture, state in one sentence which user-visible behavior in [loom/refs/vision-reference.md](loom/refs/vision-reference.md) this serves and which manual step it removes. If you cannot — if the proposal does not map to a vision element or replace a manual step — the proposal is probably wrong. Stop and ask before continuing. The cost of writing this sentence is one line; the cost of building the wrong thing is hours.
 - Discuss design before implementing — Rafa thinks out loud and reaches better solutions through dialogue.
 - When a design question is open, present trade-offs and ask — don't just pick one.
 - If Rafa's proposal has a problem, explain it briefly then let him respond.
