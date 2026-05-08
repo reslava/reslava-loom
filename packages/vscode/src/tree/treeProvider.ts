@@ -147,8 +147,8 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
             const archivedLooseDocs = (this.state as any).archivedLooseDocs as Document[] | undefined;
             if (viewState.showArchived) {
                 const archiveChildren: TreeNode[] = [
-                    ...(archivedWeaves ?? []).map(w => this.createWeaveNode(w, true)),
-                    ...(archivedLooseDocs ?? []).map(d => this.createDocumentNode(d, `loose-${d.type}`, undefined)),
+                    ...[...(archivedWeaves ?? [])].sort((a, b) => a.id.localeCompare(b.id)).map(w => this.createWeaveNode(w, true)),
+                    ...[...(archivedLooseDocs ?? [])].sort((a, b) => (a.title ?? a.id).localeCompare(b.title ?? b.id)).map(d => this.createDocumentNode(d, `loose-${d.type}`, undefined)),
                 ];
                 const archiveSection = this.createSectionNode(
                     archiveChildren.length > 0 ? 'Archive' : 'Archive (empty)',
