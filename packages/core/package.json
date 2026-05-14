@@ -1,4 +1,7 @@
 {
+  "name": "@reslava-loom/core",
+  "version": "0.5.0",
+  "license": "MIT",
   "scripts": {
     "build": "tsc --build"
   },

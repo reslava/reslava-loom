@@ -82,7 +82,7 @@ const RESOURCE_TEMPLATES = [
 
 export function createLoomMcpServer(root: string): Server {
     const server = new Server(
-        { name: 'loom', version: '0.4.0' },
+        { name: 'loom', version: '0.5.0' },
         { capabilities: { resources: {}, tools: {}, prompts: {} } }
     );
 

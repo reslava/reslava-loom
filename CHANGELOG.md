@@ -5,6 +5,45 @@ All notable changes to Loom will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-05-14
+
+### Added
+- **MCP server** (`packages/mcp`) — full agent surface via Model Context Protocol: resources (`loom://state`, `loom://thread-context`, `loom://plan`, `loom://requires-load`, `loom://diagnostics`, `loom://summary`, `loom://link-index`), tools (`loom_create_*`, `loom_complete_step`, `loom_do_step`, `loom_promote`, `loom_append_to_chat`, `loom_rename`, `loom_archive`, `loom_update_doc`, `loom_get_stale_docs`, `loom_refresh_ctx`, and more), prompts (`do-next-step`, `continue-thread`, `validate-state`, `weave-idea/design/plan`), and sampling support for VS Code AI buttons.
+- **`loom install`** — single command to bootstrap Loom in any project: creates `.loom/` config dir, `CLAUDE.md` AI session contract, `.mcp.json` MCP server config, and `loom/ctx.md` global context stub.
+- **VS Code extension — MCP client** (`packages/vscode`) — extension now routes all AI operations through the Loom MCP server (sampling) instead of calling `app` directly. Single billing, no separate API key needed in VS Code settings.
+- **Numbered chat docs** — chats now use `*-chat-NNN.md` naming with zero-padded sequence numbers. AI session rules updated to recognize both `-chat.md` and `-chat-NNN.md` patterns.
+- **Promote to Reference** — new command to promote any chat or doc to a `*-reference.md` doc in `loom/refs/`.
+- **Thread-create from node** — create a new thread directly from any weave node in the tree view.
+- **Chat custom names** — `loom_create_chat` accepts a custom title; shown in the tree view.
+- **Empty-workspace welcome view** — `viewsWelcome` shown when no `loom/` dir exists or it's empty; includes an *Initialize Workspace* button.
+- **MCP reconnect command** — `loom.reconnectMcp` restores the MCP connection without reloading VS Code; reflected in the status-bar indicator.
+- **`loom://thread-context` resource** — bundles idea + design + active plan + ctx for a thread in a single MCP read; primary agent entry point.
+- **`resources/templates/list` MCP handler** — `ListResourceTemplatesRequestSchema` registered separately from concrete resources; fixes `-32601 Method not found` on Continue.dev and other strict MCP hosts.
+- **`loom_do_step` / `loom_append_done`** — MCP tools for the full implement-step loop with done-doc recording.
+- **`loom_get_stale_docs` / `loom_get_stale_plans`** — surface stale docs and plans across the workspace.
+- **`loom_refresh_ctx`** — regenerate ctx summary via MCP sampling.
+- **`loom_search_docs` / `loom_find_doc`** — full-text and ID-based doc search via MCP.
+- **Status filter** — tree view filter by status (active, implementing, draft, done, archived).
+- **Sort archive / sort reference** — archive and reference nodes sorted by modification time.
+- **Dynamic title** — tree view title reflects the current workspace and filter state.
+- **Getting started guide** — `loom/refs/getting-started.md` one-pager for new users.
+
+### Changed
+- VS Code extension architecture: `vscode → mcp → app → core + fs` (previously `vscode → app → core + fs`). Extension has zero direct `app` imports.
+- All `file:` workspace dependencies moved from `dependencies` to `devDependencies` in `packages/vscode/package.json` — esbuild bundles them, so they are build-time only. Fixes 773 MB vsix bloat from vsce following file: symlinks in npm workspaces.
+- `.vscodeignore` tightened: excludes monorepo siblings, `.claude/`, and all `dist/**` except `dist/extension.js`.
+- `loom/refs/vision-reference.md` rewritten to lead with the outside-user perspective.
+- `loom/refs/architecture-reference.md` — chat doc location table updated to include weave-level chats.
+- `packages/app/src/installWorkspace.ts` CLAUDE.md template cleaned up for outside-user readability.
+- `loom-reference.md` renamed → `loom-reference.md` (implementation contract for contributors).
+- Version aligned across all packages to `0.5.0`.
+
+### Fixed
+- `packages/vscode` vsix packaging now clean (no warnings, 370 KB) when run with `npm run package`.
+- `CLAUDE.md` chat-doc recognition pattern updated to cover `*-chat-NNN.md` filenames (previously only matched `-chat.md`).
+
+---
+
 ## [0.3.1] - 2026-04-25
 
 ### Added

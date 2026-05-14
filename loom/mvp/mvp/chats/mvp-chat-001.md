@@ -122,3 +122,7 @@ Steps 27–31 done. Summary:
 **30 — workflow-reference.md** — No drift. The doc describes abstract phases (chat, generate, refine, implement, done) with no hardcoded button/command IDs, so the `new → weave` rename didn't affect it.
 
 **31 — installWorkspace.ts template** — Removed the "Maintainer note (Loom repo only)" block from the top of `LOOM_CLAUDE_MD`. Outside users don't need to know about the two-surface sync contract; that lives in the recursive CLAUDE.md for Loom contributors only.
+
+## Rafa:
+
+do steps 32-38
