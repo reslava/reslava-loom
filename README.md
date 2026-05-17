@@ -206,12 +206,28 @@ reads everything in its `requires_load` chain. It can't miss context it doesn't 
 
 ## VS Code Extension
 
-The VS Code extension is the **human surface** over the same document graph:
+<img src="packages/vscode/media/loom.png" alt="Loom" width="80" />
 
-- Tree view: weaves → threads → plans, chats, done docs
-- Inline buttons: rename, archive, delete
-- Toolbar commands: Weave Idea, Weave Design, Weave Plan, Start Plan
-- AI buttons (when MCP connected): Weave Idea, Weave Design, AI Reply — powered by MCP sampling
+The VS Code extension is the **human surface** over the same document graph.
+
+> Demo GIF coming — see `packages/vscode/media/loom-demo.gif` once recorded.
+
+**The CONTEXT panel** (Activity Bar) shows your weaves → threads → plans, chats, done docs.
+
+| Button | What it does |
+|--------|-------------|
+| *Generate Idea* | Formalise a chat or prompt into a scoped idea doc |
+| *Generate Design* | Turn an idea into an architecture + decisions doc |
+| *Generate Plan* | Break a design into numbered, reviewable implementation steps |
+| *Do Step* | AI implements the next pending step; marks it ✅ and writes a done note |
+| *AI Reply* | Continue the conversation inside a chat doc with full thread context loaded |
+| *Generate Ctx* | Regenerate the ctx summary for a weave or thread |
+| *Refine* | Re-run generation on a stale doc after its parent was updated |
+| *Promote* | chat → idea → design → plan in one click |
+| *Start Plan* | Move a plan from `draft` to `implementing` |
+| *Rename / Archive* | Inline doc management |
+
+Install from the VS Code marketplace: search **`reslava.loom`**.
 
 ---
 
