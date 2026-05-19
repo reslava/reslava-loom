@@ -725,3 +725,22 @@ bump extension 0.6.0 version
 update `loom/refs/architecture-reference.md` name both ways to use AI and how to use them
 update main readme and extension readme
 commit & push
+
+## Rafa:
+
+Current extension readme section `The CONTEXT panel`
+is in fact `LOOM` panel
+and there is no section for `CONTEXT` extension panel that shows the context to inject to AI depending of tree node is selected.
+
+Update and fix the readme
+
+## AI:
+
+Fixed `packages/vscode/README.md`:
+
+- Renamed "The CONTEXT panel" → "The LOOM panel" (the Activity Bar container is "Loom", not "Context")
+- Split into two subsections:
+  - **Threads view** — the doc tree with toolbar buttons (same content, correct name)
+  - **Context view** — new section documenting the second sidebar view: Pinned docs (idea + design + active plan + ctx), Opt-in docs (chats, refs), Total token count, and how toggling works
+
+Changes not yet committed — let me know if you want them bundled into a separate commit or squashed.
