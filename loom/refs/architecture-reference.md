@@ -59,7 +59,7 @@ User
              ├── Resources  — read Loom state (loom://state, loom://thread-context/...)
              ├── Tools      — mutate Loom state (loom_complete_step, loom_create_idea...)
              ├── Prompts    — guided workflow templates (do-next-step, continue-thread...)
-             └── Sampling   — server asks host agent to run LLM inference (VS Code AI buttons)
+             └── Sampling   — server asks host agent to run LLM inference (API-key path only)
 
 Loom MCP config (Claude Code):
   { "mcpServers": { "loom": { "command": "loom", "args": ["mcp"], "env": { "LOOM_ROOT": "${workspaceFolder}" } } } }
@@ -80,8 +80,9 @@ Session start: call `do-next-step` prompt (loads context + step instructions).
 - `loom_complete_step` — mark a plan step done (idempotent)
 - `loom_create_idea / design / plan / chat` — create Loom docs
 - `loom_update_doc` — rewrite doc content, preserve frontmatter
+- `loom_append_to_chat` — append a message to a chat doc (role: user | ai)
 - `loom_promote` — idea → design → plan, chat → idea
-- `loom_refresh_ctx` — regenerate ctx summary via sampling
+- `loom_refresh_ctx` — regenerate ctx summary (sampling path; use loom_update_doc in Claude Code CLI)
 - `loom_rename` / `loom_archive` / `loom_get_stale_docs`
 
 **Key prompts:**
@@ -89,7 +90,26 @@ Session start: call `do-next-step` prompt (loads context + step instructions).
 - `continue-thread` — loads thread context and asks agent to propose next action
 - `weave-idea / design / plan` — guided doc creation via sampling
 
-**Sampling:** MCP server requests the host agent to run an LLM inference on its behalf. Enables VS Code toolbar AI buttons (Weave Idea, Weave Design, AI Reply) without a separate API key — all AI runs through the user's agent connection (single billing).
+**Sampling:** MCP server requests the host agent to run an LLM inference on its behalf. Used by the VS Code extension when an Anthropic/OpenAI API key is configured (`reslava-loom.ai.apiKey`). **Not available in Claude Code CLI sessions** — the CLI is already the AI; recursive server→client inference is intentionally blocked.
+
+## 2a. VS Code Extension AI Button Paths
+
+The extension toolbar buttons support two AI paths, chosen at click time:
+
+```
+Button clicked
+  ├── Claude Code CLI installed?
+  │     yes → open terminal → claude "<direct-tool prompt>"
+  │           Claude reads docs, calls loom_create_* + loom_update_doc / loom_append_to_chat directly
+  │           (no sampling — Claude IS the AI)
+  │
+  └── no → getMCP().callTool('loom_generate_*' / 'loom_refine_*')
+            → MCP server calls sampling/createMessage → extension's makeAIClient (API key)
+```
+
+**CLI path (default):** Works for Claude Pro subscribers and API-key users who have Claude Code installed. Opens a named terminal (e.g. "Loom: Chat Reply") and sends a `claude "<prompt>"` command. The prompt instructs Claude to use low-level MCP tools directly instead of sampling-based generate/refine tools.
+
+**API-key path (fallback):** Works when Claude Code CLI is not on PATH and `reslava-loom.ai.apiKey` (or `reslava-loom.ai.provider` + key) is configured in VS Code settings. The extension acts as MCP client and handles `sampling/createMessage` callbacks via `makeAIClient` (Anthropic, OpenAI, or DeepSeek).
 
 ## 3. Document Types and Frontmatter Fields
 

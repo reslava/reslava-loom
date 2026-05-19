@@ -37,6 +37,7 @@ import { addRequiresLoadCommand } from './commands/addRequiresLoad';
 import { setIconBaseUri } from './icons';
 import { disposeMCP, getMCP, getMCPConnected } from './mcp-client';
 import { handleMcpError } from './mcpErrorUtils';
+import { isClaudeInstalled, launchClaude } from './commands/claudeTerminal';
 import { TokenEstimatorService } from './services/tokenEstimatorService';
 import { ContextSidebarProvider } from './providers/contextSidebarProvider';
 
@@ -169,26 +170,28 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
             if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
             const weaveId = node?.weaveId;
             const threadId = node?.threadId;
-            try {
-                let result: any;
-                await vscode.window.withProgress(
-                    { location: vscode.ProgressLocation.Notification, title: 'Loom: Refreshing context…', cancellable: false },
-                    async () => {
-                        if (weaveId) {
-                            result = await getMCP(root).callTool('loom_refresh_ctx', { weaveId, ...(threadId ? { threadId } : {}) });
-                        } else {
-                            result = await getMCP(root).callTool('loom_generate_global_ctx', {});
-                        }
-                    }
+            if (await isClaudeInstalled()) {
+                const scope = weaveId ? `weaveId="${weaveId}"${threadId ? `, threadId="${threadId}"` : ''}` : 'global';
+                await launchClaude(root, 'Loom: Refresh Ctx',
+                    `Loom refresh ctx task. scope=${scope}. Use the loom MCP server: read thread docs${weaveId ? ` in weave "${weaveId}"` : ' across all weaves'} via loom://thread-context or loom://state, write an updated ctx summary, then use MCP tool loom_update_doc on the ctx doc. Do not use loom_refresh_ctx or loom_generate_global_ctx — sampling is unavailable in Claude Code CLI.`
                 );
-                treeProvider.refresh();
-                if (result?.filePath) {
-                    const doc = await vscode.workspace.openTextDocument(result.filePath);
-                    await vscode.window.showTextDocument(doc, { preview: false });
-                }
-                vscode.window.showInformationMessage('Context refreshed.');
-            } catch (e: any) {
-                handleMcpError(e, treeProvider);
+            } else {
+                try {
+                    let result: any;
+                    await vscode.window.withProgress(
+                        { location: vscode.ProgressLocation.Notification, title: 'Loom: Refreshing context…', cancellable: false },
+                        async () => {
+                            if (weaveId) {
+                                result = await getMCP(root).callTool('loom_refresh_ctx', { weaveId, ...(threadId ? { threadId } : {}) });
+                            } else {
+                                result = await getMCP(root).callTool('loom_generate_global_ctx', {});
+                            }
+                        }
+                    );
+                    treeProvider.refresh();
+                    if (result?.filePath) { const doc = await vscode.workspace.openTextDocument(result.filePath); await vscode.window.showTextDocument(doc, { preview: false }); }
+                    vscode.window.showInformationMessage('Context refreshed.');
+                } catch (e: any) { handleMcpError(e, treeProvider); }
             }
         }),
         vscode.commands.registerCommand('loom.generateDesign', async (node?: TreeNode) => {
@@ -196,23 +199,25 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
             if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
             const id = node?.doc?.id;
             if (!id) { vscode.window.showErrorMessage('Right-click an idea in the tree to generate a design.'); return; }
-            try {
-                let result: any;
-                await vscode.window.withProgress(
-                    { location: vscode.ProgressLocation.Notification, title: 'Loom: Generating design…', cancellable: false },
-                    async () => {
-                        const contextIds = contextSidebar.getSelectedIds();
-                        result = await getMCP(root).callTool('loom_generate_design', { id, ...(contextIds.length > 0 ? { context_ids: contextIds } : {}) });
-                    }
+            const contextIds = contextSidebar.getSelectedIds();
+            if (await isClaudeInstalled()) {
+                const weaveId = node?.weaveId ?? '';
+                const threadId = node?.threadId ?? '';
+                const ctxNote = contextIds.length > 0 ? ` Additional context doc ids: ${JSON.stringify(contextIds)}.` : '';
+                await launchClaude(root, 'Loom: Generate Design',
+                    `Loom generate design task. ideaId="${id}", weaveId="${weaveId}", threadId="${threadId}".${ctxNote} Use the loom MCP server: use MCP tool loom_find_doc with id="${id}" to read the idea, use MCP tool loom_create_design with weaveId="${weaveId}" threadId="${threadId}", then use MCP tool loom_update_doc with the design body. Do not use loom_generate_design — sampling is unavailable in Claude Code CLI.`
                 );
-                treeProvider.refresh();
-                if (result?.filePath) {
-                    const doc = await vscode.workspace.openTextDocument(result.filePath);
-                    await vscode.window.showTextDocument(doc, { preview: false });
-                }
-                vscode.window.showInformationMessage(`Design generated`);
-            } catch (e: any) {
-                handleMcpError(e, treeProvider);
+            } else {
+                try {
+                    let result: any;
+                    await vscode.window.withProgress(
+                        { location: vscode.ProgressLocation.Notification, title: 'Loom: Generating design…', cancellable: false },
+                        async () => { result = await getMCP(root).callTool('loom_generate_design', { id, ...(contextIds.length > 0 ? { context_ids: contextIds } : {}) }); }
+                    );
+                    treeProvider.refresh();
+                    if (result?.filePath) { const doc = await vscode.workspace.openTextDocument(result.filePath); await vscode.window.showTextDocument(doc, { preview: false }); }
+                    vscode.window.showInformationMessage('Design generated');
+                } catch (e: any) { handleMcpError(e, treeProvider); }
             }
         }),
         vscode.commands.registerCommand('loom.generatePlan', async (node?: TreeNode) => {
@@ -220,44 +225,45 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
             if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
             const id = node?.doc?.id;
             if (!id) { vscode.window.showErrorMessage('Right-click a design in the tree to generate a plan.'); return; }
-            try {
-                let result: any;
-                await vscode.window.withProgress(
-                    { location: vscode.ProgressLocation.Notification, title: 'Loom: Generating plan…', cancellable: false },
-                    async () => {
-                        const contextIds = contextSidebar.getSelectedIds();
-                        result = await getMCP(root).callTool('loom_generate_plan', { id, ...(contextIds.length > 0 ? { context_ids: contextIds } : {}) });
-                    }
+            const contextIds = contextSidebar.getSelectedIds();
+            if (await isClaudeInstalled()) {
+                const weaveId = node?.weaveId ?? '';
+                const threadId = node?.threadId ?? '';
+                const ctxNote = contextIds.length > 0 ? ` Additional context doc ids: ${JSON.stringify(contextIds)}.` : '';
+                await launchClaude(root, 'Loom: Generate Plan',
+                    `Loom generate plan task. designId="${id}", weaveId="${weaveId}", threadId="${threadId}".${ctxNote} Use the loom MCP server: use MCP tool loom_find_doc with id="${id}" to read the design, use MCP tool loom_create_plan with weaveId="${weaveId}" threadId="${threadId}", then use MCP tool loom_update_doc with a plan steps table based on the design. Do not use loom_generate_plan — sampling is unavailable in Claude Code CLI.`
                 );
-                treeProvider.refresh();
-                if (result?.filePath) {
-                    const doc = await vscode.workspace.openTextDocument(result.filePath);
-                    await vscode.window.showTextDocument(doc, { preview: false });
-                }
-                vscode.window.showInformationMessage(`Plan generated`);
-            } catch (e: any) {
-                handleMcpError(e, treeProvider);
+            } else {
+                try {
+                    let result: any;
+                    await vscode.window.withProgress(
+                        { location: vscode.ProgressLocation.Notification, title: 'Loom: Generating plan…', cancellable: false },
+                        async () => { result = await getMCP(root).callTool('loom_generate_plan', { id, ...(contextIds.length > 0 ? { context_ids: contextIds } : {}) }); }
+                    );
+                    treeProvider.refresh();
+                    if (result?.filePath) { const doc = await vscode.workspace.openTextDocument(result.filePath); await vscode.window.showTextDocument(doc, { preview: false }); }
+                    vscode.window.showInformationMessage('Plan generated');
+                } catch (e: any) { handleMcpError(e, treeProvider); }
             }
         }),
         vscode.commands.registerCommand('loom.generateGlobalCtx', async () => {
             const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
             if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
-            try {
-                let result: any;
-                await vscode.window.withProgress(
-                    { location: vscode.ProgressLocation.Notification, title: 'Loom: Generating global context…', cancellable: false },
-                    async () => {
-                        result = await getMCP(root).callTool('loom_generate_global_ctx', {});
-                    }
+            if (await isClaudeInstalled()) {
+                await launchClaude(root, 'Loom: Generate Global Ctx',
+                    `Loom generate global ctx task. Use the loom MCP server: read all weaves and threads via loom://state, write a concise global ctx summary, then use MCP tool loom_update_doc on the global ctx doc. Do not use loom_generate_global_ctx — sampling is unavailable in Claude Code CLI.`
                 );
-                treeProvider.refresh();
-                if (result?.filePath) {
-                    const doc = await vscode.workspace.openTextDocument(result.filePath);
-                    await vscode.window.showTextDocument(doc, { preview: false });
-                }
-                vscode.window.showInformationMessage(`Global context updated (v${result?.version})`);
-            } catch (e: any) {
-                handleMcpError(e, treeProvider);
+            } else {
+                try {
+                    let result: any;
+                    await vscode.window.withProgress(
+                        { location: vscode.ProgressLocation.Notification, title: 'Loom: Generating global context…', cancellable: false },
+                        async () => { result = await getMCP(root).callTool('loom_generate_global_ctx', {}); }
+                    );
+                    treeProvider.refresh();
+                    if (result?.filePath) { const doc = await vscode.workspace.openTextDocument(result.filePath); await vscode.window.showTextDocument(doc, { preview: false }); }
+                    vscode.window.showInformationMessage(`Global context updated (v${result?.version})`);
+                } catch (e: any) { handleMcpError(e, treeProvider); }
             }
         }),
         vscode.commands.registerCommand('loom.install.openCliTerminal', () => {
@@ -271,17 +277,10 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         )
     );
 
-    let aiEnabled = false;
-    function syncAiContext(): void {
-        const apiKey = vscode.workspace.getConfiguration('reslava-loom.ai').get<string>('apiKey') ?? '';
-        aiEnabled = apiKey.length > 0;
-        vscode.commands.executeCommand('setContext', 'loom.aiEnabled', aiEnabled);
-    }
-    syncAiContext();
+    let aiEnabled = true;
     context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration(e => {
-            if (e.affectsConfiguration('reslava-loom.ai.apiKey')) {
-                syncAiContext();
+            if (e.affectsConfiguration('reslava-loom.ai')) {
                 syncSetupContext();
             }
         })
@@ -294,7 +293,7 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         const workspaceInitialized = root ? fs.existsSync(path.join(root, '.loom')) : false;
         const mcpConfigured = root ? await detectMcpConfig(root) : false;
         const mcpLive = getMCPConnected();
-        const aiConfigured = (vscode.workspace.getConfiguration('reslava-loom.ai').get<string>('apiKey') ?? '').length > 0;
+        const aiConfigured = cliDetected;
         const hasWeaves = root ? detectHasWeaves(root) : false;
 
         const set = (key: string, val: boolean) => vscode.commands.executeCommand('setContext', key, val);

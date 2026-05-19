@@ -227,6 +227,17 @@ The VS Code extension is the **human surface** over the same document graph.
 | *Start Plan* | Move a plan from `draft` to `implementing` |
 | *Rename / Archive* | Inline doc management |
 
+### AI button paths
+
+Every AI button in the extension picks its path automatically at click time:
+
+| Path | When it runs | Who it works for |
+|------|-------------|-----------------|
+| **Claude Code CLI** (default) | `claude` is on PATH | Claude Pro subscribers and API-key users with Claude Code installed |
+| **API key / sampling** (fallback) | CLI not found | Users with `reslava-loom.ai.apiKey` set in VS Code settings |
+
+On the CLI path the button opens a persistent **Loom AI** terminal and runs `claude "<prompt>"`. Claude reads Loom docs, calls the right MCP tools directly, and writes the result back — no API key needed, no separate billing.
+
 Install from the VS Code marketplace: search **`reslava.loom`**.
 
 ---
@@ -258,7 +269,8 @@ No layer imports upward. All MCP tools delegate to `app` — no bypassing.
 | CLI commands | ✅ Shipped |
 | VS Code extension (tree view, toolbar, commands) | ✅ Shipped |
 | MCP server (`loom mcp`, resources, tools, prompts) | ✅ Shipped (v0.5.0) |
-| MCP sampling (VS Code AI buttons via agent) | ✅ Shipped (v0.5.0) |
+| VS Code AI buttons — CLI terminal path (Claude Pro) | ✅ Shipped (v0.6.0) |
+| VS Code AI buttons — API key path (sampling fallback) | ✅ Shipped (v0.5.0) |
 | `loom init` with CLAUDE.md fusion | ✅ Shipped |
 
 ---

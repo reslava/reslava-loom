@@ -102,7 +102,7 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
                 ? this.lastGoodState.weaves.reduce((n, w) => n + w.allDocs.length, 0)
                 : 0;
             const newTotal = newState.weaves.reduce((n, w) => n + w.allDocs.length, 0);
-            const isSuspect = this.lastGoodState !== null && lastTotal > 0 && newTotal < lastTotal * 0.7;
+            const isSuspect = this.lastGoodState !== null && newTotal === 0 && lastTotal > 0;
 
             if (isSuspect) {
                 setTimeout(() => this._onDidChangeTreeData.fire(), 1500);

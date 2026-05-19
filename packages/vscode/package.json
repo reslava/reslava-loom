@@ -2,7 +2,7 @@
   "name": "loom-vscode",
   "displayName": "Loom AI",
   "description": "Weave ideas into features with AI — document‑driven workflow for VS Code",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "publisher": "reslava",
   "license": "MIT",
   "icon": "media/loom.png",
@@ -487,7 +487,7 @@
         },
         {
           "command": "loom.refreshCtx",
-          "when": "view == loom.threads && viewItem == ctx-section && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem == ctx-section",
           "group": "inline@1"
         },
         {
@@ -562,7 +562,7 @@
         },
         {
           "command": "loom.chatReply",
-          "when": "view == loom.threads && viewItem == chat && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem == chat",
           "group": "inline@1"
         },
         {
@@ -572,12 +572,12 @@
         },
         {
           "command": "loom.refineIdea",
-          "when": "view == loom.threads && viewItem =~ /^(idea|loose-idea)/ && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem =~ /^(idea|loose-idea)/",
           "group": "ai@1"
         },
         {
           "command": "loom.generateDesign",
-          "when": "view == loom.threads && viewItem =~ /^idea/ && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem =~ /^idea/",
           "group": "ai@2"
         },
         {
@@ -587,42 +587,42 @@
         },
         {
           "command": "loom.generatePlan",
-          "when": "view == loom.threads && viewItem == design && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem == design",
           "group": "ai@2"
         },
         {
           "command": "loom.refinePlan",
-          "when": "view == loom.threads && viewItem =~ /^plan-/ && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem =~ /^plan-/",
           "group": "ai@1"
         },
         {
           "command": "loom.closePlan",
-          "when": "view == loom.threads && viewItem =~ /^plan-(implementing|done)$/ && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem =~ /^plan-(implementing|done)$/",
           "group": "ai@2"
         },
         {
           "command": "loom.promoteToIdea",
-          "when": "view == loom.threads && viewItem == chat && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem == chat",
           "group": "ai@1"
         },
         {
           "command": "loom.promoteToDesign",
-          "when": "view == loom.threads && viewItem =~ /^(chat|idea|loose-idea)/ && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem =~ /^(chat|idea|loose-idea)/",
           "group": "ai@2"
         },
         {
           "command": "loom.promoteToPlan",
-          "when": "view == loom.threads && viewItem =~ /^(chat|idea|loose-idea|design)/ && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem =~ /^(chat|idea|loose-idea|design)/",
           "group": "ai@3"
         },
         {
           "command": "loom.promoteToReference",
-          "when": "view == loom.threads && viewItem == chat-refs && loom.aiEnabled",
+          "when": "view == loom.threads && viewItem == chat-refs",
           "group": "ai@1"
         },
         {
           "command": "loom.summarise",
-          "when": "view == loom.threads && (viewItem == weave || viewItem =~ /^thread/) && loom.aiEnabled",
+          "when": "view == loom.threads && (viewItem == weave || viewItem =~ /^thread/)",
           "group": "ai@4"
         },
         {

@@ -88,16 +88,36 @@ Right-click any node for the same actions as a context menu.
 
 ---
 
+## AI setup
+
+Every AI button picks its path automatically:
+
+**1. Claude Code CLI (default — recommended)**
+
+If `claude` is on your PATH, buttons open a persistent **Loom AI** terminal and run `claude "<prompt>"`. Claude reads your Loom docs, calls the right MCP tools, and writes the result back. No API key needed — works with a Claude Pro subscription.
+
+```bash
+# Install Claude Code CLI (free with Claude Pro)
+npm install -g @anthropic-ai/claude-code
+```
+
+**2. API key / sampling (fallback)**
+
+If Claude Code CLI is not installed, the extension calls the AI provider directly via its configured API key. Set in VS Code settings:
+
+```
+reslava-loom.ai.apiKey  → your Anthropic / OpenAI / DeepSeek key
+reslava-loom.ai.provider → anthropic | openai | deepseek
+```
+
 ## Settings
 
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `reslava-loom.user.name` | `User` | Your display name in chat headers |
-| `reslava-loom.ai.provider` | `anthropic` | AI provider (anthropic/deepseek/openai) |
-| `reslava-loom.ai.apiKey` | — | API key for the configured provider |
+| `reslava-loom.ai.provider` | `anthropic` | AI provider for API key path (anthropic/deepseek/openai) |
+| `reslava-loom.ai.apiKey` | — | API key (fallback — not needed if Claude Code CLI is installed) |
 | `reslava-loom.ai.model` | — | Model override (blank = provider default) |
-
-**AI configuration:** The extension defaults to Claude (Anthropic). For Claude, set `reslava-loom.ai.apiKey` to your Anthropic API key. You can also use OpenAI or DeepSeek by changing `reslava-loom.ai.provider`.
 
 ---
 

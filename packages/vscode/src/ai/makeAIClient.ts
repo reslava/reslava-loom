@@ -14,7 +14,7 @@ export function makeAIClient(): AIClient {
     const provider = config.get<string>('provider', 'anthropic');
     const defaults = PROVIDER_DEFAULTS[provider] ?? PROVIDER_DEFAULTS['anthropic'];
 
-    const apiKey  = config.get<string>('apiKey', '');
+    const apiKey  = config.get<string>('apiKey', '') || process.env['ANTHROPIC_API_KEY'] || '';
     const model   = config.get<string>('model',   '') || defaults.model;
     const baseUrl = config.get<string>('baseUrl', '') || defaults.baseUrl;
 
