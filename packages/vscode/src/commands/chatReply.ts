@@ -19,8 +19,11 @@ export async function chatReplyCommand(treeProvider: LoomTreeProvider, node?: Tr
     }
 
     if (await isClaudeInstalled()) {
+        const readInstruction = filePath
+            ? `Read the chat file at "${filePath}" using the Read tool (not Bash, not loom_find_doc).`
+            : `Use MCP tool loom_find_doc with id="${chatId}" to get the file path, then read it with the Read tool.`;
         await launchClaude(root, `Loom: Chat Reply`,
-            `Loom chat reply task. chatId="${chatId}". Use the loom MCP server: use MCP tool loom_find_doc with id="${chatId}" to get the file path, read the chat file, understand the conversation, write a reply to the last user message, then use MCP tool loom_append_to_chat with id="${chatId}", role="ai", body="<your reply>". Do not use loom_generate_chat_reply — sampling is unavailable in Claude Code CLI.`
+            `Loom chat reply task. chatId="${chatId}". ${readInstruction} Understand the conversation, write a reply to the last user message, then use MCP tool loom_append_to_chat with id="${chatId}", role="ai", body="<your reply>". Do not use loom_generate_chat_reply — sampling is unavailable. Do not invoke CLI commands via Bash.`
         );
     } else {
         try {

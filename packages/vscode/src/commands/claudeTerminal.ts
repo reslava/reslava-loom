@@ -24,6 +24,20 @@ function getLoomTerminal(root: string): vscode.Terminal {
     return _terminal;
 }
 
+// Quote the prompt for the active VS Code shell (detected from vscode.env.shell,
+// not process.platform — Git Bash on Windows uses POSIX quoting, not PowerShell).
+function quotePrompt(prompt: string): string {
+    const shell = (vscode.env.shell ?? '').toLowerCase();
+    if (shell.includes('powershell') || shell.includes('pwsh')) {
+        return `'${prompt.replace(/'/g, "''")}'`;       // PS: '' is literal '
+    }
+    if (shell.endsWith('cmd.exe') || shell.endsWith('\\cmd')) {
+        return `"${prompt.replace(/"/g, '""')}"`;       // cmd: "" is literal "
+    }
+    // bash, zsh, sh, Git Bash, fish — POSIX single-quote with '\'' escape
+    return `'${prompt.replace(/'/g, "'\\''")}'`;
+}
+
 export async function launchClaude(root: string, terminalName: string, prompt: string): Promise<void> {
     if (!(await isClaudeInstalled())) {
         const action = await vscode.window.showErrorMessage(
@@ -37,6 +51,8 @@ export async function launchClaude(root: string, terminalName: string, prompt: s
     }
     const terminal = getLoomTerminal(root);
     terminal.show();
-    terminal.sendText(`echo "\\n─── ${terminalName} ───"`);
-    terminal.sendText(`claude ${JSON.stringify(prompt)}`);
+    terminal.sendText(`echo "─── ${terminalName} ───"`);
+    // Interactive mode: shows tool calls and progress as Claude works.
+    // --dangerously-skip-permissions: suppresses MCP tool approval prompts.
+    terminal.sendText(`claude --dangerously-skip-permissions ${quotePrompt(prompt)}`);
 }

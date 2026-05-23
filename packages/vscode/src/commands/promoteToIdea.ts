@@ -25,9 +25,13 @@ export async function promoteToIdeaCommand(treeProvider: LoomTreeProvider, node?
     if (targetThreadId) toolArgs['targetThreadId'] = targetThreadId;
 
     if (await isClaudeInstalled()) {
+        const sourceFilePath = (node?.doc as any)?._path as string | undefined;
+        const readInstruction = sourceFilePath
+            ? `Read the source file at "${sourceFilePath}" using the Read tool (not Bash, not loom_find_doc).`
+            : `Use MCP tool loom_find_doc with id="${sourceId}" to get the file path, then read it with the Read tool.`;
         const threadArg = targetThreadId ? `, targetThreadId="${targetThreadId}"` : '';
         await launchClaude(root, `Loom: Promote to Idea`,
-            `Loom promote to idea task. sourceId="${sourceId}", targetWeaveId="${targetWeaveId}"${threadArg}. Use the loom MCP server: use MCP tool loom_find_doc with id="${sourceId}" to read the source doc, use MCP tool loom_create_idea with weaveId="${targetWeaveId}"${targetThreadId ? ` threadId="${targetThreadId}"` : ''}, then use MCP tool loom_update_doc with idea content derived from the source. Do not use loom_promote — sampling is unavailable in Claude Code CLI.`
+            `Loom promote to idea task. sourceId="${sourceId}", targetWeaveId="${targetWeaveId}"${threadArg}. ${readInstruction} Use MCP tool loom_create_idea with weaveId="${targetWeaveId}"${targetThreadId ? ` threadId="${targetThreadId}"` : ''}, then use MCP tool loom_update_doc with idea content derived from the source. Do not use loom_promote — sampling is unavailable in Claude Code CLI. Do not invoke CLI commands via Bash.`
         );
     } else {
         try {

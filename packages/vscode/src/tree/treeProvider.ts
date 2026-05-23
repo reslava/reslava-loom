@@ -36,8 +36,18 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
 
     private filePathToNode = new Map<string, TreeNode>();
     private nodeToParent = new Map<TreeNode, TreeNode>();
+    private weaveIdToNode = new Map<string, TreeNode>();
+    private threadKeyToNode = new Map<string, TreeNode>();
+    private _afterRefreshCallbacks: Array<() => void> = [];
 
     constructor(private viewStateManager: ViewStateManager) {}
+
+    waitForRefresh(): Promise<void> {
+        return new Promise(resolve => {
+            this._afterRefreshCallbacks.push(resolve);
+            this._onDidChangeTreeData.fire();
+        });
+    }
 
     setWorkspaceRoot(root: string | undefined): void {
         this.workspaceRoot = root;
@@ -76,44 +86,57 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
             if (arg instanceof vscode.Uri) {
                 this.filePathToNode.set(arg.fsPath, node);
             }
+            if (node.weaveId && !node.threadId && node.contextValue === 'weave') {
+                this.weaveIdToNode.set(node.weaveId, node);
+            }
+            if (node.weaveId && node.threadId && (node.contextValue as string | undefined)?.startsWith('thread')) {
+                this.threadKeyToNode.set(`${node.weaveId}/${node.threadId}`, node);
+            }
             if (node.children?.length) this.buildNodeMaps(node.children, node);
         }
     }
 
+    getNodeByWeaveId(weaveId: string): TreeNode | undefined {
+        return this.weaveIdToNode.get(weaveId);
+    }
+
+    getNodeByThreadId(weaveId: string, threadId: string): TreeNode | undefined {
+        return this.threadKeyToNode.get(`${weaveId}/${threadId}`);
+    }
+
     private async getRootChildren(): Promise<TreeNode[]> {
+        const pendingCallbacks = this._afterRefreshCallbacks.splice(0);
+
         if (!this.workspaceRoot) {
+            pendingCallbacks.forEach(cb => cb());
             return [this.messageNode('No workspace open')];
         }
 
         const loomDir = path.join(this.workspaceRoot, '.loom');
         if (!fs.existsSync(loomDir)) {
+            pendingCallbacks.forEach(cb => cb());
             return [];
         }
 
         this.filePathToNode.clear();
         this.nodeToParent.clear();
+        this.weaveIdToNode.clear();
+        this.threadKeyToNode.clear();
 
         try {
             const json = await this.readStateWithRetry(this.workspaceRoot);
             const newState = JSON.parse(json) as LoomState;
             this._onMCPStateChange.fire();
+            this.state = newState;
+            this.lastGoodState = newState;
 
-            const lastTotal = this.lastGoodState
-                ? this.lastGoodState.weaves.reduce((n, w) => n + w.allDocs.length, 0)
-                : 0;
-            const newTotal = newState.weaves.reduce((n, w) => n + w.allDocs.length, 0);
-            const isSuspect = this.lastGoodState !== null && newTotal === 0 && lastTotal > 0;
-
-            if (isSuspect) {
-                setTimeout(() => this._onDidChangeTreeData.fire(), 1500);
-            } else {
-                this.state = newState;
-                this.lastGoodState = newState;
+            if (!this.state) {
+                pendingCallbacks.forEach(cb => cb());
+                return [];
             }
 
-            if (!this.state) return [];
-
             if (this.state.weaves.length === 0) {
+                pendingCallbacks.forEach(cb => cb());
                 return [];
             }
 
@@ -186,8 +209,10 @@ export class LoomTreeProvider implements vscode.TreeDataProvider<TreeNode> {
                 nodes.push(this.createRefsSection(globalRefDocs));
             }
             this.buildNodeMaps(nodes, undefined);
+            pendingCallbacks.forEach(cb => cb());
             return nodes;
         } catch (e: any) {
+            pendingCallbacks.forEach(cb => cb());
             console.error('🧵 Failed to load Loom state:', e);
             const isTimeout = e.message?.includes('32001') || e.message?.includes('timed out');
             if (isTimeout) {

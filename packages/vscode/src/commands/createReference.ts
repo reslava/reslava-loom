@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import { getMCP } from '../mcp-client';
-import { LoomTreeProvider } from '../tree/treeProvider';
+import { LoomTreeProvider, TreeNode } from '../tree/treeProvider';
 import { isClaudeInstalled, launchClaude } from './claudeTerminal';
+import { revealDocAfterCreate } from './revealDoc';
 
-export async function createReferenceCommand(treeProvider: LoomTreeProvider): Promise<void> {
+export async function createReferenceCommand(treeProvider: LoomTreeProvider, treeView: vscode.TreeView<TreeNode>): Promise<void> {
     const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
 
@@ -14,11 +15,11 @@ export async function createReferenceCommand(treeProvider: LoomTreeProvider): Pr
 
     try {
         const result = await getMCP(root).callTool('loom_create_reference', { title, ...(description ? { description } : {}) }) as any;
-        treeProvider.refresh();
         if (result?.filePath) {
             const doc = await vscode.workspace.openTextDocument(result.filePath);
             await vscode.window.showTextDocument(doc, { preview: false });
         }
+        revealDocAfterCreate(treeProvider, treeView, result?.filePath);
         if (result?.id) {
             if (await isClaudeInstalled()) {
                 await launchClaude(root, `Loom: Generate Reference`,

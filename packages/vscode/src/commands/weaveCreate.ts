@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { LoomTreeProvider } from '../tree/treeProvider';
+import { LoomTreeProvider, TreeNode } from '../tree/treeProvider';
 
-export async function weaveCreateCommand(treeProvider: LoomTreeProvider): Promise<void> {
+export async function weaveCreateCommand(treeProvider: LoomTreeProvider, treeView: vscode.TreeView<TreeNode>): Promise<void> {
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceRoot) {
         vscode.window.showErrorMessage('No workspace open.');
@@ -25,5 +25,7 @@ export async function weaveCreateCommand(treeProvider: LoomTreeProvider): Promis
 
     await fs.ensureDir(weavePath);
     await fs.ensureDir(path.join(weavePath, 'chats'));
-    treeProvider.refresh();
+    await treeProvider.waitForRefresh();
+    const node = treeProvider.getNodeByWeaveId(weaveId);
+    if (node) treeView.reveal(node, { select: true, focus: true, expand: false });
 }

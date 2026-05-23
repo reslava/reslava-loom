@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { getMCP } from '../mcp-client';
 import { LoomTreeProvider, TreeNode } from '../tree/treeProvider';
+import { revealDocAfterCreate } from './revealDoc';
 
 export async function chatNewCommand(
     treeProvider: LoomTreeProvider,
@@ -26,7 +27,7 @@ export async function chatNewCommand(
             const doc = await vscode.workspace.openTextDocument(result.filePath);
             await vscode.window.showTextDocument(doc);
         }
-        treeProvider.refresh();
+        revealDocAfterCreate(treeProvider, treeView, result?.filePath);
     } catch (e: any) {
         vscode.window.showErrorMessage(`Failed to create chat: ${e.message}`);
     }

@@ -36,5 +36,7 @@ export async function threadCreateCommand(
 
     await fs.ensureDir(threadPath);
     await fs.ensureDir(path.join(threadPath, 'chats'));
-    treeProvider.refresh();
+    await treeProvider.waitForRefresh();
+    const threadNode = treeProvider.getNodeByThreadId(weaveId, threadId);
+    if (threadNode) treeView.reveal(threadNode, { select: true, focus: true, expand: false });
 }

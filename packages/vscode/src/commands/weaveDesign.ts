@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 import { getMCP } from '../mcp-client';
 import { LoomTreeProvider, TreeNode } from '../tree/treeProvider';
 import { handleMcpError } from '../mcpErrorUtils';
+import { revealDocAfterCreate } from './revealDoc';
 
-export async function weaveDesignCommand(treeProvider: LoomTreeProvider, node?: TreeNode): Promise<void> {
+export async function weaveDesignCommand(treeProvider: LoomTreeProvider, treeView: vscode.TreeView<TreeNode>, node?: TreeNode): Promise<void> {
     const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
 
@@ -20,7 +21,7 @@ export async function weaveDesignCommand(treeProvider: LoomTreeProvider, node?: 
     try {
         const result = await getMCP(root).callTool('loom_create_design', { weaveId, threadId, title }) as any;
         vscode.window.showInformationMessage(`🧵 Design woven: ${result.id}`);
-        treeProvider.refresh();
+        revealDocAfterCreate(treeProvider, treeView, result?.filePath);
     } catch (e: any) {
         handleMcpError(e, treeProvider);
     }

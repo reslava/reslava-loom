@@ -12,8 +12,12 @@ export async function refineIdeaCommand(treeProvider: LoomTreeProvider, node?: T
     if (!id) { vscode.window.showErrorMessage('Right-click an idea in the tree to refine it.'); return; }
 
     if (await isClaudeInstalled()) {
+        const filePath = (node?.doc as any)?._path as string | undefined;
+        const readInstruction = filePath
+            ? `Read the idea file at "${filePath}" using the Read tool (not Bash, not loom_find_doc).`
+            : `Use MCP tool loom_find_doc with id="${id}" to get the file path, then read it with the Read tool.`;
         await launchClaude(root, `Loom: Refine Idea`,
-            `Loom refine idea task. ideaId="${id}". Use the loom MCP server: use MCP tool loom_find_doc with id="${id}", read the idea and any parent docs, rewrite the idea body with improvements, then use MCP tool loom_update_doc with id="${id}" and refined body. Do not use loom_refine_idea — sampling is unavailable in Claude Code CLI.`
+            `Loom refine idea task. ideaId="${id}". ${readInstruction} Also read any parent docs. Rewrite the idea body with improvements, then use MCP tool loom_update_doc with id="${id}" and refined body. Do not use loom_refine_idea — sampling is unavailable in Claude Code CLI. Do not invoke CLI commands via Bash.`
         );
     } else {
         try {

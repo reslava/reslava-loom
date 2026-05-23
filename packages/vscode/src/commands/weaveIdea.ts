@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 import { getMCP } from '../mcp-client';
 import { toKebabCaseId } from '@reslava-loom/core/dist';
 import { LoomTreeProvider, TreeNode } from '../tree/treeProvider';
+import { revealDocAfterCreate } from './revealDoc';
 
-export async function weaveIdeaCommand(treeProvider: LoomTreeProvider, node?: TreeNode): Promise<void> {
+export async function weaveIdeaCommand(treeProvider: LoomTreeProvider, treeView: vscode.TreeView<TreeNode>, node?: TreeNode): Promise<void> {
     const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
 
@@ -22,7 +23,7 @@ export async function weaveIdeaCommand(treeProvider: LoomTreeProvider, node?: Tr
     try {
         const result = await getMCP(root).callTool('loom_create_idea', { weaveId, threadId, title }) as any;
         vscode.window.showInformationMessage(`🧵 Idea woven: ${result.id}`);
-        treeProvider.refresh();
+        revealDocAfterCreate(treeProvider, treeView, result?.filePath);
     } catch (e: any) {
         vscode.window.showErrorMessage(`Failed to weave idea: ${e.message}`);
     }

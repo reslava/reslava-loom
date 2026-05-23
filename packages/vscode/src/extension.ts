@@ -121,11 +121,11 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
     context.subscriptions.push(
         vscode.commands.registerCommand('loom.refresh', syncAndRefresh),
         vscode.commands.registerCommand('loom.reconnectMcp', () => { disposeMCP(); syncAndRefresh(); }),
-        vscode.commands.registerCommand('loom.weaveCreate', () => weaveCreateCommand(treeProvider)),
+        vscode.commands.registerCommand('loom.weaveCreate', () => weaveCreateCommand(treeProvider, treeView)),
         vscode.commands.registerCommand('loom.threadCreate', (node?: TreeNode) => threadCreateCommand(treeProvider, treeView, node)),
-        vscode.commands.registerCommand('loom.weaveIdea', (node?: TreeNode) => weaveIdeaCommand(treeProvider, node)),
-        vscode.commands.registerCommand('loom.weaveDesign', (node?: TreeNode) => weaveDesignCommand(treeProvider, node)),
-        vscode.commands.registerCommand('loom.weavePlan', (node?: TreeNode) => weavePlanCommand(treeProvider, node)),
+        vscode.commands.registerCommand('loom.weaveIdea', (node?: TreeNode) => weaveIdeaCommand(treeProvider, treeView, node)),
+        vscode.commands.registerCommand('loom.weaveDesign', (node?: TreeNode) => weaveDesignCommand(treeProvider, treeView, node)),
+        vscode.commands.registerCommand('loom.weavePlan', (node?: TreeNode) => weavePlanCommand(treeProvider, treeView, node)),
         vscode.commands.registerCommand('loom.finalize', (node?: TreeNode) => finalizeCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.rename', (node?: TreeNode) => renameCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.refineDesign', (node?: TreeNode) => refineCommand(treeProvider, node, contextSidebar)),
@@ -163,7 +163,7 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         vscode.commands.registerCommand('loom.markDone', (node?: TreeNode) => markDoneCommand(treeProvider, treeView, node)),
         vscode.commands.registerCommand('loom.markActive', (node?: TreeNode) => markActiveCommand(treeProvider, treeView, node)),
         vscode.commands.registerCommand('loom.restoreItem', (node?: TreeNode) => restoreItemCommand(treeProvider, node)),
-        vscode.commands.registerCommand('loom.createReference', () => createReferenceCommand(treeProvider)),
+        vscode.commands.registerCommand('loom.createReference', () => createReferenceCommand(treeProvider, treeView)),
         vscode.commands.registerCommand('loom.addRequiresLoad', (node?: TreeNode) => addRequiresLoadCommand(node)),
         vscode.commands.registerCommand('loom.refreshCtx', async (node?: TreeNode) => {
             const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;

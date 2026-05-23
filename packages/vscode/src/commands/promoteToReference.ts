@@ -22,8 +22,12 @@ export async function promoteToReferenceCommand(treeProvider: LoomTreeProvider, 
         }
         if (result?.id) {
             if (await isClaudeInstalled()) {
+                const sourceFilePath = (sourceDoc as any)?._path as string | undefined;
+                const readInstruction = sourceFilePath
+                    ? `Read the source file at "${sourceFilePath}" using the Read tool (not Bash, not loom_find_doc).`
+                    : `Use MCP tool loom_find_doc with id="${sourceDoc.id}" to get the file path, then read it with the Read tool.`;
                 await launchClaude(root, `Loom: Generate Reference`,
-                    `Loom generate reference task. referenceId="${result.id}", sourceId="${sourceDoc.id}". Use the loom MCP server: loom_find_doc(id="${sourceDoc.id}") → read the source doc → loom_update_doc(id="${result.id}", body="<reference content derived from source>"). Do not call loom_generate_reference — sampling is unavailable in Claude Code CLI.`
+                    `Loom generate reference task. referenceId="${result.id}", sourceId="${sourceDoc.id}". ${readInstruction} Then use MCP tool loom_update_doc(id="${result.id}", body="<reference content derived from source>"). Do not call loom_generate_reference — sampling is unavailable in Claude Code CLI. Do not invoke CLI commands via Bash.`
                 );
             } else {
                 try {

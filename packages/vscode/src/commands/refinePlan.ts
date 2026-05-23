@@ -15,9 +15,13 @@ export async function refinePlanCommand(treeProvider: LoomTreeProvider, node?: T
     const contextIds = contextSidebar?.getSelectedIds() ?? [];
 
     if (await isClaudeInstalled()) {
+        const filePath = (node?.doc as any)?._path as string | undefined;
+        const readInstruction = filePath
+            ? `Read the plan file at "${filePath}" using the Read tool (not Bash, not loom_find_doc).`
+            : `Use MCP tool loom_find_doc with id="${id}" to get the file path, then read it with the Read tool.`;
         const ctxNote = contextIds.length > 0 ? ` Additional context doc ids: ${JSON.stringify(contextIds)}.` : '';
         await launchClaude(root, `Loom: Refine Plan`,
-            `Loom refine plan task. planId="${id}".${ctxNote} Use the loom MCP server: use MCP tool loom_find_doc with id="${id}", read the plan and its parent design, update the plan steps table to reflect the current design, then use MCP tool loom_update_doc with id="${id}" and updated body. Do not use loom_refine_plan — sampling is unavailable in Claude Code CLI.`
+            `Loom refine plan task. planId="${id}".${ctxNote} ${readInstruction} Also read its parent design. Update the plan steps table to reflect the current design, then use MCP tool loom_update_doc with id="${id}" and updated body. Do not use loom_refine_plan — sampling is unavailable in Claude Code CLI. Do not invoke CLI commands via Bash.`
         );
     } else {
         try {
