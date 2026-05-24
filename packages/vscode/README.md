@@ -57,6 +57,10 @@ The agent then has access to all Loom tools (`loom_create_idea`, `loom_do_step`,
 
 ## The loop
 
+| Weave→ | Thread→ | Chat→ | Idea→ | Design→ | Plan→ | Done |
+|---|---|---|---|---|---|---|
+|<img src="media/icons/weave-implementing.svg" alt="Loom" width="32" />|<img src="media/icons/thread-implementing.svg" alt="Loom" width="32" />|<img src="media/icons/chat.svg" alt="Loom" width="32" />|<img src="media/icons/idea.svg" alt="Loom" width="32" />|<img src="media/icons/design.svg" alt="Loom" width="32" />|<img src="media/icons/plan-implementing.svg" alt="Loom" width="32" />|<img src="media/icons/status-done.svg" alt="Loom" width="32" />|
+
 1. **Chat** — open a chat doc, think out loud with the AI.
 2. **Idea** — click *Generate Idea* to formalize what you want to build.
 3. **Design** — click *Generate Design* to define how to build it.

@@ -1,9 +1,14 @@
-# 🧵 Loom
+# <img src="packages/vscode/media/loom.png" alt="Loom" width="32" /> Loom
 
 **Document-native workflow for AI-assisted development.**
 
 Loom gives AI agents structured, scoped, persistent context — so every session is as sharp
 as the first, and every decision is traceable.
+
+| Context | Reference |
+|---|---|
+|<img src="packages/vscode/media/icons/ctx.svg" alt="Loom" width="32" />|<img src="packages/vscode/media/icons/reference.svg" alt="Loom" width="32" />|
+
 
 > *"The workflow of serious projects needs to be organised and persistent: ideas, designs,
 > plans, reference material, appropriate context. Documents represent the state of the project —
@@ -150,6 +155,10 @@ The agent owns code execution. Loom owns workflow state. Each stays in its lane.
 ---
 
 ## The Workflow
+
+| Weave→ | Thread→ | Chat→ | Idea→ | Design→ | Plan→ | Done |
+|---|---|---|---|---|---|---|
+|<img src="packages/vscode/media/icons/weave-implementing.svg" alt="Loom" width="32" />|<img src="packages/vscode/media/icons/thread-implementing.svg" alt="Loom" width="32" />|<img src="packages/vscode/media/icons/chat.svg" alt="Loom" width="32" />|<img src="packages/vscode/media/icons/idea.svg" alt="Loom" width="32" />|<img src="packages/vscode/media/icons/design.svg" alt="Loom" width="32" />|<img src="packages/vscode/media/icons/plan-implementing.svg" alt="Loom" width="32" />|<img src="packages/vscode/media/icons/status-done.svg" alt="Loom" width="32" />|
 
 ```
 0. Chat      → think with the AI, explore the problem space
