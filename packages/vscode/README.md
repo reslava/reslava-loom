@@ -108,7 +108,7 @@ The token counts let you see exactly how much context the AI will receive before
 
 Every AI button picks its path automatically:
 
-**1. Claude Code CLI (default — recommended)**
+**1. Claude Code CLI (default)**
 
 If `claude` is on your PATH, buttons open a persistent **Loom AI** terminal and run `claude "<prompt>"`. Claude reads your Loom docs, calls the right MCP tools, and writes the result back. No API key needed — works with a Claude Pro subscription.
 
