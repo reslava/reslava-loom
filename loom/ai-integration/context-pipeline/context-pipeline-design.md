@@ -4,8 +4,8 @@ id: de_01KSG5XTNGXB2KPE448CA5B586
 title: Unified Context Pipeline
 status: draft
 created: "2026-05-25T00:00:00.000Z"
-updated: "2026-05-25T00:00:00.000Z"
-version: 3
+updated: 2026-05-27
+version: 4
 tags: []
 parent_id: id_01KSDJ2C59Z1XY11W336B0W9YS
 requires_load: []
@@ -20,8 +20,12 @@ requires_load: []
 
 **Consumes (does not re-own):**
 - [[showing-docs-loaded]] — the visibility line format. This thread *produces* the data; that thread defines how it's rendered.
-- [[load-when]] — the `load_when` filter (Phase 2). The filter logic lives *inside* the assembler but the field design is that thread's.
-- [[reference-load-context]] — the `load: always | by-request` axis (Phase 2). Same: gate lives in the assembler, field design is that thread's.
+
+**Absorbed (Option C, 2026-05-27 — these threads are now superseded and archived):**
+- [[load-when]] — the `load_when` filter **and** its field design. Both the gate logic and the `load_when: string[]` frontmatter field now land in **Phase 2 of this thread**.
+- [[reference-load-context]] — the `load: always | by-request` axis **and** its field design. Both land in Phase 2 here.
+
+  Rationale: both threads predated this pipeline and were written for the old `getAIContext` path that no longer exists; their context-filtering content is fully superseded by the assembler. Their VS Code tree-view UX (References section, 📌 icon, `load_when` tooltip tags) rides with the **Phase 3** sidebar CONTEXT work — not lost, just relocated to its proper owner. See §14.
 
 **Non-goals:** background/automatic context loading (pipeline runs only on a button-triggered command), changing how docs are authored, or any model-specific prompt engineering (the bundle is agent-agnostic).
 
@@ -34,7 +38,7 @@ Verified against `packages/core/src/entities`:
 - **Scope is positional, not a frontmatter field.** A ctx/ref doc's scope is derived from *where it lives*: `globalDocs` → `global`; a weave's `allDocs`/`looseFibers` → `weave`; a thread's `allDocs` → `thread`. The assembler needs a small `classifyScope(doc, state)` helper; there is no `scope:` key to read.
 - `ReferenceDoc` today has `slug` and `loadWhen?: string | null` (reserved, **singular string**) — but **no `load` field**. So:
   - Phase 1 treats all `ctx` docs as implicitly `load: always` and ignores `load_when`.
-  - Phase 2 adds the real `load` (enum) and widens `load_when` to `string[]` in the type + frontmatter (coordinated with [[reference-load-context]] and [[load-when]]).
+  - Phase 2 adds the real `load` (enum) and widens `load_when` to `string[]` in the type + frontmatter (absorbed from the now-archived [[reference-load-context]] and [[load-when]] threads — see §1 and §14).
 - Staleness signals already exist (plan `design_version`, ctx `source_version`, generation timestamps). The assembler **reuses existing staleness helpers** — it does not reinvent stale detection.
 
 ## 3. The `ContextBundle` type
@@ -228,9 +232,9 @@ Plus one MCP integration test that spawns `loom mcp`, reads `loom://context/{id}
 
 | Phase | Ships | Code |
 |---|---|---|
-| **P1** | core pipeline + chat-reply + do-step; auto-load + `requires_load` only | `core/ContextBundle`, `app/context/assembleContext.ts`, `loom://context` resource, wire `chatReply` + `do-next-step`, **delete** `threadContext.ts` + `loom://thread-context` |
-| **P2** | `load_when` filter + `load` axis | add `load`/widen `load_when` to types+frontmatter; step 3 of algorithm |
-| **P3** | sidebar CONTEXT UX (user override) | `.loom/context-prefs.json` read/write; sidebar toggles; step 5 |
+| **P1 ✅** | core pipeline + chat-reply + do-step; auto-load + `requires_load` only | `core/ContextBundle`, `app/context/assembleContext.ts`, `loom://context` resource, wire `chatReply` + `do-next-step`, **delete** `threadContext.ts` + `loom://thread-context` |
+| **P2** | `load_when` filter + `load` axis (**absorbed from [[load-when]] + [[reference-load-context]], now archived — see §14**) | add `load`/widen `load_when` to types+frontmatter; step 3 of algorithm |
+| **P3** | sidebar CONTEXT UX (user override) — **also lands the absorbed threads' tree-view UX** (References section, 📌 icon, `load_when` tooltip tags) | `.loom/context-prefs.json` read/write; sidebar toggles; step 5 |
 | **P4** | wire remaining AI commands | refine*/promote*/generate*/refreshCtx all call the assembler |
 | **P5** | token budget + summarisation | budget config; eviction (prefer ctx over source, drop oldest done first, never user-included) |
 
@@ -241,7 +245,19 @@ Phase order confirmed against Rafa's "sidebar CONTEXT UX as its own phase" note.
 - **Cross-thread `[[link]]` context** (idea's suggestion): pull a referenced thread's ctx one level deep, opt-in via `link_load`. Deferred — bounded value, unbounded cost risk; revisit after P1.
 - **Ctx cache freshness** (auto-regen vs stale-badge): recommend the stale-badge (option b) but it belongs to the ctx/refresh thread, not here. The assembler only *marks* stale; it never regenerates.
 - **`continue-thread` / `validate-state` prompts**: do they also route through the assembler? Probably yes in P4; not decided.
+- **Thread/weave ctx auto-load is inert** (P1 status): `getState`/`loadThread` don't yet load `ctx/` subdirs into `LoomState`, so the assembler can't surface weave/thread ctx yet. Belongs with the ctx-naming / global-ctx threads. The assembler is forward-compatible. This also gates *ctx* `load_when` filtering in P2 — *reference* filtering works without it.
 
-## Next
+## 14. Consolidation — `load`/`load_when` absorbed (Option C, 2026-05-27)
 
-Both flagged calls are settled (§5 serialisation = markdown-with-provenance; §7 migration = replace-immediately, zero legacy). Next artifact is `context-pipeline-plan-001.md` scoped to **Phase 1 only**.
+**Decision (Rafa, 2026-05-27):** the two pre-existing threads that owned reference context-loading control are **consolidated into this pipeline**:
+
+- `load-when` (`de_01KQYDFDD8YN5CJTDPMB5W2DBJ`) — owned `load_when: [mode…]`.
+- `reference-load-context` (`de_01KQYDFDD9Z844XJV7XDHB92FP`) — owned `load: always | by-request`.
+
+Both were authored (Apr 2026) against the old `getAIContext(doc, mode)` context path, which no longer exists — the assembler is now the single owner of "what the AI knows before it acts." Keeping them as separate living threads would split context-filtering ownership across three docs and leave two near-orphaned stubs.
+
+**What moves where:**
+- **Fields + filtering** (the `load` enum, the `load_when: string[]` field, and the assembler's step-3 filter) → **this thread's Phase 2** (`context-pipeline-plan-002`).
+- **VS Code tree-view UX** (References tree section, 📌 `load: always` icon, `load_when` tooltip tags) → **Phase 3** sidebar CONTEXT work, where the rest of the context UX lives.
+
+**Action taken:** both threads' designs were marked superseded and **archived** to `.archive/`. Their content is preserved there for provenance; this pipeline is the live owner going forward.

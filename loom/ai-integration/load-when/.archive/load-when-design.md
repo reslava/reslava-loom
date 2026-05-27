@@ -4,13 +4,15 @@ id: de_01KQYDFDD8YN5CJTDPMB5W2DBJ
 title: Reference Context Filtering by Operation Mode (load_when)
 status: active
 created: "2026-04-23T00:00:00.000Z"
-version: 1
+updated: 2026-05-27
+version: 2
 tags: [reference, ai, context, frontmatter, load_when]
 parent_id: null
 requires_load: [de_01KQYDFDD9Z844XJV7XDHB92FP]
 ---
-
 # Reference Context Filtering by Operation Mode (load_when)
+
+> ⚠️ **SUPERSEDED & ARCHIVED (2026-05-27).** Absorbed into the Unified Context Pipeline (Option C). The `load_when` field + its filtering now land in `context-pipeline-plan-002` (Phase 2); the VS Code tree-view UX rides with the Phase 3 sidebar CONTEXT work. Authoritative record: `context-pipeline-design.md` §14. This design was written for the old `getAIContext(doc, mode)` path that no longer exists — kept for provenance only, not a live design.
 
 ## Relationship to `reference-load-context-design`
 

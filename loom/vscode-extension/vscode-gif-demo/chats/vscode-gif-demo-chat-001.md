@@ -1144,3 +1144,154 @@ Net: completing a step on one plan corrupts sibling plans that have post-table h
 Questions: (a) OK to `git restore` the 6 siblings? (b) Fix bug #1 now and include it in this commit, or separate? (c) `runEvent`/`saveWeave` — new thread, or in scope now? (d) Should I exclude `.claude/settings.local.json` from the commit (it's local session settings)?
 
 **STOP** — waiting for your direction before any `git restore`, fix, or commit.
+
+## AI:
+
+**Committed + pushed — `aab2ccc` → origin/main.** 38 files, +2269 / −189.
+
+All four follow-ups (a–d) are now closed:
+- **(a)** 6 corrupted ai-integration siblings restored to HEAD before staging.
+- **(b)** Truncation bug fixed in `planTableUtils.ts` — boundary lookahead widened `#{1,2}` → `#{1,6}` in both `parseStepsTable` and `updateStepsTableInContent`, so an `### Notes`/`### Legend` section right after the steps table survives save round-trips. Regression test `tests/plan-table-utils.test.ts` covers it.
+- **(c)** `runEvent → saveWeave` whole-weave re-save blast radius captured as a follow-up idea: `loom/core-engine/event-save-scope/event-save-scope-idea.md` (not fixed here — it's a wider change to the save path; flagged for its own thread).
+- **(d)** `.claude/settings.local.json` excluded from the commit (still modified in the working tree).
+
+Phase 1 of the Unified Context Pipeline is in: pure `assembleContext` + `serializeBundle`, the `loom://context/{docId}` and `loom://context/thread/{weaveId}/{threadId}` resource, all 7 callers migrated (no legacy alias), `threadContext.ts` deleted, plan mini-table removed at the root. `build-all.sh` + `test-all.sh` both green before commit.
+
+Next: Phase 2 planning (deferred until Phase 1 is tested in real sessions), and the `event-save-scope` thread when you want to tackle the save-path blast radius.
+
+## Rafa:
+
+Enumerate steps tp test Phase 1 
+Create plan Phase 2
+Briefly detail `event-save-scope`
+
+
+## AI:
+
+Three answers below. I've **not** created the Phase 2 plan doc yet — there's one cross-thread scope decision to settle first (see §2), so I'm presenting the breakdown and stopping for your call before `loom_create_plan`.
+
+---
+
+## 1 — Steps to test Phase 1
+
+**A. Automated (already wired, just re-run as the gate):**
+1. `./scripts/build-all.sh` → `./scripts/test-all.sh` — must be green. The Phase 1 coverage lives in `tests/context-assembler.test.ts` (scope ordering, requires_load transitive + cycle, missing→placeholder, override precedence, stale flag), `tests/plan-table-utils.test.ts` (truncation regression), and the MCP integration test (reads `loom://context/{id}` and asserts provenance headers).
+
+**B. Manual / real-repo (the behaviour the unit tests can't prove):**
+2. **Resource — doc form.** Read `loom://context/{a real chat id}?mode=chat`. Assert: the `<!-- loom:context-bundle … -->` comment, ordered sections, global `loom/ctx.md` present, each `### [scope type] Title · id` header correct, `---` separators.
+3. **Resource — thread form.** Read `loom://context/thread/{weave}/{thread}?mode=design`. Assert it anchors on the thread's design (`design ?? idea ?? active plan ?? first doc`).
+4. **requires_load.** Pick a doc that points at the vision/workflow reference slugs → assert those refs appear last in order. Then point a `requires_load` at a bogus id → assert `### ⚠️ requires_load target missing: <id>` placeholder + an `excluded` entry with reason `missing`.
+5. **Stale flag.** A plan whose `design_version` < its design's version → header shows `⚠️ stale: …`; the doc is flagged, not dropped.
+6. **chatReply (extension).** Click **Reply** on a thread chat → confirm the serialised bundle is prepended to the launched prompt and the `📄 {Title} — loaded for context` lines print in the *Loom Context* output channel. This is the original demo bug — the agent should answer without grepping the repo.
+7. **doStep / do-next-step.** Run a step → confirm an `implementing`-mode bundle (idea + design + active plan) is injected.
+8. **Negative / known-gap confirmation.** Weave & thread ctx are **not** surfaced yet (`getState`/`loadThread` don't load `ctx/` subdirs) — only global `loom/ctx.md`. Confirm this is silent-absent, not an error. Documented gap, expected.
+9. **Migration regression.** Grep the tree: **zero** `loom://thread-context` references survive, and all 7 migrated callers resolve.
+
+---
+
+## 2 — Phase 2 plan: one decision before I write it
+
+Per the design (§1, §12), **Phase 2 = the `load_when` filter + the `load: always | by-request` axis** (step 3 of the assembler algorithm). The catch is ownership: the design explicitly says the *field design* for both belongs to sibling threads — **[[load-when]]** (`load_when`) and **[[reference-load-context]]** (`load`) — while only the **gate logic lives inside the assembler**.
+
+So the decision is **scope**:
+
+- **Option A — self-contained.** This Phase 2 plan defines the `load` enum + widens `load_when` to `string[]` in `ReferenceDoc` + frontmatter *and* implements the assembler filter. Absorbs the two sibling threads' field design. Fastest, one PR — but it pre-empts threads that are supposed to own those fields.
+- **Option B — gate-only, depends on siblings (recommended).** load-when + reference-load-context land the field design first; this plan implements only the assembler's step-3 filter + tests against those fields. Cleaner ownership, honours the design's stated boundaries — but it's blocked-by two threads that aren't planned yet.
+
+There's also a **prerequisite worth naming**: ctx-doc filtering by `load_when` is only meaningful once weave/thread ctx actually load into state — and that's the inert getState gap (owned by ctx-naming / global-ctx). Reference-doc filtering works today regardless. So even under Option B, Phase 2 can ship *reference* filtering immediately and ctx filtering follows the getState work.
+
+**My recommendation: Option B**, scoped to reference-doc `load`/`load_when` filtering, with ctx filtering deferred behind the getState gap. It keeps thread ownership clean (your standing "no legacy / correct-path" preference) and isn't blocked on the bigger getState refactor.
+
+**Which option do you want?** Once you pick, I'll draft `context-pipeline-plan-002.md` accordingly.
+
+---
+
+## 3 — `event-save-scope` (brief)
+
+Captured as `loom/core-engine/event-save-scope/event-save-scope-idea.md` (id `id_01KSGJSN9N8DHX4G7M2P281BMS`).
+
+**Problem:** `runEvent` → `loadWeave` → `applyEvent` → `saveWeave`, and `saveWeave` re-serialises **every doc in the weave**, not just the one the event changed. So a single `loom_complete_step` on one plan rewrites every idea/design/plan/done/chat in that weave. That's exactly what turned the Phase 1 truncation bug into six-doc corruption — the blast radius amplified an isolated bug into collateral data loss.
+
+**Fix direction:** a workflow event mutates one doc (at most one thread); `runEvent` should persist only what changed — reducers report the touched doc id(s) (cleaner than diffing the weave), and `runEvent` calls `saveDoc` on just those. Keep `saveWeave` for genuine bulk ops (migrations). Bounds blast radius *and* kills the spurious git churn from re-normalising untouched docs.
+
+**Status:** idea only, not planned. Pure core/app concern, no MCP/extension surface. The truncation fix already shipped stops the data loss; this is defence-in-depth so a future save-path regression can't spread.
+
+---
+
+**STOP** — waiting on the Option A vs B call for §2 before drafting the Phase 2 plan.
+
+## Rafa:
+
+Quick questions before proceed:
+If i pick B, when we finish it
+`load-when` `reference-load-context weaves` will be still pending?
+
+`event-save-scope` is also pending, correct?
+
+## AI:
+
+Checked both — and the honest answer reframes the A/B choice. First, a terminology fix: `load-when` and `reference-load-context` are **threads** inside the `ai-integration` weave, not weaves.
+
+**Current state of the two threads (I just read both):**
+
+| Thread | Design | Plan / impl | Owns |
+|---|---|---|---|
+| `reference-load-context` | status `done` | none | `load: always \| by-request` field + scope resolution + a 📌 tree icon |
+| `load-when` | status `active` | none | `load_when: [mode…]` field + per-mode filtering + References tree section / tooltip tags (depends on reference-load-context) |
+
+Each design actually carries **three** parts: (1) the entity **field**, (2) the **context-assembly filtering** that reads it, (3) **VS Code tree-view UX** (References section, 📌 icon, `load_when` tags in tooltips).
+
+**So: "if I pick B, when we finish, are those threads still pending?"** — **Partly yes.** Part (2), the filtering, *is* the context-pipeline assembler's step-3 — that's literally what P2 builds. And you can't filter on fields that don't exist, so part (1) the fields must land with it. But part (3), the **VS Code tree UX**, is not in the pipeline's scope at all. So a B-scoped P2 would consume parts 1+2 and leave the **UX portions of both threads still pending**.
+
+That's messy ownership — two threads left as UX-only stubs. Which points at a cleaner third option:
+
+- **Option C — consolidate (worth considering).** The pipeline design (§1) already declares itself the home of filtering ("the gate lives in the assembler"). The pipeline is now the single owner of *what the AI knows before it acts*; `reference-load-context` (Apr 21) and `load-when` (Apr 23) both predate it and were written for the old `getAIContext` path that no longer exists. So: fold parts 1+2 (fields + filtering) into context-pipeline **P2**, and re-scope the two old threads down to **just their VS Code tree UX** — or roll that UX into the **P3 sidebar CONTEXT** work and **archive** the two threads entirely. Result: zero orphaned stubs, one owner for context filtering. This matches your standing preference for clean ownership over legacy fragments.
+
+My updated recommendation: **Option C** — absorb fields+filtering into P2, and let the tree-view UX ride with P3's sidebar work (archive the two threads, since their non-UX content is fully superseded by the pipeline design). If you'd rather keep them as living threads, Option B + a follow-up note on each that their filtering moved to the pipeline.
+
+**Q2 — `event-save-scope`:** correct, **pending**. Idea only (`id_01KSGJSN9N8DHX4G7M2P281BMS`), no design, no plan, not implemented. The shipped truncation fix stopped the data loss; this thread is the unstarted defence-in-depth (narrow the save scope).
+
+**STOP** — pick A, B, or C and I'll draft `context-pipeline-plan-002.md` (and, for C, handle the two thread archives/re-scopes cleanly).
+
+## Rafa:
+
+Option C
+Create plan Phase 2, consolidate and absorb, archive old threads
+
+Create design and plan for `event-save-scope`
+
+## AI:
+
+Option C executed — all five artifacts created/updated. Nothing built or committed yet; these are planning docs awaiting your review.
+
+**1. Pipeline design updated** (`de_01KSG5XTNGXB2KPE448CA5B586`)
+- §1: the `load-when` / `reference-load-context` bullets moved from *Consumes* to a new **Absorbed** block (with the why + where the tree UX goes).
+- §2 + §12: P2 row now notes the absorption; P3 row now owns the absorbed threads' tree-view UX.
+- New **§14 — Consolidation (Option C, 2026-05-27)**: the decision, what moves where, both archived doc ids. This is the authoritative record.
+
+**2. Phase 2 plan created** — `context-pipeline-plan-002.md` (`pl_01KSNAAWE8FWDV91GCBQ8E4GRF`), 5 steps: `load` enum + `load_when: string[]` on the entity → fs parse/serialize → assembler step-3 filter (`load_when-filter` exclude reason) → test matrix → reference-doc update + green build. Reference filtering ships; ctx filtering stays gated behind the inert getState ctx-load gap; tree UX is P3.
+- ⚠️ Caught + fixed a latent bug: the generated step 1 had a literal `|` inside a `` `load: 'always' | 'by-request'` `` code span — `parseStepsTable` splits rows on `|`, so the next `complete_step` would have mis-parsed and corrupted that row. Rephrased to avoid the embedded pipe. (Same class as the truncation bug — worth a guard in `loom_create_plan`/`generateStepsTable` to escape or reject `|` in step text; flagging, not fixing here.)
+
+**3. event-save-scope design created** (`de_01KSNACN3T97M7HVG3K0W3WBQB`)
+- Decision: **reducers report the changed doc id(s)**; `applyEvent` returns `{ weave, changed }`; `runEvent` saves only those.
+- Explicitly **rejects** the cheaper serialize-and-diff route, with the key reasoning: a diff is computed from serialiser output, so a non-idempotent save path makes an *untouched* doc look "changed" and gets written — i.e. diff-derived would **not** have prevented the corruption. Only a serialisation-independent signal bounds the blast radius.
+
+**4. event-save-scope plan created** — `event-save-scope-plan-001.md` (`pl_01KSNAFC9TT66GV1BVF761A8KF`), 5 steps in dependency order: reducers → `applyEvent` → `runEvent` → callers → tests (incl. the regression: complete-step leaves every sibling file byte-identical).
+
+**5. Both threads archived** (banner-noted first, pointing at pipeline §14):
+- `load-when` → `loom/ai-integration/load-when/.archive/load-when-design.md`
+- `reference-load-context` → `loom/ai-integration/reference-load-context/.archive/reference-load-context-design.md`
+
+---
+
+**Next — your call:**
+- **Commit** these planning docs (design update + 2 plans + design + 2 archives)?
+- **Which to implement first** — context-pipeline **Phase 2**, or **event-save-scope** (the save-scope hardening is arguably higher-value as defence-in-depth before more event-driven work)?
+
+**STOP** — waiting on commit + implementation-order direction.
+
+## RAFA:
+
+1. commit
+2. implement event-save-scope and fix bug you mentioend in line 1273
+3. commit
