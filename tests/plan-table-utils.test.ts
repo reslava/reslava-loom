@@ -1,5 +1,5 @@
 import { assert } from './test-utils.ts';
-import { updateStepsTableInContent, parseStepsTable } from '../packages/core/dist/index.js';
+import { updateStepsTableInContent, parseStepsTable, generateStepsTable } from '../packages/core/dist/index.js';
 
 const STEPS = [
     { order: 1, description: 'First step', done: true, files_touched: [], blockedBy: [] },
@@ -81,6 +81,29 @@ async function run() {
         assert(parsed.length === 2, `expected 2 steps, got ${parsed.length}`);
         assert(parsed[0].done === true && parsed[1].done === false, 'done flags parsed correctly');
         console.log('    ✅ parsed exactly the 2 table rows');
+    }
+
+    // ── A literal pipe in a step description survives generate → parse ──
+    // Bug: a description like "load: 'always' | 'by-request'" split on '|' and
+    // spilled across columns, corrupting the row on the next table rewrite.
+    console.log('  • a step description containing a literal | round-trips losslessly...');
+    {
+        const steps = [
+            { order: 1, description: "Add `load: 'always' | 'by-request'` field", done: false, files_touched: [], blockedBy: [] },
+            { order: 2, description: 'Plain step', done: true, files_touched: [], blockedBy: [] },
+        ];
+        const table = generateStepsTable(steps);
+        assert(table.includes('\\|'), 'the literal pipe is escaped in the generated table');
+
+        const body = `## Steps\n\n${table}\n`;
+        const parsed = parseStepsTable(body);
+        assert(parsed.length === 2, `expected 2 steps, got ${parsed.length}`);
+        assert(
+            parsed[0].description === "Add `load: 'always' | 'by-request'` field",
+            `description must round-trip with its pipe intact, got: ${parsed[0].description}`,
+        );
+        assert(parsed[0].done === false && parsed[1].done === true, 'done flags survive the pipe-escaped row');
+        console.log('    ✅ pipe-bearing description round-trips intact');
     }
 
     console.log('\n✅ planTableUtils tests passed\n');

@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { runEvent } from '../../../app/dist/runEvent';
 import { loadWeave} from '../../../fs/dist';
-import { saveWeave } from '../../../fs/dist';
+import { saveDocs } from '../../../fs/dist';
 import { getActiveLoomRoot } from '../../../fs/dist';
 
 export async function refineCommand(weaveId: string): Promise<void> {
@@ -14,7 +14,7 @@ export async function refineCommand(weaveId: string): Promise<void> {
             return thread;
         };
 
-        await runEvent(weaveId, { type: 'REFINE_DESIGN' }, { loadWeave: loadWeaveOrThrow, saveWeave, loomRoot });
+        await runEvent(weaveId, { type: 'REFINE_DESIGN' }, { loadWeave: loadWeaveOrThrow, saveDocs, loomRoot });
         console.log(chalk.green(`🧵 REFINE_DESIGN applied to thread '${weaveId}'`));
         console.log(chalk.gray(`   Design version incremented. Dependent plans marked stale.`));
     } catch (e: any) {

@@ -2,7 +2,7 @@ import * as path from 'path';
 import { ensureDir, pathExists, remove, readdir } from 'fs-extra';
 import { assert, mockAIClient } from './test-utils.ts';
 import { setupWorkspace, seedWeaveWithThread, seedThread, seedLooseFiber, seedDoneInThread, fileExists, readFile } from './workspace-utils.ts';
-import { loadWeave, saveWeave, saveDoc } from '../packages/fs/dist/index.js';
+import { loadWeave, saveDocs, saveDoc } from '../packages/fs/dist/index.js';
 import { completeStep } from '../packages/app/dist/completeStep.js';
 import { closePlan } from '../packages/app/dist/closePlan.js';
 import { doStep } from '../packages/app/dist/doStep.js';
@@ -17,7 +17,7 @@ const fsDeps = {
 
 function makeRunEvent(loomRoot: string) {
     return (weaveId: string, event: any) =>
-        runEvent(weaveId, event, { loadWeave: loadWeave as any, saveWeave, loomRoot });
+        runEvent(weaveId, event, { loadWeave: loadWeave as any, saveDocs, loomRoot });
 }
 
 function makeLoadWeave(loomRoot: string) {

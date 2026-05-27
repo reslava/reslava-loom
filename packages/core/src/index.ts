@@ -45,7 +45,7 @@ export { planReducer } from './reducers/planReducer';
 // ============================================================================
 // Core Utilities
 // ============================================================================
-export { applyEvent } from './applyEvent';
+export { applyEvent, ApplyResult } from './applyEvent';
 export { getWeaveStatus, getWeavePhase, isPlanStale, getStalePlans, getThreadStatus } from './derived';
 export { createBaseFrontmatter, serializeFrontmatter } from './frontmatterUtils';
 export { generateDocId, parseDocId, isUlidId, toKebabCaseId, ensureUniqueId, generateTempId, generatePermanentId, generatePlanId, generateChatId } from './idUtils';

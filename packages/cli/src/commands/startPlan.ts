@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { runEvent } from '../../../app/dist/runEvent';
 import { loadWeave} from '../../../fs/dist';
-import { saveWeave } from '../../../fs/dist';
+import { saveDocs } from '../../../fs/dist';
 import { getActiveLoomRoot, resolveWeaveIdForPlan } from '../../../fs/dist';
 
 export async function startPlanCommand(planId: string): Promise<void> {
@@ -23,7 +23,7 @@ export async function startPlanCommand(planId: string): Promise<void> {
         }
 
         const runEventWithDeps = (tid: string, evt: any) =>
-            runEvent(tid, evt, { loadWeave: loadWeaveOrThrow, saveWeave, loomRoot });
+            runEvent(tid, evt, { loadWeave: loadWeaveOrThrow, saveDocs, loomRoot });
 
         if (plan.status === 'draft') {
             await runEventWithDeps(weaveId, { type: 'ACTIVATE_PLAN', planId });

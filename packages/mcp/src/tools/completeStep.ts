@@ -1,4 +1,4 @@
-import { loadWeave, saveWeave } from '../../../fs/dist';
+import { loadWeave, saveDocs } from '../../../fs/dist';
 import { runEvent } from '../../../app/dist/runEvent';
 import { completeStep as completeStepUseCase } from '../../../app/dist/completeStep';
 
@@ -27,7 +27,7 @@ export async function handle(root: string, args: Record<string, unknown>) {
     const deps = {
         loadWeave: loadWeaveStrict,
         runEvent: (weaveId: string, event: any) =>
-            runEvent(weaveId, event, { loadWeave: loadWeaveStrict, saveWeave, loomRoot: root }),
+            runEvent(weaveId, event, { loadWeave: loadWeaveStrict, saveDocs, loomRoot: root }),
         loomRoot: root,
     };
 

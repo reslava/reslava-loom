@@ -7,7 +7,7 @@ import { ChatDoc } from '../../../core/dist/entities/chat';
 import { loadDoc, FrontmatterParseError } from '../serializers/frontmatterLoader';
 import { saveDoc } from '../serializers/frontmatterSaver';
 import { listThreadDirs } from '../utils/pathUtils';
-import { loadThread, saveThread } from './threadRepository';
+import { loadThread, saveThread, docPathInThread } from './threadRepository';
 import { LinkIndex } from '../../../core/dist/linkIndex';
 
 export async function loadWeave(loomRoot: string, weaveId: string, index?: LinkIndex, overrideWeavePath?: string): Promise<Weave | null> {
@@ -90,6 +90,43 @@ export async function saveWeave(loomRoot: string, weave: Weave): Promise<void> {
     }
 
     for (const chat of weave.chats) {
+        const filePath = (chat as any)._path ?? path.join(weavePath, 'chats', `${chat.id}.md`);
+        await saveDoc(chat, filePath);
+    }
+}
+
+/**
+ * Persist ONLY the documents whose ids are in `docIds`, leaving every other
+ * doc in the weave untouched on disk. This is the single-event save path:
+ * `runEvent` passes the `changed` set from `applyEvent` so a workflow event
+ * rewrites exactly the docs it mutated — bounding the blast radius (a
+ * non-idempotent save path can never corrupt an unchanged sibling) and
+ * eliminating spurious re-serialisation churn. `saveWeave` remains for genuine
+ * bulk operations (migrations). See loom/core-engine/event-save-scope.
+ */
+export async function saveDocs(loomRoot: string, weave: Weave, docIds: string[]): Promise<void> {
+    const wanted = new Set(docIds);
+    if (wanted.size === 0) return;
+
+    const weavePath = path.join(loomRoot, 'loom', weave.id);
+
+    for (const thread of weave.threads) {
+        const threadPath = path.join(weavePath, thread.id);
+        for (const doc of thread.allDocs) {
+            if (!wanted.has(doc.id)) continue;
+            const filePath = (doc as any)._path ?? docPathInThread(doc, threadPath, thread.id);
+            await saveDoc(doc, filePath);
+        }
+    }
+
+    for (const fiber of weave.looseFibers) {
+        if (!wanted.has(fiber.id)) continue;
+        const filePath = (fiber as any)._path ?? path.join(weavePath, `${fiber.id}.md`);
+        await saveDoc(fiber, filePath);
+    }
+
+    for (const chat of weave.chats) {
+        if (!wanted.has(chat.id)) continue;
         const filePath = (chat as any)._path ?? path.join(weavePath, 'chats', `${chat.id}.md`);
         await saveDoc(chat, filePath);
     }

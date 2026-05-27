@@ -44,6 +44,9 @@ run_test tests/context-assembler.test.ts
 # Plan table utils: steps-table rewrite must not truncate trailing sections
 run_test tests/plan-table-utils.test.ts
 
+# Event save scope: a single event persists only the doc it changed (no blast radius)
+run_test tests/event-save-scope.test.ts
+
 # Step 7: summarise use-case (mock AI)
 run_test tests/summarise.test.ts
 

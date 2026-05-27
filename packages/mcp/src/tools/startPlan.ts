@@ -1,4 +1,4 @@
-import { loadWeave, saveWeave, resolveWeaveIdForPlan } from '../../../fs/dist';
+import { loadWeave, saveDocs, resolveWeaveIdForPlan } from '../../../fs/dist';
 import { runEvent } from '../../../app/dist/runEvent';
 
 export const toolDef = {
@@ -22,7 +22,7 @@ export async function handle(root: string, args: Record<string, unknown>) {
         if (!result) throw new Error(`Weave not found: ${w}`);
         return result;
     };
-    const deps = { loadWeave: loadWeaveStrict, saveWeave, loomRoot: root };
+    const deps = { loadWeave: loadWeaveStrict, saveDocs, loomRoot: root };
     const updatedWeave = await runEvent(weaveId, { type: 'START_IMPLEMENTING_PLAN', planId } as any, deps);
     const plan = updatedWeave.threads.flatMap(t => t.plans).find(p => p.id === planId);
 

@@ -27,7 +27,10 @@ export function parseStepsTable(content: string): PlanStep[] {
         // Skip the header row
         if (line.includes('Done') && line.includes('Step')) continue;
         
-        const cols = line.split('|').slice(1, -1).map(c => c.trim());
+        // Split on UNESCAPED pipes only, then un-escape \| back to | so a step
+        // description containing a literal pipe (e.g. a code span "a | b") is read
+        // back as a single cell rather than spilling across columns.
+        const cols = line.split(/(?<!\\)\|/).slice(1, -1).map(c => c.trim().replace(/\\\|/g, '|'));
         if (cols.length < 4) continue;
         
         // Expected columns: Done, #, Step, Files touched, Blocked by
@@ -51,18 +54,23 @@ export function parseStepsTable(content: string): PlanStep[] {
 /**
  * Generates the steps table Markdown from an array of plan steps.
  */
+/** Escape pipes so cell text never spills into adjacent table columns. */
+function escapeCell(value: string): string {
+    return value.replace(/\|/g, '\\|');
+}
+
 export function generateStepsTable(steps: PlanStep[]): string {
     if (!steps.length) return '';
-    
+
     const header = '| Done | # | Step | Files touched | Blocked by |';
     const separator = '|---|---|---|---|---|';
     const rows = steps.map(s => {
         const done = s.done ? '✅' : '🔳';
         const files = s.files_touched?.length ? s.files_touched.join(', ') : '—';
         const blockers = s.blockedBy?.length ? s.blockedBy.join(', ') : '—';
-        return `| ${done} | ${s.order} | ${s.description} | ${files} | ${blockers} |`;
+        return `| ${done} | ${s.order} | ${escapeCell(s.description)} | ${escapeCell(files)} | ${escapeCell(blockers)} |`;
     });
-    
+
     return [header, separator, ...rows].join('\n');
 }
 

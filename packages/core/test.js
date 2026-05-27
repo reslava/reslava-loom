@@ -114,7 +114,7 @@ const thread = {
     allDocs: [designDoc, freshPlan],
 };
 
-const refinedThread = applyEvent(thread, { type: 'REFINE_DESIGN' });
+const { weave: refinedThread } = applyEvent(thread, { type: 'REFINE_DESIGN' });
 console.log('  ✅ REFINE_DESIGN on thread:', refinedThread.design.version === 3);
 console.log('  ✅ Child plan marked stale:', refinedThread.plans[0].staled === true);
 

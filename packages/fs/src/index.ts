@@ -7,6 +7,6 @@ export { loadDoc, FrontmatterParseError } from './serializers/frontmatterLoader'
 export { saveDoc, FileWriteError, FilePermissionError } from './serializers/frontmatterSaver';
 
 // Repositories
-export { loadWeave, saveWeave } from './repositories/weaveRepository';
-export { loadThread, saveThread } from './repositories/threadRepository';
+export { loadWeave, saveWeave, saveDocs } from './repositories/weaveRepository';
+export { loadThread, saveThread, docPathInThread } from './repositories/threadRepository';
 export { buildLinkIndex, updateIndexForFile } from './repositories/linkRepository';

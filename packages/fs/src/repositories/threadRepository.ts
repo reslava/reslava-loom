@@ -91,7 +91,7 @@ export async function loadThread(
     return { id: threadId, weaveId, idea, design, plans, dones, chats, refDocs, allDocs };
 }
 
-function docPathInThread(doc: Document, threadPath: string, threadId: string): string {
+export function docPathInThread(doc: Document, threadPath: string, threadId: string): string {
     switch (doc.type) {
         case 'idea':   return path.join(threadPath, `${threadId}-idea.md`);
         case 'design': return path.join(threadPath, `${threadId}-design.md`);

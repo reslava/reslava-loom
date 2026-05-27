@@ -5,7 +5,7 @@ import { WORKSPACE_ROOT, cleanWeaves, seedWeave, fileExists } from './helpers';
 
 // Relative imports resolved at runtime from tests/vscode/out/ (3 levels up to repo root)
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { loadWeave, saveWeave } = require('../../../packages/fs/dist/index.js') as any;
+const { loadWeave, saveDocs } = require('../../../packages/fs/dist/index.js') as any;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { completeStep } = require('../../../packages/app/dist/completeStep.js') as any;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -21,7 +21,7 @@ function makeLoadWeave(loomRoot: string) {
 
 function makeRunEvent(root: string) {
     return (weaveId: string, event: any) =>
-        runEvent(weaveId, event, { loadWeave: makeLoadWeave(root), saveWeave, loomRoot: root });
+        runEvent(weaveId, event, { loadWeave: makeLoadWeave(root), saveDocs, loomRoot: root });
 }
 
 suite('completeStep Command (Extension Host)', () => {

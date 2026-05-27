@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import { runLoom, assert, createPlanDoc } from './test-utils.ts';
-import { loadWeave, saveWeave } from '../packages/fs/dist/index.js';
+import { loadWeave, saveDocs } from '../packages/fs/dist/index.js';
 import { completeStep } from '../packages/app/dist/completeStep.js';
 import { runEvent } from '../packages/app/dist/runEvent.js';
 import { serializeFrontmatter } from '../packages/core/dist/index.js';
@@ -134,7 +134,7 @@ async function testCompleteStepUseCase() {
         return w;
     };
     const runEventBound = (wid: string, evt: any) =>
-        runEvent(wid, evt, { loadWeave: loadWeaveOrThrow, saveWeave, loomRoot });
+        runEvent(wid, evt, { loadWeave: loadWeaveOrThrow, saveDocs, loomRoot });
 
     const deps = { loadWeave: loadWeaveOrThrow, runEvent: runEventBound, loomRoot };
 

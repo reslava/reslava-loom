@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { completeStep } from '../../../app/dist/completeStep';
 import { loadWeave} from '../../../fs/dist';
 import { runEvent } from '../../../app/dist/runEvent';
-import { saveWeave } from '../../../fs/dist';
+import { saveDocs } from '../../../fs/dist';
 import { getActiveLoomRoot } from '../../../fs/dist';
 
 export async function completeStepCommand(planId: string, options: { step?: string }): Promise<void> {
@@ -22,7 +22,7 @@ export async function completeStepCommand(planId: string, options: { step?: stri
         };
 
         const runEventBound = (tid: string, evt: any) =>
-            runEvent(tid, evt, { loadWeave: loadWeaveOrThrow, saveWeave, loomRoot });
+            runEvent(tid, evt, { loadWeave: loadWeaveOrThrow, saveDocs, loomRoot });
 
         const result = await completeStep(
             { planId, step },
