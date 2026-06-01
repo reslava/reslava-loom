@@ -2,10 +2,10 @@
 type: idea
 id: id_01KSYE3WFEGBZ39SB9XDMX7X99
 title: Consolidate ctx generators into one (global + weave)
-status: draft
+status: done
 created: "2026-05-31T00:00:00.000Z"
 updated: 2026-05-31
-version: 2
+version: 3
 tags: []
 parent_id: null
 requires_load: []

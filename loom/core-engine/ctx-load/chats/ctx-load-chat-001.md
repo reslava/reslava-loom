@@ -2,9 +2,10 @@
 type: chat
 id: ch_01KSY9XWDKZRN4FW0A65M9GDTR
 title: ctx-load Chat
-status: active
-created: 2026-05-31
-version: 1
+status: done
+created: "2026-05-31T00:00:00.000Z"
+updated: 2026-05-31
+version: 2
 tags: []
 parent_id: null
 requires_load: []

@@ -3,7 +3,6 @@ import * as cp from 'child_process';
 import { promisify } from 'util';
 import { TreeNode } from '../tree/treeProvider';
 import { PlanDoc } from '@reslava-loom/core/dist/entities/plan';
-import { ContextSidebarProvider } from '../providers/contextSidebarProvider';
 
 const exec = promisify(cp.exec);
 
@@ -167,17 +166,15 @@ async function pickStepNumbers(plan: PlanDoc): Promise<number[] | undefined> {
     return topoSort(picks.map(p => p.order), allSteps);
 }
 
-function buildPrompt(planId: string, stepNumbers: number[], contextIds: string[]): string {
-    const ctxArg = contextIds.length > 0 ? `, context_ids=${JSON.stringify(contextIds)}` : '';
+function buildPrompt(planId: string, stepNumbers: number[]): string {
     if (stepNumbers.length === 1) {
-        return `Use the loom MCP server. Call loom_do_step with planId="${planId}" and stepNumber=${stepNumbers[0]}${ctxArg} to get the brief. Implement the step using your tools. After implementation, call loom_append_done with your notes, then loom_complete_step. Show me what you did.`;
+        return `Use the loom MCP server. Call loom_do_step with planId="${planId}" and stepNumber=${stepNumbers[0]} to get the brief. Implement the step using your tools. After implementation, call loom_append_done with your notes, then loom_complete_step. Show me what you did.`;
     }
     const list = JSON.stringify(stepNumbers);
-    const ctxNote = contextIds.length > 0 ? ` Pass context_ids=${JSON.stringify(contextIds)} in each loom_do_step call.` : '';
-    return `Use the loom MCP server to implement multiple plan steps in one session, preserving context across them. Plan id: "${planId}". Step numbers in dependency order: ${list}.${ctxNote} Implement ONLY these steps — do not implement any other steps even if they appear not-done in the plan summary or seem like prerequisites. If a step cannot be completed without an unlisted step, stop and report the issue instead of resolving it yourself. For each step number in this exact order: (1) call loom_do_step with planId and stepNumber, (2) implement the step using your tools, (3) call loom_append_done with your notes for that step, (4) call loom_complete_step for that step. Then move to the next number without exiting. If any step fails, stop and report which step failed and why — do not skip ahead. Summarise what you did per step at the end.`;
+    return `Use the loom MCP server to implement multiple plan steps in one session, preserving context across them. Plan id: "${planId}". Step numbers in dependency order: ${list}. Implement ONLY these steps — do not implement any other steps even if they appear not-done in the plan summary or seem like prerequisites. If a step cannot be completed without an unlisted step, stop and report the issue instead of resolving it yourself. For each step number in this exact order: (1) call loom_do_step with planId and stepNumber, (2) implement the step using your tools, (3) call loom_append_done with your notes for that step, (4) call loom_complete_step for that step. Then move to the next number without exiting. If any step fails, stop and report which step failed and why — do not skip ahead. Summarise what you did per step at the end.`;
 }
 
-export async function doStepCommand(node?: TreeNode, contextSidebar?: ContextSidebarProvider): Promise<void> {
+export async function doStepCommand(node?: TreeNode): Promise<void> {
     const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!root) {
         vscode.window.showErrorMessage('No workspace open.');
@@ -209,8 +206,7 @@ export async function doStepCommand(node?: TreeNode, contextSidebar?: ContextSid
         return;
     }
 
-    const contextIds = contextSidebar?.getSelectedIds() ?? [];
-    const prompt = buildPrompt(plan.id, stepNumbers, contextIds);
+    const prompt = buildPrompt(plan.id, stepNumbers);
 
     const terminal = vscode.window.createTerminal({
         name: `Loom: ${plan.title}`,

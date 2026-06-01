@@ -2,10 +2,10 @@
 type: idea
 id: id_01KSDJ2C59Z1XY11W336B0W9YS
 title: Unified Context Pipeline
-status: draft
+status: done
 created: "2026-05-24T00:00:00.000Z"
-updated: "2026-05-25T00:00:00.000Z"
-version: 3
+updated: 2026-05-31
+version: 4
 tags: []
 parent_id: null
 requires_load: []

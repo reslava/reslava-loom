@@ -1337,4 +1337,4 @@ This is not the way .archived works and do not show up in tree.
 
 there is just one `loom/.archive` is and both threads should be moved there.
 
-Review where you get wrong way to archive and update/fix it.
+I fixed both

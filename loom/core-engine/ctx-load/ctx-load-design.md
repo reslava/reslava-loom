@@ -2,10 +2,10 @@
 type: design
 id: de_01KSTFX5FNN132HHSFHNSK497C
 title: thread/weave ctx docs not loaded by getState
-status: draft
+status: done
 created: "2026-05-29T00:00:00.000Z"
 updated: 2026-05-31
-version: 4
+version: 5
 tags: []
 parent_id: id_01KSTFWA3V21V7B2BQP1WYTYZJ
 requires_load: []

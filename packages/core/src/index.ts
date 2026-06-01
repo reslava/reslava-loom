@@ -22,6 +22,8 @@ export {
     EmitReason,
     ExcludeReason,
     ContextOverrides,
+    ContextPrefsEntry,
+    ContextPrefs,
     BundledDoc,
     ExcludedDoc,
     ContextBundle,

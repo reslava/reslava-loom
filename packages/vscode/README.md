@@ -10,6 +10,8 @@ Loom turns your project into a structured collaboration surface between you and 
 
 Every stage is a Markdown document. The AI reads them, writes to them, and tracks progress through them — across sessions, without losing context.
 
+📚 **Guides:** [Core concepts & workflow](https://github.com/reslava/loom/blob/main/docs/USER_GUIDE.md) · [Extension User Guide](https://github.com/reslava/loom/blob/main/docs/EXTENSION_USER_GUIDE.md) · [CLI / Claude Code Guide](https://github.com/reslava/loom/blob/main/docs/CLI_USER_GUIDE.md)
+
 ---
 
 ## Install
@@ -57,12 +59,8 @@ The agent then has access to all Loom tools (`loom_create_idea`, `loom_do_step`,
 
 ## The loop
 
-| Weave→ | Thread→ | Chat→ | Idea→ | Design→ | Plan→ | Done |
-|---|---|---|---|---|---|---|
-|<img src="media/icons/weave-implementing.svg" alt="Loom" width="32" />|<img src="media/icons/thread-implementing.svg" alt="Loom" width="32" />|<img src="media/icons/chat.svg" alt="Loom" width="32" />|<img src="media/icons/idea.svg" alt="Loom" width="32" />|<img src="media/icons/design.svg" alt="Loom" width="32" />|<img src="media/icons/plan-implementing.svg" alt="Loom" width="32" />|<img src="media/icons/status-done.svg" alt="Loom" width="32" />|
-
-1. **Chat** — open a chat doc, think out loud with the AI.
-2. **Idea** — click *Generate Idea* to formalize what you want to build.
+1. **Chat** — open a chat doc, think out loud with the AI (*AI Reply*).
+2. **Idea** — create one with *Weave Idea* and flesh it out with *Refine Idea*, or *Promote* a chat straight to an idea.
 3. **Design** — click *Generate Design* to define how to build it.
 4. **Plan** — click *Generate Plan* to get a concrete step-by-step implementation list.
 5. **Implement** — click *Do Step* to have the AI implement the next step, record what was done, and mark it complete.
@@ -81,30 +79,34 @@ Shows your **weaves** (project areas) → **threads** (workstreams) → docs (id
 
 | Button | What it does |
 |--------|-------------|
-| *Generate Idea* | Formalise a chat or prompt into a scoped idea doc |
 | *Generate Design* | Turn an idea into an architecture + decisions doc |
 | *Generate Plan* | Break a design into numbered, reviewable implementation steps |
-| *Do Step* | AI implements the next pending step; marks it ✅ and writes a done note |
+| *Do Step(s)* | AI implements the next pending step; marks it ✅ and writes a done note |
 | *AI Reply* | Continue the conversation inside a chat doc with full thread context loaded |
-| *Generate Ctx* | Regenerate the ctx summary for a weave or thread |
-| *Refine* | Re-run generation on a stale doc after its parent was updated |
+| *Refine Idea / Design / Plan* | Re-run generation on a stale doc after its parent was updated |
+| *Refresh Context* | Regenerate the ctx summary for a weave or thread |
 | *Promote* | chat → idea → design → plan in one click |
-| *Start Plan* | Move a plan from `draft` to `implementing` |
+| *Start Plan* / *Close Plan* | Move a plan to `implementing` / finish it |
 | *Rename / Archive* | Inline doc management from the tree |
 
 Right-click any node for the same actions as a context menu.
 
 ### Context view
 
-Shows which documents will be loaded into the AI's context window for the selected thread. Updates automatically when you click a different tree node.
+Shows every document that *would* be loaded into the AI's context for the selected node — **before** you launch anything. Updates as you click around. What you see here is what the AI gets.
 
-| Section | What it contains |
-|---------|-----------------|
-| **Pinned** | Docs always loaded for this thread: idea + design + active plan + ctx summaries. Shown with a green ✓ and token count. Click to toggle off. |
-| **Opt-in** | Optional docs: chats, reference docs. Shown with an empty circle. Click to toggle on. |
-| **Total** | Estimated token count for all currently loaded docs. |
+Each row is one doc, marked by why it's there:
 
-The token counts let you see exactly how much context the AI will receive before clicking a button — useful for keeping sessions lean by toggling off opt-in docs you don't need.
+| Symbol | Meaning |
+|--------|---------|
+| ✓ | Auto-included (ctx, parent chain, or a matching `always` reference) |
+| 📌 | You pinned it in |
+| 🚫 | You excluded it |
+| ⊘ | Excluded but pulled back in by another doc's `requires_load` |
+| 🔒 | `load: always` — locked on (force-off prompts a warning) |
+| ⚠ / ❌ | Stale / missing |
+
+Click a row to **open the doc**. Use the inline actions to **include / exclude / reset**; choices persist per target in `.loom/context-prefs.json`. Per-doc and total token estimates let you keep launches lean.
 
 ---
 
@@ -151,6 +153,9 @@ reslava-loom.ai.provider → anthropic | openai | deepseek
 
 ## Documentation
 
+- [User Guide](https://github.com/reslava/loom/blob/main/docs/USER_GUIDE.md) — concepts, the workflow loop, and how context works
+- [Extension User Guide](https://github.com/reslava/loom/blob/main/docs/EXTENSION_USER_GUIDE.md) — the panel, buttons, and CONTEXT view
+- [CLI / Claude Code Guide](https://github.com/reslava/loom/blob/main/docs/CLI_USER_GUIDE.md) — driving Loom from the terminal
 - [Getting Started](https://github.com/reslava/loom/blob/main/loom/refs/getting-started.md) — install to first idea in five minutes
 - [How Loom works](https://github.com/reslava/loom/blob/main/loom/refs/vision-reference.md) — the chat → design → plan → implement loop
 - [Architecture](https://github.com/reslava/loom/blob/main/loom/refs/architecture-reference.md) — MCP surface, doc types, frontmatter

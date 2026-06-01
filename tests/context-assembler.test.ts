@@ -147,6 +147,17 @@ async function run() {
     assert(excluded.excluded.some((e: any) => e.id === 'i1' && e.reason === 'user-exclude'), 'i1 excluded:user-exclude');
     console.log('    ✅ exclude honoured');
 
+    // ── requires_load wins over user-exclude (design §5) → ⊘ + requiredBy ─────
+    console.log('  • excluding a requires_load target → overridden, not dropped...');
+    // c1.requires_load includes rf-A; excluding rf-A must NOT drop it (c1 needs it).
+    const overridden = assembleContext('c1', 'chat', { include: [], exclude: ['rf-A'] }, state);
+    const rfA = overridden.docs.find((d: any) => d.id === 'rf-A');
+    assert(!!rfA, 'rf-A must still be in the bundle (required by c1)');
+    assert(rfA.reason === 'user-exclude-overridden', 'rf-A reason should be user-exclude-overridden');
+    assert(typeof rfA.requiredBy === 'string' && rfA.requiredBy.length > 0, 'rf-A should carry requiredBy');
+    assert(!overridden.excluded.some((e: any) => e.id === 'rf-A'), 'rf-A must not also appear in excluded[]');
+    console.log('    ✅ requires_load overrides exclude; surfaced as ⊘ + requiredBy');
+
     // ── missing target throws ─────────────────────────────────────────────────
     console.log('  • unknown target throws...');
     let threw = false;

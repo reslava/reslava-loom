@@ -4,176 +4,159 @@ id: rf_01KQYDFDDDZDXZDHVWCM2VF3EN
 title: vscode — Commands Reference
 status: active
 created: "2026-04-14T00:00:00.000Z"
-version: 1
+version: 2
 tags: [vscode, commands, reference, ui, loom]
 requires_load: []
 slug: vscode-commands-reference
 ---
 
-# REslava Loom VS Code Commands Reference
+# Loom VS Code Commands Reference
 
-This document catalogs all commands, context menus, toolbar actions, and keyboard shortcuts available in the REslava Loom VS Code extension.
+Catalogs the views, commands, menus, and settings contributed by the Loom VS Code extension (`loom-vscode`, publisher `reslava`). Source of truth: `packages/vscode/package.json` `contributes`.
 
----
-
-## Command Palette Commands
-
-All commands are accessible via `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS) with the prefix `Loom:`.
-
-### Workspace & Initialization
-
-| Command | Description | Default Keybinding | Command ID |
-|---------|-------------|-------------------|------------|
-| `Loom: Initialize Workspace` | Run `loom init` in the current workspace. | — | `loom.init` |
-| `Loom: Setup New Loom` | Create a new named loom workspace. | — | `loom.setup` |
-| `Loom: Switch Loom` | Switch active loom context. | — | `loom.switch` |
-| `Loom: List Looms` | Show all registered looms. | — | `loom.listLooms` |
-| `Loom: Doctor` | Run system health check and repair. | — | `loom.doctor` |
-
-### Thread & Document Management
-
-| Command | Description | Default Keybinding | Command ID |
-|---------|-------------|-------------------|------------|
-| `Loom: Weave Idea` | Create a new idea document. | `Ctrl+Shift+L I` | `loom.weaveIdea` |
-| `Loom: Weave Design` | Create a new design document. | `Ctrl+Shift+L D` | `loom.weaveDesign` |
-| `Loom: Weave Plan` | Create a new implementation plan. | `Ctrl+Shift+L P` | `loom.weavePlan` |
-| `Loom: Show Status` | Display derived state of current thread. | `Ctrl+Shift+L S` | `loom.showStatus` |
-| `Loom: List Threads` | List all threads with status and phase. | — | `loom.listThreads` |
-| `Loom: Validate Thread` | Run validation on current thread. | — | `loom.validateThread` |
-| `Loom: Validate Configuration` | Validate `workflow.yml` syntax. | — | `loom.validateConfig` |
-
-### AI Collaboration
-
-| Command | Description | Default Keybinding | Command ID |
-|---------|-------------|-------------------|------------|
-| `Loom: AI Respond` | Send document to AI (Chat Mode). | `Ctrl+Shift+L R` | `loom.aiRespond` |
-| `Loom: AI Propose` | Request JSON event proposal (Action Mode). | `Ctrl+Shift+L A` | `loom.aiPropose` |
-| `Loom: Summarise Context` | Generate or regenerate `-ctx.md` summary. | — | `loom.summariseContext` |
-
-### Chat Documents
-
-| Command | Description | Default Keybinding | Command ID |
-|---------|-------------|-------------------|------------|
-| `Loom: New Chat` | Create a new chat file. | `Ctrl+Shift+L C` | `loom.chatNew` |
-| `Loom: Promote Chat to Idea` | Convert chat to an idea document. | — | `loom.chatPromote` |
-| `Loom: Refine with Chat` | Use chat to refine a design or plan. | — | `loom.chatRefine` |
-| `Loom: Append Chat` | Append chat content to target document. | — | `loom.chatAppend` |
-| `Loom: Archive Chat` | Manually archive selected chat. | — | `loom.chatArchive` |
-
-### Workflow Events
-
-| Command | Description | Default Keybinding | Command ID |
-|---------|-------------|-------------------|------------|
-| `Loom: Refine Design` | Fire `REFINE_DESIGN` event. | — | `loom.refineDesign` |
-| `Loom: Start Plan` | Fire `START_PLAN` event. | — | `loom.startPlan` |
-| `Loom: Complete Step` | Mark selected step as done. | — | `loom.completeStep` |
-
-### Maintenance
-
-| Command | Description | Default Keybinding | Command ID |
-|---------|-------------|-------------------|------------|
-| `Loom: Archive Thread` | Move thread to `_archive/`. | — | `loom.archiveThread` |
-| `Loom: Repair Thread` | Fix common issues in current thread. | — | `loom.repairThread` |
-| `Loom: Upgrade to Multi-Loom` | Migrate mono-loom to multi-loom. | — | `loom.upgradeToMulti` |
+> The extension is a thin **MCP client** — it talks to the Loom MCP server (`loom mcp`) for all state. It does not edit files directly.
 
 ---
 
-## Tree View Context Menus
+## Views
 
-### Thread Node
+The **Loom** Activity Bar container holds two views:
 
-| Command | Description |
-|---------|-------------|
-| `Weave Idea` | Create a new idea in this thread. |
-| `Weave Design` | Create a new design (if not exists). |
-| `Weave Plan` | Create a new plan from the design. |
-| `AI Respond` | Open Chat Mode with this thread's design. |
-| `AI Propose` | Request event proposal for this thread. |
-| `Validate Thread` | Run validation. |
-| `Show Status` | Display detailed status. |
-| `Archive Thread` | Move to `_archive/`. |
+| View ID | Name | Purpose |
+|---------|------|---------|
+| `loom.threads` | **Threads** | The document tree: weaves → threads → docs. |
+| `loom.context` | **Context** | What the AI will receive for the selected node (the context pipeline bundle). |
 
-### Design Node
-
-| Command | Description |
-|---------|-------------|
-| `Open Document` | Open the design file. |
-| `AI Respond` | Continue conversation in Chat Mode. |
-| `AI Propose` | Request event proposal. |
-| `Refine Design` | Fire `REFINE_DESIGN` event. |
-| `Summarise Context` | Generate context summary. |
-
-### Plan Node
-
-| Command | Description |
-|---------|-------------|
-| `Open Document` | Open the plan file. |
-| `Start Plan` | Fire `START_PLAN` event. |
-| `Complete Step` → (submenu) | Select step to mark done. |
-| `Block Plan` | Mark plan as blocked. |
-| `Finish Plan` | Mark plan as done. |
-
-### Chat Node (in `chats/`)
-
-| Command | Description |
-|---------|-------------|
-| `Open Chat` | Open the chat file. |
-| `Promote to Idea` | Create idea from this chat. |
-| `Refine Design with Chat...` | Select target design to refine. |
-| `Append to Design...` | Select target design to append. |
-| `Archive Chat` | Move to `_archive/chats/`. |
+When no workspace is initialized, the Threads view shows a welcome with an **Initialize Workspace** button (`loom install`).
 
 ---
 
-## Toolbar Actions
+## Commands
 
-| Icon | Action | Description |
-|------|--------|-------------|
-| 🔄 | Refresh | Refresh the tree view. |
-| ➕ | Weave... | Dropdown: Weave Idea, Weave Design, Weave Plan, New Chat. |
-| 🔍 | Filter | Text filter for tree items. |
-| 📁 | Group By | Dropdown: Type, Thread, Status, Release. |
-| 🧵 | Switch Loom | Quick pick from registered looms. |
+All commands are under the **Loom** category (`Ctrl+Shift+P` → type `Loom:`). The extension contributes **no default keybindings** — assign your own via *Preferences: Open Keyboard Shortcuts* if desired.
+
+### Workspace & tree
+
+| Title | Command ID |
+|-------|-----------|
+| Refresh | `loom.refresh` |
+| Reconnect MCP | `loom.reconnectMcp` |
+| New Weave | `loom.weaveCreate` |
+| Weave Thread | `loom.threadCreate` |
+| Set Grouping | `loom.setGrouping` |
+| Filter by text | `loom.setTextFilter` |
+| Filter by status | `loom.setStatusFilter` |
+| Toggle Archived | `loom.toggleArchived` / `loom.toggleArchivedOff` |
+| Sync Doc → Tree | `loom.toggleSyncDocToTree` / `loom.toggleSyncDocToTreeOff` |
+
+### Create documents
+
+| Title | Command ID |
+|-------|-----------|
+| Weave Idea | `loom.weaveIdea` |
+| Weave Design | `loom.weaveDesign` |
+| Weave Plan | `loom.weavePlan` |
+| Weave Chat | `loom.chatNew` |
+| Create Reference | `loom.createReference` |
+
+### AI actions
+
+| Title | Command ID | Notes |
+|-------|-----------|-------|
+| AI Reply | `loom.chatReply` | Reply inside a chat doc with full thread context loaded. |
+| Generate Design (AI) | `loom.generateDesign` | From an idea. |
+| Generate Plan (AI) | `loom.generatePlan` | From a design. |
+| Refine Idea | `loom.refineIdea` | |
+| Refine Design | `loom.refineDesign` | |
+| Refine Plan | `loom.refinePlan` | |
+| Do Step(s) | `loom.doStep` | Implement the next pending plan step. |
+| Refresh Context | `loom.refreshCtx` | Regenerate a ctx summary. |
+
+> There is no `generateIdea` command — an idea is created with **Weave Idea** and filled via **Refine Idea**, or by promoting a chat.
+
+### Promote
+
+| Title | Command ID |
+|-------|-----------|
+| Promote to Idea | `loom.promoteToIdea` |
+| Promote to Design | `loom.promoteToDesign` |
+| Promote to Plan | `loom.promoteToPlan` |
+| Promote to Reference | `loom.promoteToReference` |
+
+### Plan lifecycle & state
+
+| Title | Command ID |
+|-------|-----------|
+| Start Plan | `loom.startPlan` |
+| Complete Step | `loom.completeStep` |
+| Close Plan | `loom.closePlan` |
+| Mark Done | `loom.markDone` |
+| Mark Active | `loom.markActive` |
+| Validate | `loom.validate` |
+
+### Document management
+
+| Title | Command ID |
+|-------|-----------|
+| Rename Document | `loom.rename` |
+| Add References… (`requires_load`) | `loom.addRequiresLoad` |
+| Archive | `loom.archive` |
+| Restore from Archive | `loom.restoreItem` |
+| Delete | `loom.delete` |
+
+### Context panel (the `loom.context` view)
+
+| Title | Command ID | When |
+|-------|-----------|------|
+| Open Document | `loom.context.openDoc` | Click a row to open the doc/ref in the editor. |
+| Include in context | `loom.context.include` | On an excluded or available row. |
+| Exclude from context | `loom.context.exclude` | On an auto or locked row. |
+| Reset to auto | `loom.context.reset` | On a pinned / excluded / required row. |
 
 ---
 
-## Status Bar Items
+## Tree context menus
 
-| Item | Description |
-|------|-------------|
-| `🧵 Loom: <name>` | Current active loom. Click to switch. |
-| `📊 <tokens>` | Session token usage. Click to view details. |
-| `🎯 <target_release>` | Target release for current thread (if set). |
+Right-clicking a node in the Threads view exposes actions by node type:
 
----
-
-## Keyboard Shortcuts Summary
-
-| Keybinding | Command |
-|------------|---------|
-| `Ctrl+Shift+L I` | Weave Idea |
-| `Ctrl+Shift+L D` | Weave Design |
-| `Ctrl+Shift+L P` | Weave Plan |
-| `Ctrl+Shift+L C` | New Chat |
-| `Ctrl+Shift+L R` | AI Respond |
-| `Ctrl+Shift+L A` | AI Propose |
-| `Ctrl+Shift+L S` | Show Status |
+| Node | Actions |
+|------|---------|
+| **Weave** | New Weave, Weave Thread, Validate, Rename, Archive, Delete |
+| **Thread** | Weave Idea / Design / Plan, Weave Chat |
+| **Idea** | Refine Idea, Generate Design, Promote to Design / Plan, Add References, Mark Done/Active, Rename, Archive, Delete |
+| **Design** | Refine Design, Generate Plan, Weave Plan, Promote to Plan, Add References, … |
+| **Plan** (draft/active) | Start Plan |
+| **Plan** (implementing) | Do Step(s), Complete Step, Refine Plan, Close Plan |
+| **Chat** | AI Reply, Promote to Idea / Design / Plan |
+| **ctx section** | Refresh Context |
+| **refs section** | Create Reference |
 
 ---
 
-## Configuration Settings
+## Toolbar (Threads view title bar)
 
-All settings are prefixed with `reslava-loom.`.
+New Weave · Set Grouping · Filter by status · Filter by text · Toggle Archived · Sync Doc → Tree · Refresh.
+
+---
+
+## Settings
+
+All under the `reslava-loom.` prefix:
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `user.name` | `string` | `""` | Your preferred name for document headers. |
-| `user.email` | `string` | `""` | Your email (optional). |
-| `ai.provider` | `string` | `"deepseek"` | AI provider (`deepseek`, `openai`, `anthropic`, `ollama`). |
-| `ai.apiKey` | `string` | `""` | API key for the selected provider. |
-| `ai.model` | `string` | `"deepseek-chat"` | Model name. |
-| `ai.maxContextTokens` | `number` | `8000` | Maximum tokens for AI prompt. |
-| `ai.designSummaryThreshold` | `number` | `20000` | Characters before auto-summary. |
-| `allowShellCommands` | `boolean` | `false` | Enable `run_command` effect. |
-| `tree.defaultGrouping` | `string` | `"thread"` | Default grouping mode. |
-| `tree.showArchived` | `boolean` | `false` | Show archived threads in tree view. |
+| `reslava-loom.user.name` | string | `""` | Display name used in chat/doc headers. |
+| `reslava-loom.ai.provider` | enum (`anthropic` \| `deepseek` \| `openai`) | `anthropic` | Provider for the API-key path. |
+| `reslava-loom.ai.apiKey` | string | `""` | API key for the fallback path (not needed if Claude Code CLI is installed). |
+| `reslava-loom.ai.model` | string | `""` | Model override; blank uses the provider default. |
+| `reslava-loom.ai.baseUrl` | string | `""` | Base URL override for OpenAI-compatible endpoints. |
+
+---
+
+## Get Started walkthrough
+
+The extension ships a `loom.getStarted` walkthrough (*Welcome: Open Walkthrough* → "Get Started with Loom") with four steps: install the CLI, run `loom install`, configure an AI provider, and create your first weave.
+
+---
+
+See the **[Extension User Guide](../../docs/EXTENSION_USER_GUIDE.md)** for task-oriented usage.

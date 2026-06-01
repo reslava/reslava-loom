@@ -1,27 +1,23 @@
 import * as vscode from 'vscode';
 import { getMCP } from '../mcp-client';
 import { LoomTreeProvider, TreeNode } from '../tree/treeProvider';
-import { ContextSidebarProvider } from '../providers/contextSidebarProvider';
 import { handleMcpError } from '../mcpErrorUtils';
 import { isClaudeInstalled, launchClaude } from './claudeTerminal';
 
-export async function refinePlanCommand(treeProvider: LoomTreeProvider, node?: TreeNode, contextSidebar?: ContextSidebarProvider): Promise<void> {
+export async function refinePlanCommand(treeProvider: LoomTreeProvider, node?: TreeNode): Promise<void> {
     const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
 
     const id = node?.doc?.id;
     if (!id) { vscode.window.showErrorMessage('Right-click a plan in the tree to refine it.'); return; }
 
-    const contextIds = contextSidebar?.getSelectedIds() ?? [];
-
     if (await isClaudeInstalled()) {
         const filePath = (node?.doc as any)?._path as string | undefined;
         const readInstruction = filePath
             ? `Read the plan file at "${filePath}" using the Read tool (not Bash, not loom_find_doc).`
             : `Use MCP tool loom_find_doc with id="${id}" to get the file path, then read it with the Read tool.`;
-        const ctxNote = contextIds.length > 0 ? ` Additional context doc ids: ${JSON.stringify(contextIds)}.` : '';
         await launchClaude(root, `Loom: Refine Plan`,
-            `Loom refine plan task. planId="${id}".${ctxNote} ${readInstruction} Also read its parent design. Update the plan steps table to reflect the current design, then use MCP tool loom_update_doc with id="${id}" and updated body. Do not use loom_refine_plan — sampling is unavailable in Claude Code CLI. Do not invoke CLI commands via Bash.`
+            `Loom refine plan task. planId="${id}". ${readInstruction} Also read its parent design. Update the plan steps table to reflect the current design, then use MCP tool loom_update_doc with id="${id}" and updated body. Do not use loom_refine_plan — sampling is unavailable in Claude Code CLI. Do not invoke CLI commands via Bash.`
         );
     } else {
         try {
@@ -29,7 +25,7 @@ export async function refinePlanCommand(treeProvider: LoomTreeProvider, node?: T
             await vscode.window.withProgress(
                 { location: vscode.ProgressLocation.Notification, title: 'Loom: Refining plan…', cancellable: false },
                 async () => {
-                    result = await getMCP(root).callTool('loom_refine_plan', { id, ...(contextIds.length > 0 ? { context_ids: contextIds } : {}) });
+                    result = await getMCP(root).callTool('loom_refine_plan', { id });
                 }
             );
             treeProvider.refresh();

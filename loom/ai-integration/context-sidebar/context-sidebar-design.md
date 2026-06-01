@@ -4,15 +4,28 @@ id: de_01KSTFZXP06VXHFDYG1FGAK1KT
 title: Sidebar CONTEXT UX — see and toggle what the AI gets
 status: draft
 created: "2026-05-29T00:00:00.000Z"
-updated: 2026-05-29
-version: 2
+updated: 2026-05-31
+version: 3
 tags: []
 parent_id: id_01KSTFYVRPJF86BEYYNTT81C4N
 requires_load: []
 ---
 # Sidebar CONTEXT UX — see and toggle what the AI gets
 
-Seeded with the open questions from `context-sidebar-idea`. Decisions land here before plan-001.
+Seeded with the open questions from `context-sidebar-idea`. **Decisions landed 2026-05-31** (chat-001) — see the decisions log at the bottom. The sections below keep the original deliberation; each now carries a **Decision** callout.
+
+> **Key reframing (2026-05-31):** a CONTEXT panel *already exists* —
+> `packages/vscode/src/providers/contextSidebarProvider.ts`. It is a registered,
+> top-level, focus-following view (Pinned / Opt-in sections, per-doc + total token
+> counts, ✓/○ toggles). But it **re-derives context locally** (its own pinned/opt-in
+> heuristic, not the pipeline `ContextBundle`), its toggles are **ephemeral**
+> (in-memory `loaded`, reset on focus change, never persisted), and its selection
+> reaches launches as an **ephemeral `context_ids` prompt-arg** (`getSelectedIds()`
+> → `buildPrompt` → `loom_do_step(context_ids=…)`). So this thread is **not "build a
+> new surface"** — it is **rebase the existing panel onto the pipeline**: feed it from
+> `loom://context/{target}?mode=`, render `BundledDoc.reason`, persist toggles to
+> `.loom/context-prefs.json`, and collapse the two parallel context derivations into
+> one so "what you see == what the AI gets" holds by construction.
 
 ---
 
@@ -33,9 +46,13 @@ Dedicated webview with richer interactions (drag-reorder, batch toggle, token-bu
 - Pros: room to grow into Phase 5 (budget UI); not constrained by TreeView API.
 - Cons: heavier; harder to keep in sync with the rest of the tree; off-pattern for the rest of the Loom extension.
 
-**Lean:** Option A. Per-target nesting matches the bundle model 1:1 (one bundle per target × mode). Top-level (B) saves a click but adds ambient state and the "wait, what's it showing right now?" problem. Webview (C) is over-engineered for what's effectively a list of checkboxes.
-
-**Open question:** if Option A, does the Context node appear under *every* doc, or only under docs that are valid launch targets (chats, plans, designs)? My lean: only valid targets — otherwise the tree is full of empty CONTEXT nodes.
+**Decision: B — and it already exists.** The deployed `ContextSidebarProvider` is
+exactly Option B: a top-level view that retargets on `onSelectionChanged(node)`.
+The earlier "Lean: Option A" was written without knowledge of that panel and is
+**superseded**. We do not build a new surface; we rebase the existing one onto the
+pipeline (see the reframing box above). The §1 "appear under every doc?" sub-question
+is moot — a top-level focus-following view shows context for whatever node is
+selected, and renders "Select a node to see context" when nothing valid is focused.
 
 ---
 
@@ -59,7 +76,11 @@ The bundle already carries enough state to render distinct icons. Proposal:
 - Click on an auto-excluded ref (filtered by `load_when`) → 📌 (force-include, overrides the filter)
 - Click on 🔒 → confirm dialog ("Force-exclude X? It's marked `load: always`.") → 🚫
 
-**Open question:** do we need a fourth state for "user-included over auto-exclude" (i.e. the `load_when-filter` cleared by include)? The bundle already collapses this into `user-include` reason + an empty excluded entry. My lean: surface it as ⊘ in tooltip only — the symbol is still 📌.
+**Decision: adopt this symbol set.** Approved 2026-05-31. The existing panel only
+has ✓ / ○ (loaded / unloaded); we replace that with the seven-symbol set above,
+driven off `BundledDoc.reason` + the `stale` / `missing` fields. The "fourth state"
+sub-question stays as designed: surface `load_when`-filter-cleared-by-include as 📌,
+with the ⊘ provenance in the tooltip only.
 
 ---
 
@@ -98,9 +119,10 @@ More expressive. Most users would never hit the distinction; for the few that do
 ```
 Layered. Modes inherit `_default` and can add. Most general; most complex.
 
-**Lean:** Option A for v1. Two-level (target → overrides) is enough for the chat/do-step/refine cases we have today; YAGNI on per-mode until real friction shows up. Schema can grow to B/C without breaking — add a discriminator (e.g. presence of `_default`) later if needed.
-
-**Open question:** global rules ("never auto-load `rf_chatty` anywhere in this workspace"). Useful escape hatch for a doc that consistently bloats every bundle. Could live as a top-level `"_global": { "exclude": [...] }` key. My lean: skip for v1, add when someone asks twice.
+**Decision: A — mode-agnostic per-target.** `{ [targetId]: { include: string[], exclude: string[] } }`.
+Confirmed 2026-05-31. Two-level is enough for the chat/do-step/refine cases today;
+YAGNI on per-mode. Schema can grow to B/C without breaking by adding a discriminator
+later. Global rules (`"_global"`) and per-mode both deferred until real friction.
 
 ---
 
@@ -118,12 +140,43 @@ Layered. Modes inherit `_default` and can add. Most general; most complex.
 - Pros: best of both for latency.
 - Cons: two-writer surface area (if MCP also gains a write path later, conflicts).
 
-**Lean:** Option B. The extra round-trip on a click is invisible (sub-100ms typical); the consistency win is real. Drop the "MCP is for `loom/**`, not `.loom/**`" objection — `loom_set_context_prefs` is reading/writing structured workspace config, exactly what MCP is meant for. CLI/agent access for free is the kicker.
+**Decision: B — MCP tool.** Confirmed 2026-05-31. Sub-100ms round-trip is invisible;
+the consistency win and free CLI/agent access are worth it. `.loom/` config is exactly
+what MCP should own.
 
 **Concrete tool surface:**
 - `loom_set_context_prefs(targetId, { include?, exclude?, reset? })` — merge into the target's entry; `reset: true` clears the entry.
 - `loom_get_context_prefs(targetId)` — read-only; mostly for the sidebar to render.
 - Read path is also already covered by `loom://context/{docId}?mode=...` returning the bundle with `excluded[]` populated; the sidebar reads from there primarily.
+
+---
+
+## §10 — Launch-path collapse (consequence of §4 + §6)
+
+> New section, 2026-05-31. Surfaces an API consequence found during code recon.
+
+Today the panel's selection reaches a launch as an **ephemeral prompt argument**:
+`getSelectedIds()` (in-memory `loaded` ids) → `buildPrompt(…, contextIds)` →
+`loom_do_step(planId, stepNumber, context_ids=[…])`. Two problems: the override is
+lost on focus change (not durable), and it travels a *different* channel
+(`context_ids` prompt arg) than the sidebar render path (local heuristic), so the
+two can disagree.
+
+**Decision: collapse to one path through persisted prefs.** Once toggles persist to
+`.loom/context-prefs.json` (§4) and both `loom://context` *and* the
+`loom_do_step` / refine briefs read that file as `overrides`, the panel no longer
+needs to hold transient selection and the launch no longer needs to inject
+`context_ids` from the panel. So:
+
+- The ephemeral `getSelectedIds()` → `buildPrompt` `context_ids` arg channel is **removed**.
+- `loom_do_step` (and the refine briefs) read `.loom/context-prefs.json` for the resolved target's overrides themselves — same file the sidebar edits and `loom://context` reads.
+- One source of truth: edit prefs in the panel → every consumer (render + launch) sees the same overrides.
+
+**Trade-off noted:** this makes every override *persist* (no "this launch only, don't
+save" mode). That matches the idea's chosen mechanism (overrides live in
+`context-prefs.json`); reset-to-auto is the undo. If a transient/per-launch-only mode
+is wanted later, it is additive and out of scope here. *(Rafa: veto here if you want
+to keep an ephemeral channel.)*
 
 ---
 
@@ -137,6 +190,10 @@ Layered. Modes inherit `_default` and can add. Most general; most complex.
 | Click exclude | 🔒 `load: always` | warn (modal); on confirm, doc removed; surface as 🚫 with "overrides always" badge | 🚫 |
 | `requires_load` from another doc | irrelevant to user toggle | always wins over `user-exclude`; surface as ⊘ "required by X" | ⊘ |
 
+**Decision (§5 — `load: always` exclude UX): warn-on-confirm.** Confirmed 2026-05-31.
+Excluding a 🔒 ref pops a confirm modal ("Force-exclude X? It's marked `load: always`.");
+on confirm the doc is removed and surfaces as 🚫 with an "overrides always" badge.
+
 **The hardest case** is the last row: a user excludes doc A, then doc B's `requires_load` pulls A back in. Today the assembler's final-cleanup makes A emitted but it appears once in `docs[]` (good) and the exclusion is cleared. The sidebar needs to show "you tried to exclude this, but B requires it". Tooltip text. Don't break the user's mental model — they should *see* their exclude is being overridden, not silently get the doc anyway.
 
 ---
@@ -149,12 +206,11 @@ The bundle is the source of truth. Every toggle must:
 2. Re-read `loom://context/{targetId}?mode={mode}` to get the new bundle.
 3. Re-render the CONTEXT node from the new bundle.
 
-**Open question:** caching. The pipeline is fast (pure function over in-memory state), but re-running on every click for a long context list could be wasteful. Two options:
-
-- **A:** always re-run; trust the pipeline's speed (it's a pure traversal of `LoomState`). Simpler.
-- **B:** the sidebar maintains a local "predicted next bundle" by mutating the previous bundle in-place after a toggle, and lazily reconciles with the next MCP read.
-
-**Lean:** A. Premature optimisation otherwise; the pipeline is sub-ms on realistic state. Revisit only if a real workspace breaks the latency budget.
+**Decision: A — always re-run.** Confirmed 2026-05-31. The pipeline is a pure
+traversal of in-memory `LoomState` (sub-ms on realistic state); no predictive/local
+mutation. Note: the existing panel never runs the pipeline at all today, so adopting
+A means wiring the toggle → persist → re-read `loom://context` loop from scratch.
+Revisit only if a real workspace breaks the latency budget.
 
 ---
 
@@ -163,7 +219,7 @@ The bundle is the source of truth. Every toggle must:
 The sidebar CONTEXT for a target should reflect what *would* load if the user clicked Reply / do-step / refine *right now*. So it must:
 
 - Recompute on user toggle (§6).
-- Recompute on focus change (target changed → re-read for new target).
+- Recompute on focus change (target changed → re-read for new target). *(Existing panel already does this via `onSelectionChanged`.)*
 - Recompute on `LoomState` mutation that affects this target's bundle (a new ref doc added, a `load_when` edited, a `requires_load` link added).
 
 The third one is the tricky one — VS Code's file watcher fires for any `loom/**/*.md` change. Coarse-grained reaction (refresh on any change) is fine for v1; precise dirty-tracking is a Phase 5 nicety.
@@ -172,30 +228,32 @@ The third one is the tricky one — VS Code's file watcher fires for any `loom/*
 
 ## §8 — Out-of-scope reaffirmed
 
-- Token budgeting / summarisation UI — Phase 5; renders into the same surface later.
+- Token budgeting / summarisation UI — Phase 5; renders into the same surface later. *(Per-doc + total token counts already exist in the panel and stay.)*
 - Multi-target session prefs (branch-wide overrides) — out of scope; revisit if requested.
 - ctx-load itself — sibling thread.
 - Non-VSCode clients of the same prefs file — the MCP path (§4 Option B) leaves the door open; no work in this thread.
 
 ---
 
-## §9 — Plan-001 sketch (after decisions land)
+## §9 — Plan-001 (decisions landed — rebase framing)
 
-1. Add `loom_set_context_prefs` + `loom_get_context_prefs` MCP tools (read/write `.loom/context-prefs.json`).
-2. Wire `.loom/context-prefs.json` into the existing `loom://context` resource read path (already designed; check that Phase 1 left a hook).
-3. Add CONTEXT child node to the VS Code tree for valid launch targets (chats, plans, designs). Render rows from the bundle.
-4. Implement toggle actions (include / exclude / reset) → call `loom_set_context_prefs` → refresh node.
-5. Render stale / missing / always-locked badges from bundle metadata.
-6. Smoke test: open a chat, exclude an auto-loaded ref, click Reply, verify the `📄` line doesn't appear and the AI doesn't see the doc.
+1. Add `loom_set_context_prefs` + `loom_get_context_prefs` MCP tools (read/write `.loom/context-prefs.json`, schema §3 Option A).
+2. Wire `.loom/context-prefs.json` into the `loom://context` resource read path (and the `loom_do_step` / refine brief read path — §10) as `overrides`. Confirm the Phase-1 hook.
+3. **Rebase the existing `ContextSidebarProvider` onto the bundle**: replace its local pinned/opt-in derivation with a read of `loom://context/{target}?mode=`, rendering one row per `BundledDoc` with the §2 symbol set. (Not "add a new child node" — the panel is already top-level B.)
+4. Make toggles persist: include / exclude / reset call `loom_set_context_prefs`, then re-read `loom://context` and refresh (§6 always-re-run). Remove the ephemeral `getSelectedIds()` → `buildPrompt(context_ids)` channel (§10).
+5. Render badge metadata (⚠ stale, ❌ missing) + the 🔒 warn-on-confirm dialog (§5) + the ⊘ "required by X" tooltip.
+6. Smoke test: open a chat, exclude an auto-loaded ref via the toggle, click Reply, verify the `📄` line doesn't appear, prefs file shows the exclude, bundle `excluded[]` carries `reason: 'user-exclude'`.
 
 ---
 
-## Decisions log (filled in as we discuss)
+## Decisions log
 
 | # | Question | Decision | Date |
 |---|---|---|---|
-| §1 | Tree placement | — | — |
-| §3 | Prefs schema | — | — |
-| §4 | Write path | — | — |
-| §5 | `load: always` exclude UX | — | — |
-| §6 | Re-render strategy | — | — |
+| §1 | Tree placement | **B** — top-level focus-following; panel already exists, rebase it onto the pipeline (A lean superseded) | 2026-05-31 |
+| §2 | Toggle visuals | Adopt the 7-symbol set (✓ 📌 🚫 ⊘ 🔒 ⚠ ❌); replaces ✓/○ | 2026-05-31 |
+| §3 | Prefs schema | **A** — mode-agnostic per-target `{ [id]: { include, exclude } }` | 2026-05-31 |
+| §4 | Write path | **B** — MCP tool `loom_set_context_prefs` / `loom_get_context_prefs` | 2026-05-31 |
+| §5 | `load: always` exclude UX | warn-on-confirm modal → 🚫 with "overrides always" badge | 2026-05-31 |
+| §6 | Re-render strategy | **A** — always re-run the pipeline on toggle | 2026-05-31 |
+| §10 | Launch-path | Collapse to persisted prefs; remove ephemeral `context_ids` prompt-arg channel | 2026-05-31 |

@@ -44,6 +44,8 @@ import * as doStep from './tools/doStep';
 import * as appendDone from './tools/appendDone';
 import * as listPlanSteps from './tools/listPlanSteps';
 import * as createReference from './tools/createReference';
+import * as setContextPrefs from './tools/setContextPrefs';
+import * as getContextPrefs from './tools/getContextPrefs';
 import * as continueThread from './prompts/continueThread';
 import * as doNextStep from './prompts/doNextStep';
 import * as refineDesign from './prompts/refineDesign';
@@ -57,6 +59,7 @@ const BASE_TOOLS = [
     startPlan, completeStep, closePlan, finalizeDoc, archive, rename,
     findDoc, searchDocs, getBlockedSteps, getStalePlans, getStaleDocs,
     doStep, appendDone, listPlanSteps,
+    setContextPrefs, getContextPrefs,
 ];
 
 const PROMPTS = [

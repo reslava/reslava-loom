@@ -2,7 +2,7 @@
   "name": "loom-vscode",
   "displayName": "Loom AI",
   "description": "Weave ideas into features with AI — document‑driven workflow for VS Code",
-  "version": "0.6.5",
+  "version": "0.7.0",
   "publisher": "reslava",
   "license": "MIT",
   "icon": "media/loom.png",
@@ -300,10 +300,22 @@
         "icon": "$(archive)"
       },
       {
-        "command": "loom.context.toggle",
-        "title": "Toggle",
+        "command": "loom.context.exclude",
+        "title": "Exclude from context",
         "category": "Loom",
-        "icon": "$(circle-large-outline)"
+        "icon": "$(circle-slash)"
+      },
+      {
+        "command": "loom.context.include",
+        "title": "Include in context",
+        "category": "Loom",
+        "icon": "$(check)"
+      },
+      {
+        "command": "loom.context.reset",
+        "title": "Reset to auto",
+        "category": "Loom",
+        "icon": "$(discard)"
       },
       {
         "command": "loom.context.openDoc",
@@ -464,8 +476,18 @@
       ],
       "view/item/context": [
         {
-          "command": "loom.context.toggle",
-          "when": "view == loom.context && viewItem =~ /^(loaded|unloaded)Doc$/",
+          "command": "loom.context.exclude",
+          "when": "view == loom.context && viewItem =~ /^ctx-(auto|locked)$/",
+          "group": "inline"
+        },
+        {
+          "command": "loom.context.include",
+          "when": "view == loom.context && viewItem =~ /^ctx-(excluded|available)$/",
+          "group": "inline"
+        },
+        {
+          "command": "loom.context.reset",
+          "when": "view == loom.context && viewItem =~ /^ctx-(pinned|excluded|required)$/",
           "group": "inline"
         },
         {

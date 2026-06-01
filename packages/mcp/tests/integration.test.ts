@@ -173,6 +173,42 @@ async function run(): Promise<void> {
         assert(text.includes('id: t1-design'), 'design should be in the parent chain');
     });
 
+    // (b3) context prefs: set an exclude, confirm it lands in the bundle read path
+    await test('loom_set_context_prefs exclusion drops the doc from loom://context', async () => {
+        // Sanity: idea is in the bundle before any override (asserted in b2 too).
+        const before = await client.readResource({ uri: 'loom://context/tw-plan-001?mode=implementing' });
+        assert((before.contents[0].text as string).includes('id: t1-idea'), 'idea present before exclude');
+
+        const setRes = await client.callTool({
+            name: 'loom_set_context_prefs',
+            arguments: { targetId: 'tw-plan-001', exclude: ['t1-idea'] },
+        });
+        const setData = JSON.parse((setRes.content[0] as { text: string }).text);
+        assert(setData.entry.exclude.includes('t1-idea'), 'set returns the persisted exclude');
+
+        // get round-trips
+        const getRes = await client.callTool({
+            name: 'loom_get_context_prefs',
+            arguments: { targetId: 'tw-plan-001' },
+        });
+        const getData = JSON.parse((getRes.content[0] as { text: string }).text);
+        assert(getData.entry.exclude.includes('t1-idea'), 'get round-trips the exclude');
+
+        // the resource now honours the persisted override — idea is gone
+        const after = await client.readResource({ uri: 'loom://context/tw-plan-001?mode=implementing' });
+        const afterText = after.contents[0].text as string;
+        assert(!afterText.includes('id: t1-idea'), 'idea should be excluded from the bundle after override');
+        assert(afterText.includes('id: t1-design'), 'design should still be present');
+
+        // reset so later assertions / reuse see a clean target
+        await client.callTool({
+            name: 'loom_set_context_prefs',
+            arguments: { targetId: 'tw-plan-001', reset: true },
+        });
+        const restored = await client.readResource({ uri: 'loom://context/tw-plan-001?mode=implementing' });
+        assert((restored.contents[0].text as string).includes('id: t1-idea'), 'idea returns after reset');
+    });
+
     // (c) call loom_create_idea with valid args
     await test('loom_create_idea creates an idea doc', async () => {
         const result = await client.callTool({
@@ -223,6 +259,8 @@ async function run(): Promise<void> {
         assert(names.includes('loom_complete_step'), 'should include loom_complete_step');
         assert(names.includes('loom_search_docs'), 'should include loom_search_docs');
         assert(names.includes('loom_generate_idea'), 'should include loom_generate_idea');
+        assert(names.includes('loom_set_context_prefs'), 'should include loom_set_context_prefs');
+        assert(names.includes('loom_get_context_prefs'), 'should include loom_get_context_prefs');
     });
 
     // list prompts smoke test

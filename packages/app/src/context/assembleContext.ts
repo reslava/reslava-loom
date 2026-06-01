@@ -130,21 +130,41 @@ export function assembleContext(
     const excluded: ExcludedDoc[] = [];
     const excludeSet = new Set(overrides.exclude.map(id => resolveId(state.index, id) ?? id));
 
-    const add = (doc: Document, scope: DocScope, reason: BundledDoc['reason']): boolean => {
+    const add = (
+        doc: Document,
+        scope: DocScope,
+        reason: BundledDoc['reason'],
+        requiredBy?: string,
+    ): boolean => {
         if (emitted.has(doc.id)) return false;
-        if (excludeSet.has(doc.id) && reason !== 'user-include') {
+        const isExcluded = excludeSet.has(doc.id);
+        // A user exclude is overridden by an explicit user-include OR by a
+        // requires_load need (design §5: requires_load wins — a doc another doc
+        // genuinely needs is never starved by an exclude). Every other reason
+        // respects the exclude.
+        if (isExcluded && reason !== 'user-include' && reason !== 'requires_load') {
             if (!excluded.some(e => e.id === doc.id)) excluded.push({ id: doc.id, reason: 'user-exclude' });
             return false;
         }
+        // When requires_load overrides an exclude, record it as overridden (not a
+        // plain requires_load) so the sidebar can render ⊘ + "required by X".
+        const wasFiltered = excluded.some(e => e.id === doc.id && e.reason === 'load_when-filter');
+        const emitReason: BundledDoc['reason'] =
+            isExcluded && reason === 'requires_load' ? 'user-exclude-overridden' : reason;
         const bundled: BundledDoc = {
             id: doc.id,
             title: doc.title,
             type: doc.type,
             scope,
-            reason,
+            reason: emitReason,
             content: doc.content,
             tokenEstimate: estimateTokens(doc.content),
         };
+        // ⊘ provenance: a requires_load pull that overrode a gate (user-exclude or
+        // a load_when filter) carries the requiring doc's id.
+        if (requiredBy && reason === 'requires_load' && (isExcluded || wasFiltered)) {
+            bundled.requiredBy = requiredBy;
+        }
         const stale = staleReason(doc, targetEntry, state);
         if (stale) bundled.stale = { reason: stale };
         emitted.set(doc.id, bundled);
@@ -164,7 +184,12 @@ export function assembleContext(
             if (!excluded.some(e => e.id === doc.id)) excluded.push({ id: doc.id, reason: 'load_when-filter' });
             return;
         }
-        add(doc, scope, 'auto');
+        // Only `load: always` refs reach here, so mark the emitted doc as
+        // always-locked — the sidebar renders 🔒 and warns before a force-exclude.
+        if (add(doc, scope, 'auto')) {
+            const bundled = emitted.get(doc.id);
+            if (bundled) bundled.alwaysLocked = true;
+        }
     };
 
     const { weaveId, threadId } = targetEntry;
@@ -218,9 +243,13 @@ export function assembleContext(
     const docs = order.map(id => emitted.get(id)!);
     const totalTokens = docs.reduce((sum, d) => sum + d.tokenEstimate, 0);
 
-    // requires_load / user-include are explicit and win over the load_when auto-load gate:
-    // if a filtered ref ended up emitted, drop its 'load_when-filter' exclusion (no contradiction).
-    const finalExcluded = excluded.filter(e => !(e.reason === 'load_when-filter' && emitted.has(e.id)));
+    // An emitted doc carries no exclusion record: requires_load / user-include win over
+    // both the load_when gate and a user-exclude (design §5). Drop any 'load_when-filter'
+    // or 'user-exclude' entry whose id actually ended up in the bundle (no contradiction;
+    // the override is surfaced on the BundledDoc as reason/requiredBy instead).
+    const finalExcluded = excluded.filter(
+        e => !((e.reason === 'load_when-filter' || e.reason === 'user-exclude') && emitted.has(e.id)),
+    );
 
     return { targetId: canonicalTargetId, mode, docs, excluded: finalExcluded, totalTokens };
 }
@@ -242,19 +271,20 @@ function resolveRequiresLoad(
     emitted: Map<string, BundledDoc>,
     order: string[],
     excluded: ExcludedDoc[],
-    add: (doc: Document, scope: DocScope, reason: BundledDoc['reason']) => boolean,
+    add: (doc: Document, scope: DocScope, reason: BundledDoc['reason'], requiredBy?: string) => boolean,
 ): void {
-    // Seed the queue with the requires_load of every doc emitted so far + the target.
-    const queue: string[] = [];
+    // Seed the queue with the requires_load of every doc emitted so far + the target,
+    // tracking which doc required each ref (for ⊘ "required by X" provenance).
+    const queue: { ref: string; requiredBy: string }[] = [];
     const seedFrom = (id: string) => {
         const entry = catalog.get(id);
-        for (const ref of entry?.doc.requires_load ?? []) queue.push(ref);
+        for (const ref of entry?.doc.requires_load ?? []) queue.push({ ref, requiredBy: id });
     };
     for (const id of [...order]) seedFrom(id);
 
     const visited = new Set<string>();
     while (queue.length > 0) {
-        const ref = queue.shift()!;
+        const { ref, requiredBy } = queue.shift()!;
         if (visited.has(ref)) continue;
         visited.add(ref);
 
@@ -282,8 +312,8 @@ function resolveRequiresLoad(
             continue;
         }
 
-        if (add(entry.doc, entry.scope, 'requires_load')) {
-            for (const next of entry.doc.requires_load ?? []) queue.push(next);
+        if (add(entry.doc, entry.scope, 'requires_load', requiredBy)) {
+            for (const next of entry.doc.requires_load ?? []) queue.push({ ref: next, requiredBy: cid });
         }
     }
 }

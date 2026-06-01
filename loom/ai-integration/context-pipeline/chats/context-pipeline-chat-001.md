@@ -2,9 +2,10 @@
 type: chat
 id: ch_01KSNBXAQ0FZ0YH2PZQ02E7FSP
 title: context-pipeline Chat
-status: active
-created: 2026-05-27
-version: 1
+status: done
+created: "2026-05-27T00:00:00.000Z"
+updated: 2026-05-31
+version: 2
 tags: []
 parent_id: null
 requires_load: []

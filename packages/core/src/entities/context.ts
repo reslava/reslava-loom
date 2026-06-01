@@ -30,6 +30,15 @@ export interface ContextOverrides {
     exclude: string[];
 }
 
+/**
+ * Persisted sidebar overrides for one target, stored in `.loom/context-prefs.json`
+ * (Phase 3). Mode-agnostic per-target — same shape as ContextOverrides (design §3, Option A).
+ */
+export type ContextPrefsEntry = ContextOverrides;
+
+/** The whole `.loom/context-prefs.json` document: targetId → overrides. */
+export type ContextPrefs = Record<string, ContextPrefsEntry>;
+
 /** A single document included in a ContextBundle, with full provenance. */
 export interface BundledDoc {
     id: string;
@@ -44,6 +53,20 @@ export interface BundledDoc {
     stale?: { reason: string };
     /** True when this is a placeholder for a requires_load target that does not exist. */
     missing?: true;
+    /**
+     * True when this is a `load: always` reference auto-loaded by the load-gate.
+     * Lets the sidebar render the 🔒 "always-loaded" mark and warn before a
+     * force-exclude (design §2 / §5). Plain auto docs (parent chain, ctx) omit it.
+     */
+    alwaysLocked?: boolean;
+    /**
+     * Set when the doc is in the bundle *because* another doc's `requires_load`
+     * pulled it in, overriding a gate that would otherwise keep it out — a user
+     * exclude (reason becomes `user-exclude-overridden`) or a `load_when` filter.
+     * Holds the id of the requiring doc. Drives the sidebar ⊘ mark + "required by X"
+     * tooltip so an overridden exclude is visible, never silent (design §5).
+     */
+    requiredBy?: string;
 }
 
 /** A document deliberately excluded from the bundle, with a reason code. */

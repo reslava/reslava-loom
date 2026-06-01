@@ -108,9 +108,17 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('loom.context.toggle', (node: any) => {
-            const id = typeof node === 'string' ? node : node?.entry?.id;
-            if (id) contextSidebar.toggle(id);
+        vscode.commands.registerCommand('loom.context.exclude', (item: any) => {
+            const id = item?.row?.id;
+            if (id) contextSidebar.exclude(id);
+        }),
+        vscode.commands.registerCommand('loom.context.include', (item: any) => {
+            const id = item?.row?.id;
+            if (id) contextSidebar.include(id);
+        }),
+        vscode.commands.registerCommand('loom.context.reset', (item: any) => {
+            const id = item?.row?.id;
+            if (id) contextSidebar.reset(id);
         }),
         vscode.commands.registerCommand('loom.context.openDoc', (id: string) => {
             contextSidebar.openDoc(id);
@@ -127,7 +135,7 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         vscode.commands.registerCommand('loom.weavePlan', (node?: TreeNode) => weavePlanCommand(treeProvider, treeView, node)),
         vscode.commands.registerCommand('loom.finalize', (node?: TreeNode) => finalizeCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.rename', (node?: TreeNode) => renameCommand(treeProvider, node)),
-        vscode.commands.registerCommand('loom.refineDesign', (node?: TreeNode) => refineCommand(treeProvider, node, contextSidebar)),
+        vscode.commands.registerCommand('loom.refineDesign', (node?: TreeNode) => refineCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.startPlan', (node?: TreeNode) => startPlanCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.completeStep', (node?: TreeNode) => completeStepCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.validate', () => validateCommand(treeProvider)),
@@ -153,8 +161,8 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
         vscode.commands.registerCommand('loom.promoteToPlan', (node?: TreeNode) => promoteToPlanCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.promoteToReference', (node?: TreeNode) => promoteToReferenceCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.refineIdea', (node?: TreeNode) => refineIdeaCommand(treeProvider, node)),
-        vscode.commands.registerCommand('loom.refinePlan', (node?: TreeNode) => refinePlanCommand(treeProvider, node, contextSidebar)),
-        vscode.commands.registerCommand('loom.doStep', (node?: TreeNode) => doStepCommand(node, contextSidebar)),
+        vscode.commands.registerCommand('loom.refinePlan', (node?: TreeNode) => refinePlanCommand(treeProvider, node)),
+        vscode.commands.registerCommand('loom.doStep', (node?: TreeNode) => doStepCommand(node)),
         vscode.commands.registerCommand('loom.closePlan', (node?: TreeNode) => closePlanCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.delete', (node?: TreeNode) => deleteItemCommand(treeProvider, node)),
         vscode.commands.registerCommand('loom.archive', (node?: TreeNode) => archiveItemCommand(treeProvider, node)),
@@ -192,20 +200,18 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
             if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
             const id = node?.doc?.id;
             if (!id) { vscode.window.showErrorMessage('Right-click an idea in the tree to generate a design.'); return; }
-            const contextIds = contextSidebar.getSelectedIds();
             if (await isClaudeInstalled()) {
                 const weaveId = node?.weaveId ?? '';
                 const threadId = node?.threadId ?? '';
-                const ctxNote = contextIds.length > 0 ? ` Additional context doc ids: ${JSON.stringify(contextIds)}.` : '';
                 await launchClaude(root, 'Loom: Generate Design',
-                    `Loom generate design task. ideaId="${id}", weaveId="${weaveId}", threadId="${threadId}".${ctxNote} Use the loom MCP server: use MCP tool loom_find_doc with id="${id}" to read the idea, use MCP tool loom_create_design with weaveId="${weaveId}" threadId="${threadId}", then use MCP tool loom_update_doc with the design body. Do not use loom_generate_design — sampling is unavailable in Claude Code CLI.`
+                    `Loom generate design task. ideaId="${id}", weaveId="${weaveId}", threadId="${threadId}". Use the loom MCP server: use MCP tool loom_find_doc with id="${id}" to read the idea, use MCP tool loom_create_design with weaveId="${weaveId}" threadId="${threadId}", then use MCP tool loom_update_doc with the design body. Do not use loom_generate_design — sampling is unavailable in Claude Code CLI.`
                 );
             } else {
                 try {
                     let result: any;
                     await vscode.window.withProgress(
                         { location: vscode.ProgressLocation.Notification, title: 'Loom: Generating design…', cancellable: false },
-                        async () => { result = await getMCP(root).callTool('loom_generate_design', { id, ...(contextIds.length > 0 ? { context_ids: contextIds } : {}) }); }
+                        async () => { result = await getMCP(root).callTool('loom_generate_design', { id }); }
                     );
                     treeProvider.refresh();
                     if (result?.filePath) { const doc = await vscode.workspace.openTextDocument(result.filePath); await vscode.window.showTextDocument(doc, { preview: false }); }
@@ -218,20 +224,18 @@ export function activate(context: vscode.ExtensionContext): LoomExtensionAPI {
             if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
             const id = node?.doc?.id;
             if (!id) { vscode.window.showErrorMessage('Right-click a design in the tree to generate a plan.'); return; }
-            const contextIds = contextSidebar.getSelectedIds();
             if (await isClaudeInstalled()) {
                 const weaveId = node?.weaveId ?? '';
                 const threadId = node?.threadId ?? '';
-                const ctxNote = contextIds.length > 0 ? ` Additional context doc ids: ${JSON.stringify(contextIds)}.` : '';
                 await launchClaude(root, 'Loom: Generate Plan',
-                    `Loom generate plan task. designId="${id}", weaveId="${weaveId}", threadId="${threadId}".${ctxNote} Use the loom MCP server: use MCP tool loom_find_doc with id="${id}" to read the design, use MCP tool loom_create_plan with weaveId="${weaveId}" threadId="${threadId}", then use MCP tool loom_update_doc with a plan steps table based on the design. Do not use loom_generate_plan — sampling is unavailable in Claude Code CLI.`
+                    `Loom generate plan task. designId="${id}", weaveId="${weaveId}", threadId="${threadId}". Use the loom MCP server: use MCP tool loom_find_doc with id="${id}" to read the design, use MCP tool loom_create_plan with weaveId="${weaveId}" threadId="${threadId}", then use MCP tool loom_update_doc with a plan steps table based on the design. Do not use loom_generate_plan — sampling is unavailable in Claude Code CLI.`
                 );
             } else {
                 try {
                     let result: any;
                     await vscode.window.withProgress(
                         { location: vscode.ProgressLocation.Notification, title: 'Loom: Generating plan…', cancellable: false },
-                        async () => { result = await getMCP(root).callTool('loom_generate_plan', { id, ...(contextIds.length > 0 ? { context_ids: contextIds } : {}) }); }
+                        async () => { result = await getMCP(root).callTool('loom_generate_plan', { id }); }
                     );
                     treeProvider.refresh();
                     if (result?.filePath) { const doc = await vscode.workspace.openTextDocument(result.filePath); await vscode.window.showTextDocument(doc, { preview: false }); }

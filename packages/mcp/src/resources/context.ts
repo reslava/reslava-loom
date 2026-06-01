@@ -1,8 +1,8 @@
 import { getState } from '../../../app/dist/getState';
 import { assembleContext } from '../../../app/dist/context/assembleContext';
 import { serializeBundle } from '../../../app/dist/context/serializeBundle';
-import { getActiveLoomRoot, loadWeave, buildLinkIndex } from '../../../fs/dist';
-import { ConfigRegistry } from '../../../core/dist';
+import { getActiveLoomRoot, loadWeave, buildLinkIndex, readContextPrefsEntry } from '../../../fs/dist';
+import { ConfigRegistry, resolveId } from '../../../core/dist';
 import * as fs from 'fs-extra';
 
 const VALID_MODES = ['chat', 'idea', 'design', 'plan', 'implementing', 'refine', 'promote', 'ctx'] as const;
@@ -66,9 +66,26 @@ export async function handleContextResource(root: string, uri: string) {
         }
     }
 
-    const bundle = assembleContext(targetId, mode, { include: [], exclude: [] }, state);
-    const text = serializeBundle(bundle);
+    // Persisted sidebar overrides (Phase 3) — keyed by the canonical target id, the
+    // same id the sidebar gets back as bundle.targetId. This is the one impure read
+    // (file IO) that feeds the pure assembler; every context consumer (do-step,
+    // generate, prompts) routes through this handler and so honours prefs uniformly.
+    const canonicalId = resolveId(state.index, targetId) ?? targetId;
+    const overrides = await readContextPrefsEntry(root, canonicalId);
 
+    const bundle = assembleContext(targetId, mode, overrides, state);
+
+    // The sidebar needs the structured bundle (reasons, stale/missing/locked flags,
+    // per-doc token estimates) to render its marks; prompt injection needs the
+    // agent-agnostic markdown. Same bundle, two encodings — `?format=json` selects
+    // the structured form. Default stays markdown so existing callers are unchanged.
+    if (url.searchParams.get('format') === 'json') {
+        return {
+            contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(bundle) }],
+        };
+    }
+
+    const text = serializeBundle(bundle);
     return {
         contents: [{ uri, mimeType: 'text/plain', text }],
     };

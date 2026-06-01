@@ -5,6 +5,8 @@
 Loom gives AI agents structured, scoped, persistent context — so every session is as sharp
 as the first, and every decision is traceable.
 
+📚 **User Guides:** [Core concepts & workflow](./docs/USER_GUIDE.md) · [VS Code Extension](./docs/EXTENSION_USER_GUIDE.md) · [CLI / Claude Code](./docs/CLI_USER_GUIDE.md)
+
 > *"The workflow of serious projects needs to be organised and persistent: ideas, designs,
 > plans, reference material, appropriate context. Documents represent the state of the project —
 > fresh, defined and auditable — as opposed to an ever-expanding, opaque and degraded chat history."*
@@ -220,19 +222,18 @@ The VS Code extension is the **human surface** over the same document graph.
 
 > Demo GIF coming — see `packages/vscode/media/loom-demo.gif` once recorded.
 
-**The CONTEXT panel** (Activity Bar) shows your weaves → threads → plans, chats, done docs.
+The **Loom panel** (Activity Bar) has a **Threads** view (weaves → threads → idea / design / plans / chats / done) and a **Context** view showing exactly what the AI will receive for the selected node. Full walkthrough in the **[Extension User Guide](./docs/EXTENSION_USER_GUIDE.md)**.
 
 | Button | What it does |
 |--------|-------------|
-| *Generate Idea* | Formalise a chat or prompt into a scoped idea doc |
 | *Generate Design* | Turn an idea into an architecture + decisions doc |
 | *Generate Plan* | Break a design into numbered, reviewable implementation steps |
-| *Do Step* | AI implements the next pending step; marks it ✅ and writes a done note |
+| *Do Step(s)* | AI implements the next pending step; marks it ✅ and writes a done note |
 | *AI Reply* | Continue the conversation inside a chat doc with full thread context loaded |
-| *Generate Ctx* | Regenerate the ctx summary for a weave or thread |
-| *Refine* | Re-run generation on a stale doc after its parent was updated |
+| *Refine Idea / Design / Plan* | Re-run generation on a stale doc after its parent was updated |
+| *Refresh Context* | Regenerate the ctx summary for a weave or thread |
 | *Promote* | chat → idea → design → plan in one click |
-| *Start Plan* | Move a plan from `draft` to `implementing` |
+| *Start Plan* / *Close Plan* | Move a plan to `implementing` / finish it |
 | *Rename / Archive* | Inline doc management |
 
 ### AI button paths
@@ -279,7 +280,9 @@ No layer imports upward. All MCP tools delegate to `app` — no bypassing.
 | MCP server (`loom mcp`, resources, tools, prompts) | ✅ Shipped (v0.5.0) |
 | VS Code AI buttons — CLI terminal path (Claude Pro) | ✅ Shipped (v0.6.0) |
 | VS Code AI buttons — API key path (sampling fallback) | ✅ Shipped (v0.5.0) |
-| `loom init` with CLAUDE.md fusion | ✅ Shipped |
+| Unified context pipeline (`loom://context`) | ✅ Shipped |
+| Sidebar CONTEXT panel + persistent context overrides | ✅ Shipped (v0.7.0) |
+| `loom install` with CLAUDE.md fusion | ✅ Shipped |
 
 ---
 
@@ -290,7 +293,7 @@ npm install -g @reslava/loom
 
 # Initialize Loom in your project
 cd my-project
-loom init
+loom install
 
 # Create your first idea
 loom weave idea "Add Dark Mode" --weave ui
@@ -317,6 +320,9 @@ API keys.
 
 | Document | Purpose |
 |----------|---------|
+| [User Guide](./docs/USER_GUIDE.md) | Concepts, the workflow loop, and how context works (start here) |
+| [Extension User Guide](./docs/EXTENSION_USER_GUIDE.md) | The VS Code panel, buttons, and CONTEXT view |
+| [CLI / Claude Code Guide](./docs/CLI_USER_GUIDE.md) | Driving Loom from the terminal via an MCP agent |
 | [Architecture Reference](./loom/refs/architecture-reference.md) | Package relationships, AI integration, frontmatter fields, directory structure |
 | [CLI Commands Reference](./loom/refs/cli-commands-reference.md) | Every `loom` command |
 | [VS Code Commands Reference](./loom/refs/vscode-commands-reference.md) | All VS Code commands and keybindings |

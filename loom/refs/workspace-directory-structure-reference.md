@@ -40,7 +40,8 @@ load_when: [idea, design, plan, implementing]
 {project-root}/
 │
 ├── .loom/                             ← project config (hidden, tool-managed)
-│   └── config.json                    ← workspace settings, LOOM_ROOT, stage
+│   ├── config.json                    ← workspace settings, LOOM_ROOT, stage
+│   └── context-prefs.json             ← per-target context include/exclude overrides (sidebar-edited)
 │
 └── loom/                              ← docs root (was: weaves/ + references/)
     │
@@ -54,7 +55,9 @@ load_when: [idea, design, plan, implementing]
     ├── chats/                         ← project-level AI conversations
     │   └── {chat-id}.md
     │
-    ├── .archive/                      ← archived weaves and project-level docs
+    ├── .archive/                      ← SINGLE archive root for the whole repo;
+    │                                     mirrors source paths: loom/.archive/{weave}/{thread}/...
+    │                                     (no per-weave / per-thread .archive — see "Archiving" below)
     │
     └── {weave}/                       ← workstream (e.g. core-engine, vscode-extension)
         │
@@ -64,8 +67,6 @@ load_when: [idea, design, plan, implementing]
         │
         ├── chats/                     ← weave-level AI conversations
         │   └── {chat-id}.md
-        │
-        ├── .archive/                  ← archived threads and weave-level docs
         │
         └── {thread}/                  ← feature thread
             │
@@ -82,10 +83,8 @@ load_when: [idea, design, plan, implementing]
             ├── plans/                 ← implementation plans
             │   └── {plan-id}.md
             │
-            ├── done/                  ← post-implementation summaries
-            │   └── {done-id}.md
-            │
-            └── .archive/             ← archived docs for this thread
+            └── done/                  ← post-implementation summaries
+                └── {done-id}.md
 ```
 
 ---
@@ -99,13 +98,14 @@ Every scope (project, weave, thread) supports the same set of directories:
 | `ctx.md` / `ctx/` | `loom/ctx.md` | `loom/{weave}/ctx.md` | `loom/{weave}/{thread}/ctx/` |
 | `refs/` | `loom/refs/` | `loom/{weave}/refs/` | `loom/{weave}/{thread}/refs/` |
 | `chats/` | `loom/chats/` | `loom/{weave}/chats/` | `loom/{weave}/{thread}/chats/` |
-| `.archive/` | `loom/.archive/` | `loom/{weave}/.archive/` | `loom/{weave}/{thread}/.archive/` |
+| archived docs | `loom/.archive/` | `loom/.archive/{weave}/` | `loom/.archive/{weave}/{thread}/` |
 
 Rules:
 
 - Create any directory only when first needed — don't pre-create empty dirs
 - `ctx.md` (project + weave) is a single file; `ctx/` (thread) is a directory of session summaries
 - `refs/` contains static facts; never put AI-generated content in `refs/`
+- **Archiving uses one root.** There is a single `loom/.archive/` at the repo root — never a `.archive/` per weave or thread. Archive any doc by moving it to `loom/.archive/{weave}/{thread}/...`, mirroring its live path. `findMarkdownFiles` skips any directory named `.archive`, so archived docs drop out of derived state automatically. Use the `loom_archive` MCP tool rather than moving files by hand.
 
 ---
 
@@ -137,13 +137,11 @@ tags: []
 parent_id: null
 child_ids: []
 requires_load: []
-# design-specific:
-role: primary | supporting
 target_release: "0.x.0"
 actual_release: null
 design_version: 1          # plan field — stale when < parent design.version
 # reference-specific:
-load: always | by-request
+load: always # always | by-request
 load_when: [idea, design, plan, implementing]
 ---
 ```

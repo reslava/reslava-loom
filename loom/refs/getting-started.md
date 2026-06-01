@@ -1,7 +1,7 @@
 ---
 type: reference
 id: getting-started
-title: "Getting Started with Loom"
+title: "loom — Getting Started"
 status: active
 created: 2026-05-14
 version: 1
@@ -12,7 +12,7 @@ slug: getting-started
 load: by-request
 ---
 
-# Getting Started with Loom
+# loom — Getting Started
 
 One-page guide: from zero to your first AI-generated idea in five minutes.
 

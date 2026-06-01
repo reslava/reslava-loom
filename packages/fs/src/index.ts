@@ -10,3 +10,9 @@ export { saveDoc, FileWriteError, FilePermissionError } from './serializers/fron
 export { loadWeave, saveWeave, saveDocs } from './repositories/weaveRepository';
 export { loadThread, saveThread, docPathInThread } from './repositories/threadRepository';
 export { buildLinkIndex, updateIndexForFile } from './repositories/linkRepository';
+export {
+    readContextPrefs,
+    readContextPrefsEntry,
+    setContextPrefs,
+    SetContextPrefsInput,
+} from './repositories/contextPrefsRepository';

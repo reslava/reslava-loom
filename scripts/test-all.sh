@@ -41,6 +41,9 @@ run_test tests/do-step.test.ts
 # Context pipeline: pure assembler + serialiser (no IO)
 run_test tests/context-assembler.test.ts
 
+# Context prefs: .loom/context-prefs.json repository (real fs) — Phase 3 sidebar overrides
+run_test tests/context-prefs.test.ts
+
 # Plan table utils: steps-table rewrite must not truncate trailing sections
 run_test tests/plan-table-utils.test.ts
 

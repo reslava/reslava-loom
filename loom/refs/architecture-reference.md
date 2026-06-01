@@ -83,6 +83,7 @@ Session start: call `do-next-step` prompt (loads context + step instructions).
 - `loom_append_to_chat` — append a message to a chat doc (role: user | ai)
 - `loom_promote` — idea → design → plan, chat → idea
 - `loom_refresh_ctx` — regenerate ctx summary (sampling path; use loom_update_doc in Claude Code CLI)
+- `loom_get_context_prefs` / `loom_set_context_prefs` — read/write per-target context overrides in `.loom/context-prefs.json` (mode-agnostic `{ [targetId]: { include, exclude } }`); the sidebar CONTEXT panel and both `loom://context` + `loom_do_step` / refine read this file as `overrides`
 - `loom_rename` / `loom_archive` / `loom_get_stale_docs`
 
 **Key prompts:**
@@ -187,6 +188,7 @@ AI agents are stateless: each session starts from zero. Loom solves this by bein
 {workspace}/
   .loom/
     (no _status.md in Stage 2 — MCP is the source of truth)
+    context-prefs.json      ← per-target context include/exclude overrides (sidebar-edited)
   loom/
     ctx.md                  ← global context summary
     refs/                   ← static architectural facts (reference docs)
